@@ -1,3 +1,10 @@
+Live-TV neu: drei Spalten (Kategorien · Sender · Vorschau mit Programm „Jetzt/Danach“)
+Live: Sender wählen = erst Mini-Vorschau, nochmal OK = Vollbild; im Vollbild ▲/▼ = Sender wechseln
+Mini-Fenster rutscht beim Scrollen nicht mehr weg
+Player-Leiste verschwindet nach ca. 3,5 Sekunden; Zurück blendet sie auch bei Live zuerst aus; OK bei ausgeblendeter Leiste zeigt sie nur an
+Kategorien öffnen: „Alle anzeigen“ am Ende jeder Reihe – alle Titel durchblättern (lädt beim Runterscrollen nach) und darin suchen
+Zurück und Wechsel Filme ↔ Serien deutlich schneller (Listen werden gemerkt)
+App-Kachel auf dem Fire TV: neues breites Symbol über einen neuen Starteintrag
 Viel schneller: Filme-/Serien-Seiten bauen sich 3–4× schneller auf, Blättern ruckelt weniger
 Menü „Sprache & Audio“ und Auswahlmenüs scrollen jetzt mit – man sieht immer, wo man ist
 Ton verschieben bei Ton aus anderer Fassung: zusätzlich −1 min / −10 s / +10 s / +1 min (bis ±10 Minuten)
