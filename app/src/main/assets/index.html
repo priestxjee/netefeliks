@@ -452,6 +452,7 @@ html.pz-s .card{flex-basis:7.6rem}
 html.trlfull,html.trlfull body{background:transparent!important}html.trlfull #app,html.trlfull .modal,html.trlfull .talert{visibility:hidden}
 .trfh{position:fixed;left:2rem;top:1.6rem;z-index:90;background:rgba(0,0,0,.55);color:#fff;border-radius:.5rem;padding:.45rem .8rem;font-size:.9rem;opacity:0;transition:opacity .4s}.trfh.on{opacity:1}.trfh span{color:var(--red,#e50914);font-weight:800;margin-right:.6rem;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem}
 .trfw{position:fixed;inset:0;z-index:89;background:#000}.trfw video,.trfw iframe{width:100%;height:100%;border:0;object-fit:contain}
+.ccw{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center;max-width:40rem;margin:1rem auto 0}
 .card.allc{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#2a1414,#120d0d);border:2px dashed rgba(255,255,255,.18);color:var(--fg);text-align:center}
 .card.allc span{display:flex;flex-direction:column;gap:.35rem;align-items:center}
 .card.allc b{font-size:1.05rem}.card.allc small{color:var(--mute)}.card.allc i{font-style:normal;font-size:1.8rem;color:var(--red,#e50914)}
@@ -734,9 +735,10 @@ function countTypes(a){const c={live:0,movie:0,series:0};for(const x of a)c[x.ty
 function mergeInto(ex,it){ex.versions.push(...it.versions);if(QR[it.q]>QR[ex.q])ex.q=it.q;ex.genres=uniq([...ex.genres,...it.genres]);ex.sport=ex.sport||it.sport;for(const g of it.groups)if(!ex.groups.includes(g))ex.groups.push(g);
   for(const k of['logo','plot','director','backdrop','tmdb','epgId'])if(!ex[k]&&it[k])ex[k]=it[k];if(!ex.cast.length)ex.cast=it.cast;if(!ex.rating)ex.rating=it.rating;if(!ex.added||it.added>ex.added)ex.added=it.added||ex.added}
 // Katalog bauen: Sprach- und Qualitätsfassungen zusammenführen, Länder zuordnen
-function catalogCore(raws,tick){
-  const map=new Map(),tm=new Map();const N=raws.length;
+function catalogCore(raws,tick,keep){
+  const map=new Map(),tm=new Map();const N=raws.length;const kc=keep&&keep.c&&keep.c.length?new Set(keep.c):null;const skip={};
   for(let i=0;i<N;i++){const r=raws[i];raws[i]=null;if(!r||!r.name)continue;const it=normalize(r);
+    if(kc&&it.country!=='XX'&&!kc.has(it.country)){const s0=skip[it.country]=skip[it.country]||{live:0,movie:0,series:0,sport:0};s0[it.type]++;if(it.sport)s0.sport++;if(tick&&i%5000===0)tick(i,N);continue}
     const old=it.title.toLowerCase().replace(/\s+/g,' ');// alte Schlüssel-Form → gleiche IDs wie bisher (Verlauf, Listen bleiben)
     const tk=it.type==='live'?liveKey(it.title):mkey(it.title)||old;
     const key=it.type==='live'?'live|'+it.country+'|'+tk:it.type+'|'+tk+'|'+(it.year||'');
@@ -755,7 +757,8 @@ function catalogCore(raws,tick){
     IR:/(irib|manoto|\bgem\b|iran ?international|bbc persian|persiana|varzesh|tapesh|ifilm|ایران|شبکه|فارسی)/i,TR:/\b(trt|atv|show tv|star tv|kanal d|tv8|fox tr)\b/i,EN:/\b(bbc (one|two|three|four|news)|itv\d?|channel [45]|sky news|cnn|cbs|nbc|abc|fox news|espn)\b/i};
   const gv={},gn={};for(const it of items){gn[it.group]=(gn[it.group]||0)+1;if(it.type==='live'&&it.country==='XX'){for(const k in KN)if(KN[k].test(it.title)){it._kc=k;(gv[it.group]=gv[it.group]||{})[k]=((gv[it.group]||{})[k]||0)+1;break}}}
   for(const it of items)if(it.type==='live'&&it.country==='XX'){const v=gv[it.group]||{};const best=Object.keys(v).sort((a,b)=>v[b]-v[a])[0];const c=it._kc||(best&&v[best]>=Math.max(2,(gn[it.group]||0)*.4)?best:null);if(c){it.country=c;it.versions.forEach(x=>x.lang=c)}delete it._kc}
-  let sig=0;const st={};
+  if(kc)items=items.filter(it=>kc.has(it.country)||(keep.xx&&it.country==='XX'));
+  let sig=0;const st={};for(const c in skip)st[c]=skip[c];
   for(const it of items){it.versions.sort((a,b)=>QR[b.q]-QR[a.q]);it.langs=uniq(it.versions.map(v=>v.lang));sig=(Math.imul(sig,31)+hstr(it.id+':'+it.versions.length))|0;
     for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}}
   if(tick)tick(N,N);
@@ -938,10 +941,16 @@ function buildCatalog(raws){const r=catalogCore(raws);restoreItems(r.items);APP.
 const CACHE={
   db(){return new Promise((res,rej)=>{try{const r=indexedDB.open('netefeliks',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})},
   sig(){const c=APP.cfg||{};return[c.mode,c.server||'',c.user||'',c.m3u||''].join('|')},
+  async put(k,v){const d=await CACHE.db();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})},
+  async get(k){const d=await CACHE.db();return new Promise((res,rej)=>{const r=d.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
+  async del(k){const d=await CACHE.db();return new Promise(res=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=res;t.onerror=res})},
+  async saveParts(gen,n){CACHE.t=Date.now();let old=null;try{old=await CACHE.get('catalog')}catch(e){}await CACHE.put('catalog',{sig:CACHE.sig(),t:Date.now(),gen,parts:n,csig:APP.sig||'',xst:APP.xst||{}});
+    if(old&&old.gen&&old.gen!==gen)for(let i=0;i<(old.parts||0);i++)CACHE.del('c'+old.gen+'_'+i).catch(()=>{})},
   async save(json){CACHE.t=Date.now();try{const items=json||catJSON(APP.items);const d=await CACHE.db();
     await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put({sig:CACHE.sig(),t:Date.now(),items,csig:APP.sig||''},'catalog');t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}},
   async load(){try{const d=await CACHE.db();const v=await new Promise((res,rej)=>{const r=d.transaction('kv').objectStore('kv').get('catalog');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-    if(!v||v.sig!==CACHE.sig())return false;const items=JSON.parse(v.items);if(!items.length)return false;restoreItems(items);CACHE.t=v.t;APP.sig=v.csig||'';return true}catch(e){return false}}};
+    if(!v||v.sig!==CACHE.sig())return false;let items;
+    if(v.parts){items=[];for(let i=0;i<v.parts;i++){let s=await CACHE.get('c'+v.gen+'_'+i);if(!s)return false;const a=JSON.parse(s);s=null;for(let k=0;k<a.length;k++)items.push(a[k])}}else items=JSON.parse(v.items);if(!items.length)return false;restoreItems(items);CACHE.t=v.t;APP.sig=v.csig||'';APP.xst=v.xst||{};for(const c in APP.xst)if(!APP.stats[c])APP.stats[c]=APP.xst[c];return true}catch(e){return false}}};
 function restoreItems(items){APP.items=items;APP.byId=new Map(items.map(i=>[i.id,i]));APP.catVer++;
   const st={};for(const it of items)for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}APP.stats=st;APP._pool=null}
 // Hintergrund-Aktualisierung: holt die Playlist neu, ohne die Bedienung zu stören
@@ -954,7 +963,7 @@ async function bgRefresh(){if(_bgBusy||!APP.cfg||APP.cfg.mode==='demo')return;
   try{await waitIdle(120000);if(P.el||document.hidden)return;let res;try{res=await loadCatalog(null,{bg:true})}catch(e){return}
     if(res.same||(res.sig&&res.sig===APP.sig)){CACHE.t=Date.now();CACHE.touch&&CACHE.touch();return} // nichts Neues → nichts umbauen
     await waitIdle(6000);
-    const before=new Set(APP.items.map(i=>i.id));applyCatalog(res);CACHE.save(res.json);
+    const before=new Set(APP.items.map(i=>i.id));if(res.bufs)await applyCatalogB(res);else{applyCatalog(res);CACHE.save(res.json)}
     const fresh=APP.items.filter(i=>!before.has(i.id)&&i.type!=='live');
     if(fresh.length){const m=fresh.filter(i=>i.type==='movie').length,se=fresh.length-m;toast(`Playlist aktualisiert · ${m?m+' neue Filme':''}${m&&se?' · ':''}${se?se+' neue Serien':''}`);
       if(APP.view==='home'&&!P.el&&!APP.modal&&document.activeElement&&document.activeElement.closest('.rail'))renderApp()}}
@@ -981,8 +990,9 @@ self.onmessage=function(e){const m=e.data;try{
   if(m.op==='m3ub'){const dec=new TextDecoder();let parts=[];for(let i=0;i<m.bufs.length;i++){parts.push(dec.decode(new Uint8Array(m.bufs[i]),{stream:true}));m.bufs[i]=null}parts.push(dec.decode());m.text=parts.join('');parts=null;m.bufs=null;m.op=m.op==='xtb'?'xt':'m3u'}
   if(m.op==='xt'){let arr=JSON.parse(m.text);m.text=null;const n=xtMap(m.kind,arr,m.cats,m.B,m.U,m.P,RAW);arr=null;postMessage({op:'ok',n:n});return}
   if(m.op==='m3u'){const out=M3Uparse(m.text,function(f){postMessage({op:'tick',f:f})});m.text=null;for(const x of out)RAW.push(x);postMessage({op:'ok',n:out.length,c:countTypes(out)});return}
-  if(m.op==='build'){let r=catalogCore(RAW,function(i,n){postMessage({op:'tick',i:i,n:n})});RAW=[];let json=catJSON(r.items);const st=r.stats,sg=r.sig,n=r.items.length;r=null;
-    if(typeof TextEncoder!=='undefined'){const u8=new TextEncoder().encode(json);json=null;postMessage({op:'done',buf:u8.buffer,stats:st,sig:sg,n:n},[u8.buffer])}else postMessage({op:'done',json:json,stats:st,sig:sg,n:n});return}
+  if(m.op==='build'){let r=catalogCore(RAW,function(i,n){postMessage({op:'tick',i:i,n:n})},m.keep||null);RAW=[];const st=r.stats,sg=r.sig,n=r.items.length;let items=r.items;r=null;
+    if(typeof TextEncoder!=='undefined'){const enc=new TextEncoder(),bufs=[];for(let i=0;i<items.length;i+=4000){const u8=enc.encode(catJSON(items.slice(i,i+4000)));bufs.push(u8.buffer)}items=null;postMessage({op:'done',bufs:bufs,stats:st,sig:sg,n:n},bufs)}
+    else{const json=catJSON(items);items=null;postMessage({op:'done',json:json,stats:st,sig:sg,n:n})}return}
 }catch(err){postMessage({op:'err',msg:String(err&&err.message||err)})}};`;
 function mkWorker(){try{if(!window.Worker||!window.Blob||!window.URL)return null;const core=document.getElementById('nfk-core');if(!core)return null;
   return new Worker(URL.createObjectURL(new Blob([core.textContent+WK_MAIN],{type:'text/javascript'})))}catch(e){return null}}
@@ -1009,7 +1019,9 @@ const fmtMB=b=>b>=1e9?(b/1e9).toFixed(1).replace('.',',')+' GB':b>=1e7?Math.roun
 // Falls der speichersparende Weg auf einem Gerät nicht klappt: automatisch nochmal auf dem bewährten Weg
 async function loadCatalog(ui,opt={}){try{return await loadCatalog0(ui,opt)}catch(e){const m=String(e&&e.message||e);if(opt.textMode||/^(AUTH|KEINM3U|HTTP)/.test(m))throw e;
   LS.set('nfk.scanerr',{t:Date.now(),m});ui&&ui({msg:'Zweiter Versuch …',p:.02});return await loadCatalog0(ui,{...opt,textMode:true})}}
-async function loadCatalog0(ui,opt={}){const lsig=LS.get('nfk.lsig',{})||{},nsig={};let changed=!opt.bg;const tsig=t=>t.length+':'+hstr(t.slice(0,3000)+t.slice(t.length>>1,(t.length>>1)+3000)+t.slice(-3000));
+function scanKeep(){const ps=LS.get('nfk.profiles',[])||[];const cs=new Set(LS.get('nfk.scanc',[])||[]);let xx=false;for(const p of ps){(p.countries||[]).forEach(c=>cs.add(c));if(p.other)xx=true}
+  if(!cs.size)return null;if(cs.has('DE')){cs.add('AT');cs.add('CH')}if(cs.has('IR'))cs.add('AF');return{c:[...cs].sort(),xx}}
+async function loadCatalog0(ui,opt={}){const keep=scanKeep();LS.set('nfk.keepc',keep);const lsig=LS.get('nfk.lsig',{})||{},nsig={};let changed=!opt.bg;const tsig=t=>t.length+':'+hstr(t.slice(0,3000)+t.slice(t.length>>1,(t.length>>1)+3000)+t.slice(-3000));
   const c=APP.cfg;const cnt={live:0,movie:0,series:0};const up=o=>{if(ui)ui(Object.assign({cnt},o))};
   let w=c.mode==='demo'?null:mkWorker();if(w&&!(await wReady(w))){try{w.terminate()}catch(e){}w=null}APP.noWorker=c.mode!=='demo'&&!w;
   const raws=[];
@@ -1047,10 +1059,15 @@ async function loadCatalog0(ui,opt={}){const lsig=LS.get('nfk.lsig',{})||{},nsig
     for(const k of['live','movie','series'])up({done:k,detail:''});up({step:'movie',detail:nf(cnt.movie)});up({step:'series',detail:nf(cnt.series)});up({step:'live',detail:nf(cnt.live),p:.6})}
   LS.set('nfk.lsig',nsig);if(!changed)return{same:true};
   up({step:'ana',msg:'Sortiere nach Ländern, Genres & Qualität…',p:.62,detail:''});
-  if(w){const d=await wcall(w,{op:'build'},t=>up({step:'ana',p:.62+.33*(t.i/Math.max(1,t.n)),detail:Math.round(100*t.i/Math.max(1,t.n))+' %'}));
-    up({done:'ana',p:.96,detail:nf(d.n)+' Titel'});try{w.terminate()}catch(e){}w=null;const json=d.buf?new TextDecoder().decode(new Uint8Array(d.buf)):d.json;d.buf=null;return{json,stats:d.stats,sig:d.sig,n:d.n}}
-  await sleep(40);const r=catalogCore(raws,null);up({done:'ana',p:.96,detail:nf(r.items.length)+' Titel'});return{items:r.items,stats:r.stats,sig:r.sig,n:r.items.length}
+  if(w){const d=await wcall(w,{op:'build',keep},t=>up({step:'ana',p:.62+.33*(t.i/Math.max(1,t.n)),detail:Math.round(100*t.i/Math.max(1,t.n))+' %'}));
+    up({done:'ana',p:.96,detail:nf(d.n)+' Titel'});try{w.terminate()}catch(e){}w=null;if(d.bufs)return{bufs:d.bufs,stats:d.stats,sig:d.sig,n:d.n};return{json:d.json,stats:d.stats,sig:d.sig,n:d.n}}
+  await sleep(40);const r=catalogCore(raws,null,keep);up({done:'ana',p:.96,detail:nf(r.items.length)+' Titel'});return{items:r.items,stats:r.stats,sig:r.sig,n:r.items.length}
   }finally{if(w)try{w.terminate()}catch(e){}}}
+// Neuer Katalog in Stücken: Stück für Stück lesen und auf dem Gerät speichern (nie alles als ein Text)
+async function applyCatalogB(res){APP.items=[];APP.byId=new Map();APP._pool=null;APP._tc=null;APP.hero=[];META.mem.clear();TRL.mem.clear();APP._vm=null;APP._dd=null;
+  const dec=new TextDecoder(),gen=Date.now().toString(36),items=[];const n=res.bufs.length;
+  for(let i=0;i<n;i++){let s=dec.decode(new Uint8Array(res.bufs[i]));res.bufs[i]=null;const a=JSON.parse(s);for(let k=0;k<a.length;k++)items.push(a[k]);try{await CACHE.put('c'+gen+'_'+i,s)}catch(e){}s=null}
+  restoreItems(items);APP.sig=res.sig;const xst={};if(res.stats)for(const c in res.stats)if(!APP.stats[c]){APP.stats[c]=res.stats[c];xst[c]=res.stats[c]}APP.xst=xst;try{await CACHE.saveParts(gen,n)}catch(e){}}
 function applyCatalog(res){if(!res.items){APP.items=[];APP.byId=new Map();APP._pool=null;APP._tc=null;APP.hero=[];META.mem.clear();TRL.mem.clear()}restoreItems(res.items||JSON.parse(res.json));APP.sig=res.sig}
 
 // ---------- Profile & Verlauf ----------
@@ -2254,6 +2271,7 @@ function vLogin(err,tab){
     startScan(tab)});
 }
 async function startScan(tab){
+  if(APP.cfg)LS.set('nfk.cfg',APP.cfg);
   const m3u=APP.cfg&&APP.cfg.mode==='m3u';
   const STEPS=[['conn','Verbinden'],['live',m3u?'Playlist laden':'Live-Sender laden'],...(m3u?[]:[['movie','Filme laden'],['series','Serien laden']]),['ana','Länder, Genres & Qualität erkennen'],['save','Auf dem Gerät speichern']];
   screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.6rem">NETEFELIKS</h1><div class="prog"><i id="pg"></i></div><p id="pm" class="pm">Verbinde mit deinem Server…</p>
@@ -2273,7 +2291,7 @@ async function startScan(tab){
       (window.NFK?'Der Server ist nicht erreichbar oder das Einlesen ist fehlgeschlagen. Prüfe die Adresse (inkl. Port) und versuche es nochmal.':'Der Server ist nicht erreichbar. Prüfe die Adresse (inkl. Port). <br><br><b>Hinweis:</b> In dieser Browser-Vorschau sind Verbindungen zu fremden Servern gesperrt. Auf dem Fire TV bzw. als App funktioniert die echte Anmeldung – hier kannst du mit „Demo ansehen“ alles testen.')+`<br><small style="opacity:.7">Technischer Hinweis: ${esc(String(e&&e.message||e).slice(0,160))}</small>`;
     return vLogin(msg,tab)}
   ui({step:'save',msg:'Speichere auf dem Gerät…',p:.97});await sleep(30);
-  applyCatalog(res);LS.set('nfk.cfg',APP.cfg);await CACHE.save(res.json);LS.del('nfk.scanning');
+  if(res.bufs)await applyCatalogB(res);else{applyCatalog(res);await CACHE.save(res.json)}LS.set('nfk.cfg',APP.cfg);LS.del('nfk.scanning');
   const tot=a=>Object.values(APP.stats).reduce((s,x)=>s+x[a],0);const nc=Object.keys(APP.stats).filter(k=>k!=='XX').length;
   cur.cnt={live:tot('live'),movie:tot('movie'),series:tot('series')};ui({done:'save',p:1,msg:'Fertig – '+nf(APP.items.length)+' Titel bereit',detail:''});$('#s4')&&($('#s4').textContent=nf(nc));
   clearInterval(tm);await sleep(1300);
@@ -2361,6 +2379,8 @@ document.addEventListener('click',e=>{
      const r=String(NFK.backupSave(JSON.stringify(d))||'');if(r==='ask')toast('Bitte den Zugriff erlauben und dann nochmal „Jetzt sichern“ drücken');else if(r.startsWith('ok:'))toast('✓ Gesichert: '+r.slice(3).split('/').slice(-2).join('/'));else toast('Sichern nicht möglich: '+r.replace(/^err:/,''));break}
    case'bkload':{const r=String(NFK.backupLoad()||'');if(r==='ask'){toast('Bitte den Zugriff erlauben und dann nochmal drücken');break}if(r==='none'){toast('Keine Sicherung gefunden');break}if(!r.startsWith('ok:')){toast('Wiederherstellen nicht möglich: '+r.replace(/^err:/,''));break}
      try{const d=JSON.parse(r.slice(3));let n=0;for(const k in d.ls){if(k.startsWith('nfk.')){localStorage.setItem(k,d.ls[k]);n++}}toast('✓ Wiederhergestellt ('+n+' Einträge) – App startet neu …');setTimeout(()=>location.reload(),1200)}catch(e){toast('Sicherung ist beschädigt')}break}
+   case'scc':{const k=b.dataset.k;const a=LS.get('nfk.scanc',[])||[];const ps=LS.get('nfk.profiles',[])||[];const inP=ps.some(p=>(p.countries||[]).includes(k));const i=a.indexOf(k);
+     if(b.classList.contains('on')){if(i>-1)a.splice(i,1);if(inP)toast('Ist in deinem Profil gewählt – bleibt dabei');else b.classList.remove('on')}else{if(i<0)a.push(k);b.classList.add('on')}LS.set('nfk.scanc',a);break}
    case'vclr':APP.args={};renderApp('[data-act="dd"][data-k="g"]');break;
    case'vall':{let a2={};try{a2=JSON.parse(b.dataset.a)}catch(e){}APP.hist.push({v:APP.view,a:APP.args,f:b.dataset.a});APP.args=a2;renderApp('#vgrid .card');break}
    case'vf':{$$('.ddm').forEach(x=>x.remove());const k=b.dataset.k;APP.args={...APP.args,[k]:b.dataset.v,lim:0};renderApp(`[data-act="dd"][data-k="${k}"],[data-act="vf"][data-k="${k}"]`);break}
@@ -2388,7 +2408,8 @@ document.addEventListener('click',e=>{
    case'demo':APP.cfg={mode:'demo'};startScan();break;
    case'cpick':{const k=b.dataset.k;draft.countries=draft.countries.includes(k)?draft.countries.filter(x=>x!==k):[...draft.countries,k];$$('.cc[data-k]').forEach(x=>{const i=draft.countries.indexOf(x.dataset.k);x.dataset.n=i+1;x.classList.toggle('on',i>-1)});$('#csel').textContent=draft.countries.length+' ausgewählt';break}
    case'cother':draft.other=!draft.other;b.classList.toggle('on');break;
-   case'cnext':if(!draft.countries.length&&!draft.other){toast('Wähle mindestens ein Land');break}if(draft.edit){const p=prof();p.countries=draft.countries;p.other=draft.other;saveProfiles();APP._pool=null;draft=null;APP.view='settings';APP.args={sec:'sprache'};renderApp();toast('Länder gespeichert')}else vGenres();break;
+   case'cnext':if(!draft.countries.length&&!draft.other){toast('Wähle mindestens ein Land');break}if(draft.edit){const p=prof();p.countries=draft.countries;p.other=draft.other;saveProfiles();APP._pool=null;draft=null;const kp=LS.get('nfk.keepc',null);const sk=scanKeep();
+       if(kp&&sk&&(sk.c.some(c=>!kp.c.includes(c))||(sk.xx&&!kp.xx))){toast('Neue Länder werden jetzt geladen …');startScan().then(()=>startBg());break}APP.view='settings';APP.args={sec:'sprache'};renderApp();toast('Länder gespeichert')}else vGenres();break;
    case'cancel':draft=null;renderApp();break;
    case'gpick':{const g=b.dataset.g;draft.genres=draft.genres.includes(g)?draft.genres.filter(x=>x!==g):[...draft.genres,g];b.classList.toggle('on');break}
    case'gnext':if(draft.edit&&draft.onlyGenres){const p=prof();p.genres=draft.genres;saveProfiles();APP.ver++;draft=null;APP.view='settings';renderApp();toast('Lieblingsgenres gespeichert')}else vTeams();break;
@@ -2402,14 +2423,14 @@ document.addEventListener('click',e=>{
    case'upd':UPD.run();break;
    case'ux':$$('.uplert').forEach(popClose);break;
    case'updcheck':UPD.check(true).then(()=>{if(APP.view==='settings'&&!$('.uplert'))renderApp('[data-act="updcheck"]')});break;
-   case'lall':APP.args={all:b.dataset.v==='1'};renderApp(`[data-act="lall"][data-v="${b.dataset.v}"]`);break;
+   case'lall':if(b.dataset.v==='1'&&LS.get('nfk.keepc',null)){toast('Es sind nur deine Länder geladen – weitere unter Einstellungen → Sprache → „Länder bearbeiten“ hinzufügen');break}APP.args={all:b.dataset.v==='1'};renderApp(`[data-act="lall"][data-v="${b.dataset.v}"]`);break;
    case'sec':APP.args={sec:b.dataset.s};renderApp(`.cat[data-s="${b.dataset.s}"]`);break;
    case'subreset':{SUBST.forEach(([k])=>setPS(k,SET_DEF[k]));subApply();renderApp('[data-act="subreset"]');toast('Untertitel: Standard');break}
    case'apsty':{const k=b.dataset.s;const e=SUBST.find(x=>x[0]===k);const o=e[2];const i=o.findIndex(x=>String(x[0])===String(subOpt(k)[0]));setPS(k,o[(i+1)%o.length][0]);subApply();P.panel(true);break}
    case'set':{let v=b.dataset.v;const k=b.dataset.k;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;setPS(k,v);if(k==='akeep')syncKeep();if(/^sub/.test(k))subApply();renderApp(`[data-act="set"][data-k="${k}"]`);toast('Gespeichert');break}
    case'setrow':{const r=Object.assign({},PS('rows'));r[b.dataset.k]=r[b.dataset.k]===0?1:0;setPS('rows',r);renderApp(`[data-act="setrow"][data-k="${b.dataset.k}"]`);break}
    case'hidegen':{const g=b.dataset.g;const h=PS('hideGenres');setPS('hideGenres',h.includes(g)?h.filter(x=>x!==g):[...h,g]);renderApp(`[data-act="hidegen"][data-g="${CSS.escape(g)}"]`);break}
-   case'pother':{const p=prof();p.other=!p.other;saveProfiles();APP._pool=null;renderApp('[data-act="pother"]');break}
+   case'pother':{const p=prof();p.other=!p.other;saveProfiles();APP._pool=null;const kp=LS.get('nfk.keepc',null);if(p.other&&kp&&!kp.xx){toast('Sender ohne Länderangabe werden jetzt geladen …');startScan().then(()=>startBg());break}renderApp('[data-act="pother"]');break}
    case'pname':{const p=prof();const n=$('#pname').value.trim();if(n){p.name=n;saveProfiles();renderApp('[data-act="pname"]');toast('Name gespeichert')}break}
    case'pcolor':{const p=prof();p.color=b.dataset.c;saveProfiles();renderApp(`[data-act="pcolor"][data-c="${b.dataset.c}"]`);break}
    case'apanel':P.panel();break;
@@ -2607,11 +2628,12 @@ const INTRO={el:null,
     for(const[f,at]of[[880,1.12],[1318.5,1.3]]){const o=ac.createOscillator();o.type='triangle';o.frequency.value=f;const g=ac.createGain();const st=t+at;
       g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(.2,st+.01);g.gain.exponentialRampToValueAtTime(.001,st+1.1);o.connect(g);g.connect(out);o.start(st);o.stop(st+1.2)}
     setTimeout(()=>{try{ac.close()}catch(e){}},5200)}catch(e){}}};
-function vCrash(){screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.4rem">NETEFELIKS</h1><p style="max-width:34rem;margin:1rem auto;line-height:1.6">Beim Einlesen deiner Playlist ist dem Fire TV kurz der Arbeitsspeicher ausgegangen – die App wurde neu gestartet.<br>Schließe am besten andere Apps (Fire-TV-Taste gedrückt halten → Apps) und versuche es noch einmal.</p><button class="btn pri f" data-act="rescan" data-autofocus>Erneut einlesen</button></div>`)}
+function vCrash(){screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.4rem">NETEFELIKS</h1><p style="max-width:34rem;margin:1rem auto;line-height:1.6">Beim Einlesen deiner Playlist ist dem Fire TV kurz der Arbeitsspeicher ausgegangen – die App wurde neu gestartet.<br>Schließe am besten andere Apps (Fire-TV-Taste gedrückt halten → Apps) und versuche es noch einmal.</p><div class="ccw">${(()=>{const cur=new Set((scanKeep()||{c:[]}).c);return['IR','DE','EN','TR','AR','AF','KU','FR','ES','IT','NL','PL','RU','IN','AL','GR','PT','RO'].filter(k=>CBY[k]).map(k=>`<button class="chip f${cur.has(k)?' on':''}" data-act="scc" data-k="${k}">${CBY[k].flag||''} ${esc(CBY[k].name.split(' · ')[0])}</button>`).join('')})()}</div>
+  <p class="hint" style="margin:.4rem auto 1rem;max-width:34rem">Tipp: Wähle nur die Länder, die du brauchst – dann wird nur das geladen und es braucht viel weniger Speicher.</p><button class="btn pri f" data-act="rescan" data-autofocus>Erneut einlesen</button></div>`)}
 // ---------- Start ----------
 (async function boot(){
   try{const cr=window.NFK&&NFK.lastCrash&&NFK.lastCrash();if(cr){LS.set('nfk.appcrash',{t:Date.now(),x:String(cr).slice(0,1500)});NFK.clearCrash();setTimeout(()=>toast('Die App war abgestürzt – Details unter Einstellungen → Abo & App'),5000)}}catch(e){}
-  const intro=INTRO.play();const crashed=/recovered/.test(location.hash);const scanCrash=crashed&&LS.get('nfk.scanning',0);LS.del('nfk.scanning');
+  const intro=INTRO.play();const crashed=/recovered/.test(location.hash);const sc0=+LS.get('nfk.scanning',0)||0;const scanCrash=!!sc0&&Date.now()-sc0<30*6e4;LS.del('nfk.scanning');
   if(!APP.cfg){await intro;vLogin();return}
   // Gespeicherte Playlist sofort nutzen (lädt während des Intros), frische Daten kommen im Hintergrund
   if(crashed){const n=LS.get('nfk.now',{})||{};const l=LS.get('nfk.crashes',[])||[];l.push({t:Date.now(),why:(location.hash.split('-')[1]||'?'),v:n.v||'',play:!!n.play});LS.set('nfk.crashes',l.slice(-10))}
