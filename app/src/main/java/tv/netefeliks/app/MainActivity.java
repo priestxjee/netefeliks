@@ -41,13 +41,14 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 3;
+    static final int NATIVE_VERSION = 4;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
 
     private WebView web;
     private VideoEngine video;
+    private String ua = "";
     private SharedPreferences prefs;
 
     @Override
@@ -71,6 +72,7 @@ public class MainActivity extends Activity {
         s.setUseWideViewPort(true);
         s.setLoadWithOverviewMode(true);
         s.setUserAgentString(s.getUserAgentString() + " Netefeliks/" + installedVersion());
+        ua = s.getUserAgentString();
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
             // Liefert die heruntergeladene neuere Oberfläche unter derselben Adresse aus,
@@ -84,6 +86,20 @@ public class MainActivity extends Activity {
                             return new WebResourceResponse("text/html", "utf-8", new FileInputStream(f));
                         } catch (Exception e) { /* eingebaute Version verwenden */ }
                     }
+                }
+                // YouTube-Trailer: Die eingebettete Wiedergabe braucht eine Herkunftsangabe (Referer),
+                // die eine lokal geladene App nicht mitschickt – deshalb holt die App diese eine Seite selbst.
+                String u = req.getUrl().toString();
+                if (!req.isForMainFrame() && (u.startsWith("https://www.youtube-nocookie.com/embed/") || u.startsWith("https://www.youtube.com/embed/"))) {
+                    try {
+                        HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
+                        c.setRequestProperty("Referer", "https://netefeliks.app/");
+                        c.setRequestProperty("User-Agent", ua);
+                        c.setRequestProperty("Accept-Language", "de-DE,de;q=0.9,en;q=0.8");
+                        c.setConnectTimeout(10000);
+                        c.setReadTimeout(15000);
+                        if (c.getResponseCode() == 200) return new WebResourceResponse("text/html", "utf-8", c.getInputStream());
+                    } catch (Exception e) { /* normal laden */ }
                 }
                 return null;
             }

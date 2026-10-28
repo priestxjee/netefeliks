@@ -26,6 +26,8 @@ import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer;
 import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter;
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import androidx.media3.exoplayer.source.MediaSource;
+import androidx.media3.exoplayer.source.MergingMediaSource;
 import androidx.media3.ui.SubtitleView;
 
 import org.json.JSONArray;
@@ -61,6 +63,9 @@ class VideoEngine {
     private ExoPlayer player;
     private SyncAudioRenderer audio;
     private long delayMs;
+    private DefaultMediaSourceFactory sources;
+    private boolean mixPending;
+    private String[] mixLangs = new String[0];
     private volatile String state = "{}";
     private volatile String tracks = "{\"audio\":[],\"text\":[]}";
 
@@ -107,8 +112,9 @@ class VideoEngine {
                 .setUserAgent("Netefeliks/3 (Linux; Android) ExoPlayer")
                 .setConnectTimeoutMs(15000)
                 .setReadTimeoutMs(20000);
+        sources = new DefaultMediaSourceFactory(http);
         player = new ExoPlayer.Builder(act, renderers)
-                .setMediaSourceFactory(new DefaultMediaSourceFactory(http))
+                .setMediaSourceFactory(sources)
                 .build();
         player.setVideoSurfaceView(surface);
         player.addListener(new Player.Listener() {
@@ -119,7 +125,7 @@ class VideoEngine {
                 if (s == Player.STATE_ENDED) events.emit("ended", "");
             }
             @Override public void onCues(CueGroup cueGroup) { subs.setCues(cueGroup.cues); }
-            @Override public void onTracksChanged(Tracks t) { buildTracks(); events.emit("tracks", ""); }
+            @Override public void onTracksChanged(Tracks t) { if (mixPending) applyMix(); buildTracks(); events.emit("tracks", ""); }
         });
     }
 
@@ -149,7 +155,19 @@ class VideoEngine {
             subs.setCues(new ArrayList<androidx.media3.common.text.Cue>());
             surface.setVisibility(View.VISIBLE);
             subs.setVisibility(View.VISIBLE);
-            player.setMediaItem(MediaItem.fromUri(c.getString("url")), Math.max(0, c.optLong("start", 0)));
+            long start = Math.max(0, c.optLong("start", 0));
+            String audioUrl = c.optString("audioUrl", "");
+            if (audioUrl.length() > 0) {
+                // Bild aus Fassung 1 + Ton aus Fassung 2: beide Streams laden und zusammenführen
+                MediaSource pic = sources.createMediaSource(MediaItem.fromUri(c.getString("url")));
+                MediaSource snd = sources.createMediaSource(MediaItem.fromUri(audioUrl));
+                mixPending = true;
+                mixLangs = langs;
+                player.setMediaSource(new MergingMediaSource(true, true, pic, snd), start);
+            } else {
+                mixPending = false;
+                player.setMediaItem(MediaItem.fromUri(c.getString("url")), start);
+            }
             player.prepare();
             player.play();
             ui.removeCallbacks(poll);
@@ -189,6 +207,34 @@ class VideoEngine {
                 player.setTrackSelectionParameters(b.build());
             }
         });
+    }
+
+    /** Bild nur aus Stream 0 (Präfix „0:“), Ton nur aus Stream 1 (Präfix „1:“) – Wunschsprache bevorzugt. */
+    private void applyMix() {
+        List<Tracks.Group> groups = player.getCurrentTracks().getGroups();
+        Tracks.Group vid = null, aud = null;
+        int vt = 0, at = 0, best = 999;
+        for (Tracks.Group g : groups) {
+            String id = g.getMediaTrackGroup().id;
+            if (g.getType() == C.TRACK_TYPE_VIDEO && id.startsWith("0:") && vid == null) {
+                for (int i = 0; i < g.length; i++) if (g.isTrackSupported(i)) { vid = g; vt = i; break; }
+            }
+            if (g.getType() == C.TRACK_TYPE_AUDIO && id.startsWith("1:")) {
+                for (int i = 0; i < g.length; i++) {
+                    if (!g.isTrackSupported(i)) continue;
+                    String l = g.getTrackFormat(i).language;
+                    int rank = 500;
+                    for (int k = 0; k < mixLangs.length; k++) if (l != null && l.startsWith(mixLangs[k])) { rank = k; break; }
+                    if (aud == null || rank < best) { aud = g; at = i; best = rank; }
+                }
+            }
+        }
+        if (vid == null || aud == null) return;   // noch nicht alles geladen – beim nächsten Mal
+        mixPending = false;
+        player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon()
+                .setOverrideForType(new TrackSelectionOverride(vid.getMediaTrackGroup(), vt))
+                .setOverrideForType(new TrackSelectionOverride(aud.getMediaTrackGroup(), at))
+                .build());
     }
 
     String state() { return state; }
@@ -233,6 +279,8 @@ class VideoEngine {
                     o.put("label", label(f));
                     o.put("sel", g.isTrackSelected(ti));
                     o.put("ch", f.channelCount);
+                    String gid = g.getMediaTrackGroup().id;
+                    o.put("src", gid.startsWith("1:") ? 1 : 0);
                     (type == C.TRACK_TYPE_AUDIO ? a : t).put(o);
                 }
             }

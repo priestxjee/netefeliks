@@ -1,4 +1,6 @@
-Echter Fire-TV-Player unter der gewohnten Oberfläche: Bild bei 4K/HEVC und MKV
-Neues Menü „Sprache & Audio“: Tonspur, Untertitel, Version
-Audio-Synchronisation in 0,1-s-Schritten, pro Film gemerkt
-Untertitel-Größe in den Einstellungen
+Bild & Ton kombinieren: z. B. 4K-Bild mit persischem Ton
+Alle Tonspuren aus allen Fassungen, ohne Doppelte
+Live-TV: Länder aufklappen, Reihenfolge per ▲▼, Kategorien anheften, Meine Sender
+Bewertungen und Trailer ohne Schlüssel
+Playlist wird gespeichert – App startet sofort, Aktualisierung alle 30 Min. im Hintergrund
+Update-Hinweis zuverlässiger, eigener Bereich „Updates“ in den Einstellungen
