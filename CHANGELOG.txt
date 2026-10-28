@@ -1,3 +1,4 @@
+Einlesen der Playlist braucht deutlich weniger Arbeitsspeicher (Daten wandern ohne Kopie in den Hintergrund) – kein Neustart mehr beim ersten Einlesen
 App-Symbol: roter NETEFELIKS-Schriftzug ohne eigenen Hintergrund – füllt die Fire-TV-Kachel sauber
 Anmeldung neu gestaltet: klare dunkle Karte, saubere Felder, „Sicherung laden“ und „Demo“ als zweite Wahl
 App-Symbol: das breite Netefeliks-Banner ist jetzt auch das Haupt-Symbol der App (Fire TV nimmt bei selbst installierten Apps dieses)

@@ -967,14 +967,24 @@ const WK_MAIN=`
 let RAW=[];
 self.onmessage=function(e){const m=e.data;try{
   if(m.op==='ping'){postMessage({op:'pong'});return}
+  if(m.op==='xtb'||m.op==='m3ub'){const dec=new TextDecoder();let parts=[];for(let i=0;i<m.bufs.length;i++){parts.push(dec.decode(new Uint8Array(m.bufs[i]),{stream:true}));m.bufs[i]=null}parts.push(dec.decode());m.text=parts.join('');parts=null;m.bufs=null;m.op=m.op==='xtb'?'xt':'m3u'}
   if(m.op==='xt'){let arr=JSON.parse(m.text);m.text=null;const n=xtMap(m.kind,arr,m.cats,m.B,m.U,m.P,RAW);arr=null;postMessage({op:'ok',n:n});return}
   if(m.op==='m3u'){const out=M3Uparse(m.text,function(f){postMessage({op:'tick',f:f})});m.text=null;for(const x of out)RAW.push(x);postMessage({op:'ok',n:out.length,c:countTypes(out)});return}
-  if(m.op==='build'){const r=catalogCore(RAW,function(i,n){postMessage({op:'tick',i:i,n:n})});RAW=[];const json=catJSON(r.items);postMessage({op:'done',json:json,stats:r.stats,sig:r.sig,n:r.items.length});return}
+  if(m.op==='build'){let r=catalogCore(RAW,function(i,n){postMessage({op:'tick',i:i,n:n})});RAW=[];let json=catJSON(r.items);const st=r.stats,sg=r.sig,n=r.items.length;r=null;
+    if(typeof TextEncoder!=='undefined'){const u8=new TextEncoder().encode(json);json=null;postMessage({op:'done',buf:u8.buffer,stats:st,sig:sg,n:n},[u8.buffer])}else postMessage({op:'done',json:json,stats:st,sig:sg,n:n});return}
 }catch(err){postMessage({op:'err',msg:String(err&&err.message||err)})}};`;
 function mkWorker(){try{if(!window.Worker||!window.Blob||!window.URL)return null;const core=document.getElementById('nfk-core');if(!core)return null;
   return new Worker(URL.createObjectURL(new Blob([core.textContent+WK_MAIN],{type:'text/javascript'})))}catch(e){return null}}
-function wcall(w,msg,onTick){return new Promise((res,rej)=>{w.onmessage=e=>{const d=e.data;if(d.op==='tick'){onTick&&onTick(d);return}if(d.op==='err')rej(new Error(d.msg));else res(d)};
-  w.onerror=e=>{try{e.preventDefault()}catch(x){}rej(new Error('worker'))};w.postMessage(msg)})}
+function wcall(w,msg,onTick,transfer){return new Promise((res,rej)=>{w.onmessage=e=>{const d=e.data;if(d.op==='tick'){onTick&&onTick(d);return}if(d.op==='err')rej(new Error(d.msg));else res(d)};
+  w.onerror=e=>{try{e.preventDefault()}catch(x){}rej(new Error('worker'))};if(transfer)w.postMessage(msg,transfer);else w.postMessage(msg)})}
+// Speichersparend laden: Rohdaten bleiben Bytes und wandern ohne Kopie in den Hintergrund-Worker (kein riesiger Text im Hauptteil)
+async function fetchBufs(url,onChunk){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);const total=+(r.headers.get('content-length')||0);
+  if(!r.body||!r.body.getReader||!window.TextDecoder){const ab=await r.arrayBuffer();const t=new TextDecoder().decode(new Uint8Array(ab,0,Math.min(ab.byteLength,4e6)));onChunk&&onChunk(t,ab.byteLength,total);return{bufs:[ab],bytes:ab.byteLength,head:t.slice(0,20000)}}
+  const rd=r.body.getReader(),dec=new TextDecoder();const bufs=[];let bytes=0,head='';
+  for(;;){const{done,value}=await rd.read();if(done)break;bytes+=value.length;const ab=value.byteOffset===0&&value.byteLength===value.buffer.byteLength?value.buffer:value.slice().buffer;bufs.push(ab);
+    const s=dec.decode(value,{stream:true});if(head.length<20000)head+=s.slice(0,20000-head.length);onChunk&&onChunk(s,bytes,total)}
+  return{bufs,bytes,head}}
+const bsig=f=>{let h=2166136261;const mix=u=>{for(let i=0;i<u.length;i+=7){h^=u[i];h=Math.imul(h,16777619)}};const L=f.bufs.length;[0,L>>1,L-1].forEach(i=>{const b=f.bufs[i];if(b)mix(new Uint8Array(b,0,Math.min(b.byteLength,6000)))});return'b'+f.bytes+':'+(h>>>0)}
 async function wReady(w){try{await Promise.race([wcall(w,{op:'ping'}),sleep(3000).then(()=>{throw new Error('timeout')})]);return true}catch(e){return false}}
 // Datei laden und dabei mitzählen (damit man live sieht, was gefunden wird)
 async function fetchText(url,onChunk){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
@@ -1002,24 +1012,29 @@ async function loadCatalog(ui,opt={}){const lsig=LS.get('nfk.lsig',{})||{},nsig=
     const B=XT.base(c),U=encodeURIComponent(c.user),P=encodeURIComponent(c.pass);
     const plan=[['live','get_live_streams','"stream_id"','live',.05,.2,'Lade Live-Sender…'],['vod','get_vod_streams','"stream_id"','movie',.2,.45,'Lade Filme…'],['series','get_series','"series_id"','series',.45,.6,'Lade Serien…']];
     for(const[kind,action,key,step,a,b,msg]of plan){up({step,msg,p:a,detail:''});const t0=performance.now();
-      const text=await fetchText(XT.url(c,action),(ch,bytes,total)=>{cnt[step]+=countOcc(ch,key);up({step,p:a+(b-a)*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+6e6))),detail:nf(cnt[step])+' gefunden · '+fmtMB(bytes)})});
-      const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
-      nsig[kind]=tsig(text);if(nsig[kind]!==lsig[kind])changed=true;
-      if(w){const d=await wcall(w,{op:'xt',kind,text,cats:cats[kind],B,U,P});cnt[step]=d.n}else cnt[step]=xtMap(kind,JSON.parse(text),cats[kind],B,U,P,raws);
+      const onCh=(ch,bytes,total)=>{cnt[step]+=countOcc(ch,key);up({step,p:a+(b-a)*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+6e6))),detail:nf(cnt[step])+' gefunden · '+fmtMB(bytes)})};
+      if(w){let f=await fetchBufs(XT.url(c,action),onCh);const sec=(performance.now()-t0)/1000;if(f.bytes>3e6&&sec>.4)BW.note(f.bytes*8/sec/1e6,'Playlist',true);
+        nsig[kind]=bsig(f);if(nsig[kind]!==lsig[kind])changed=true;const bufs=f.bufs;f=null;
+        const d=await wcall(w,{op:'xtb',kind,bufs,cats:cats[kind],B,U,P},null,bufs);cnt[step]=d.n}
+      else{const text=await fetchText(XT.url(c,action),onCh);const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
+        nsig[kind]=tsig(text);if(nsig[kind]!==lsig[kind])changed=true;cnt[step]=xtMap(kind,JSON.parse(text),cats[kind],B,U,P,raws)}
       up({done:step,step,detail:nf(cnt[step]),p:b})}}
   else{
     up({step:'conn',msg:'Verbinde mit deinem Server…',p:.02});let n=0;const t0=performance.now();
-    const text=await fetchText(c.m3u,(ch,bytes,total)=>{if(!n)up({done:'conn',step:'live',msg:'Lade Playlist…'});n+=countOcc(ch,'#EXTINF');up({step:'live',p:.05+.5*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+8e6))),detail:nf(n)+' Einträge · '+fmtMB(bytes)})});
-    const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
+    const onCh=(ch,bytes,total)=>{if(!n)up({done:'conn',step:'live',msg:'Lade Playlist…'});n+=countOcc(ch,'#EXTINF');up({step:'live',p:.05+.5*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+8e6))),detail:nf(n)+' Einträge · '+fmtMB(bytes)})};
+    if(w){let f=await fetchBufs(c.m3u,onCh);const sec=(performance.now()-t0)/1000;if(f.bytes>3e6&&sec>.4)BW.note(f.bytes*8/sec/1e6,'Playlist',true);
+      if(!/#EXTM3U|#EXTINF/i.test(f.head))throw new Error('KEINM3U');nsig.m3u=bsig(f);if(nsig.m3u!==lsig.m3u)changed=true;if(!changed)return{same:true};
+      up({step:'live',msg:'Lese Playlist…',p:.56});const bufs=f.bufs;f=null;const d=await wcall(w,{op:'m3ub',bufs},t=>up({p:.56+.04*t.f}),bufs);Object.assign(cnt,d.c)}
+    else{const text=await fetchText(c.m3u,onCh);const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
     if(!/#EXTM3U|#EXTINF/i.test(text.slice(0,20000)))throw new Error('KEINM3U');
     nsig.m3u=tsig(text);if(nsig.m3u!==lsig.m3u)changed=true;if(!changed)return{same:true};
     up({step:'live',msg:'Lese Playlist…',p:.56});
-    if(w){const d=await wcall(w,{op:'m3u',text},t=>up({p:.56+.04*t.f}));Object.assign(cnt,d.c)}else{const out=M3Uparse(text);Object.assign(cnt,countTypes(out));for(const x of out)raws.push(x)}
+    const out=M3Uparse(text);Object.assign(cnt,countTypes(out));for(const x of out)raws.push(x)}
     for(const k of['live','movie','series'])up({done:k,detail:''});up({step:'movie',detail:nf(cnt.movie)});up({step:'series',detail:nf(cnt.series)});up({step:'live',detail:nf(cnt.live),p:.6})}
   LS.set('nfk.lsig',nsig);if(!changed)return{same:true};
   up({step:'ana',msg:'Sortiere nach Ländern, Genres & Qualität…',p:.62,detail:''});
   if(w){const d=await wcall(w,{op:'build'},t=>up({step:'ana',p:.62+.33*(t.i/Math.max(1,t.n)),detail:Math.round(100*t.i/Math.max(1,t.n))+' %'}));
-    up({done:'ana',p:.96,detail:nf(d.n)+' Titel'});return{json:d.json,stats:d.stats,sig:d.sig,n:d.n}}
+    up({done:'ana',p:.96,detail:nf(d.n)+' Titel'});try{w.terminate()}catch(e){}w=null;const json=d.buf?new TextDecoder().decode(new Uint8Array(d.buf)):d.json;d.buf=null;return{json,stats:d.stats,sig:d.sig,n:d.n}}
   await sleep(40);const r=catalogCore(raws,null);up({done:'ana',p:.96,detail:nf(r.items.length)+' Titel'});return{items:r.items,stats:r.stats,sig:r.sig,n:r.items.length}
   }finally{if(w)try{w.terminate()}catch(e){}}}
 function applyCatalog(res){if(!res.items){APP.items=[];APP.byId=new Map();APP._pool=null;APP._tc=null;APP.hero=[];META.mem.clear();TRL.mem.clear()}restoreItems(res.items||JSON.parse(res.json));APP.sig=res.sig}
