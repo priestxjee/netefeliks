@@ -1,3 +1,4 @@
+Wichtig: Neue Oberflächen werden jetzt direkt geladen – vorher blieb auf manchen Fire TVs die alte Ansicht stehen
 Film-Details aufgeräumt: Sprache, Bild und Untertitel als eine Zeile mit Auswahlmenüs; weniger Flaggen und Kategorien; insgesamt kleinere Schrift
 Zurück-Taste im Film blendet zuerst die Steuerleiste aus – erst beim zweiten Drücken verlässt du den Film
 Player: reines Schwarz statt grauer Ränder; neuer Knopf „Bildformat“ (Original, Füllen, Strecken, 16:9, 4:3, 21:9) – auch mit der Menü-Taste ≡

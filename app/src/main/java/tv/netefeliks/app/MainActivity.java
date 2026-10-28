@@ -44,7 +44,7 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 11;
+    static final int NATIVE_VERSION = 12;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
@@ -112,7 +112,7 @@ public class MainActivity extends Activity {
             }
         });
         web.requestFocus();
-        web.loadUrl(APP_URL);
+        web.loadUrl(startUrl());
     }
 
     WebView createWeb() {
@@ -190,7 +190,7 @@ public class MainActivity extends Activity {
                 web = createWeb();
                 root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 web.requestFocus();
-                web.loadUrl(APP_URL + "#recovered-" + why);
+                web.loadUrl(startUrl() + "#recovered-" + why);
             }
         });
     }
@@ -199,6 +199,13 @@ public class MainActivity extends Activity {
         runOnUiThread(new Runnable() {
             @Override public void run() { if (root != null) root.setBackgroundColor(black ? Color.BLACK : Color.rgb(13, 11, 11)); }
         });
+    }
+
+    /** Neuere heruntergeladene Oberfläche direkt öffnen (nicht über Umwege), sonst die eingebaute. */
+    String startUrl() {
+        File f = webFile();
+        if (f.exists() && f.length() > 1000 && prefs.getInt("webVersion", 0) > installedVersion()) return Uri.fromFile(f).toString();
+        return APP_URL;
     }
 
     File webFile() { return new File(getFilesDir(), "web-index.html"); }
@@ -235,7 +242,7 @@ public class MainActivity extends Activity {
                 if (!tmp.renameTo(webFile())) return false;
                 prefs.edit().putInt("webVersion", version).apply();
                 runOnUiThread(new Runnable() {
-                    @Override public void run() { web.clearCache(false); web.loadUrl(APP_URL); }
+                    @Override public void run() { web.clearCache(false); web.loadUrl(startUrl()); }
                 });
                 return true;
             } catch (Exception e) {
