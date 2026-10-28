@@ -1,3 +1,5 @@
+Anmeldung neu gestaltet: klare dunkle Karte, saubere Felder, „Sicherung laden“ und „Demo“ als zweite Wahl
+App-Symbol: das breite Netefeliks-Banner ist jetzt auch das Haupt-Symbol der App (Fire TV nimmt bei selbst installierten Apps dieses)
 Live: Stern-Knopf (Favorit) ist beim Draufstehen jetzt deutlich hervorgehoben
 Neu: Daten sichern & wiederherstellen (Einstellungen → Abo & App) – für eine Neuinstallation ohne Datenverlust
 Trailer neu: zuerst offizielle Apple-Trailer (iTunes, wird nicht blockiert), dann IMDb, dann YouTube als direkte Datei

@@ -187,6 +187,25 @@ label.lb{display:block;font-size:.8rem;font-weight:700;letter-spacing:.08em;text
 .scr.login::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 70% at 20% 30%,rgba(13,11,11,.4),var(--bg) 75%);pointer-events:none}
 .login .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:3rem;align-items:center;min-height:88vh}
 .login .pitch p{color:#d6cecb;font-size:1.25rem;line-height:1.5;max-width:30rem;margin:1.2rem 0 0}
+/* Login: ruhige, klare Karte */
+.login .wall{opacity:.12}
+.login .wrap{grid-template-columns:1fr minmax(0,27rem);gap:4rem}
+.login .feat{list-style:none;padding:0;margin:1.6rem 0 0;display:flex;flex-direction:column;gap:.7rem;color:var(--mute);font-size:1rem}
+.login .feat li{display:flex;gap:.7rem;align-items:baseline}.login .feat li::before{content:"";flex:none;width:.45rem;height:.45rem;border-radius:50%;background:var(--red);transform:translateY(-.1rem)}.login .feat b{color:var(--fg);font-weight:700}
+.lpanel{background:#141010;border:1px solid rgba(255,255,255,.08);border-radius:1rem;padding:2rem 2rem 1.6rem;gap:1.05rem;box-shadow:0 40px 90px rgba(0,0,0,.7)}
+.lpanel *{box-sizing:border-box}
+.lph h2{margin:0;font-size:1.6rem;font-weight:800;letter-spacing:-.01em}.lph p{margin:.3rem 0 0;color:var(--dim);font-size:.9rem}
+.lpanel .tabs{background:#0b0909;border:1px solid rgba(255,255,255,.06);padding:.25rem;border-radius:.55rem}
+.lpanel .tabs .chip{background:transparent;color:var(--mute);font-weight:700;padding:.6rem .8rem;font-size:.92rem}
+.lpanel .tabs .chip.on{background:#2a2222;color:var(--fg)}.lpanel .tabs .chip:focus{background:var(--fg);color:#111}
+.lpanel .in{width:100%;background:#0d0a0a;border:2px solid rgba(255,255,255,.1);border-radius:.5rem;padding:.85rem 1rem;font-size:1rem}
+.lpanel .in::placeholder{color:#5d5453}
+.lpanel .in:focus{border-color:var(--fg);background:#191313}
+.lpanel label.lb{font-size:.72rem;margin-bottom:.35rem;color:var(--dim)}
+.lpanel .lgo{width:100%;justify-content:center;padding:.95rem;font-size:1.05rem;margin-top:.2rem}
+.lalt{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:.6rem}.lalt .btn{min-width:0;width:100%;justify-content:center;font-size:.86rem;padding:.7rem .5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn.ghost{background:transparent;border:2px solid rgba(255,255,255,.14);color:var(--mute)}.btn.ghost:focus{background:var(--fg);border-color:var(--fg);color:#111}
+.lsafe{display:flex;align-items:center;justify-content:center;gap:.4rem;font-size:.78rem;color:var(--dim);margin-top:.2rem}
 .panel{background:rgba(22,18,18,.92);border:1px solid var(--line);border-radius:.7rem;padding:1.8rem;display:flex;flex-direction:column;gap:1rem;box-shadow:0 30px 80px rgba(0,0,0,.6);min-width:0}
 .tabs{display:flex;gap:.4rem;background:#0f0c0c;padding:.3rem;border-radius:.5rem}
 .tabs .chip{flex:1;border:0;border-radius:.35rem;text-align:center}
@@ -2188,15 +2207,17 @@ window.nfkPlayed=s=>{let r;try{r=JSON.parse(s)}catch(e){return}const it=P.it;if(
 function screen(html,cls=''){$('#app').innerHTML=`<div class="scr ${cls}">${html}</div>`;requestAnimationFrame(()=>{const f=$('#app [data-autofocus]')||$('#app .f');f&&f.focus({preventScroll:true})})}
 function vLogin(err,tab){
   tab=tab||'xt';const c=APP.cfg||{};const wall=buildDemo().filter(r=>r.type!=='live'&&!/4K/.test(r.name)).slice(0,64).map(r=>{const n=normalize(r);return`<div class="card" style="aspect-ratio:2/3">${artHTML(n)}</div>`}).join('');
-  screen(`<div class="wall">${wall}</div><div class="wrap"><div class="pitch"><h1 class="wordmark">NETEFELIKS</h1><p>Dein IPTV-Abo, aufgeräumt wie ein Streamingdienst. Nur die Länder, die du willst – mit Postern, Bewertungen und Empfehlungen, die mit jedem Abend besser werden.</p></div>
-  <form class="panel" id="lf" autocomplete="off"><div class="tabs"><button type="button" class="chip f${tab==='xt'?' on':''}" data-act="ltab" data-t="xt">Xtream Codes</button><button type="button" class="chip f${tab==='m3u'?' on':''}" data-act="ltab" data-t="m3u">M3U-Link</button></div>
+  screen(`<div class="wall">${wall}</div><div class="wrap"><div class="pitch"><h1 class="wordmark">NETEFELIKS</h1><p>Dein IPTV-Abo, aufgeräumt wie ein Streamingdienst.</p>
+   <ul class="feat"><li><span><b>Live-TV</b> aus deinen Ländern – mit Programm</span></li><li><span><b>Filme & Serien</b> mit Postern, Bewertungen und Trailern</span></li><li><span><b>4K-Bild mit deiner Sprache</b> – Bild und Ton frei kombinierbar</span></li></ul></div>
+  <form class="panel lpanel" id="lf" autocomplete="off"><div class="lph"><h2>Anmelden</h2><p>Mit den Zugangsdaten deines IPTV-Anbieters</p></div><div class="tabs"><button type="button" class="chip f${tab==='xt'?' on':''}" data-act="ltab" data-t="xt">Xtream Codes</button><button type="button" class="chip f${tab==='m3u'?' on':''}" data-act="ltab" data-t="m3u">M3U-Link</button></div>
    ${tab==='xt'?`<div><label class="lb" for="srv">Server-URL</label><input class="in f" id="srv" placeholder="http://mein-server.tv:8080" value="${esc(c.server||'')}" inputmode="url" data-autofocus></div>
    <div><label class="lb" for="usr">Benutzername</label><input class="in f" id="usr" value="${esc(c.user||'')}" autocapitalize="off"></div>
    <div><label class="lb" for="pwd">Passwort</label><input class="in f" id="pwd" type="password" value="${esc(c.pass||'')}"></div>`
    :`<div><label class="lb" for="m3u">M3U-Playlist-Link</label><input class="in f" id="m3u" placeholder="http://server/get.php?username=…&password=…&type=m3u_plus" value="${esc(c.m3u||'')}" inputmode="url" data-autofocus></div><p class="hint">Ein get.php-Link von einem Xtream-Server wird automatisch als Xtream-Zugang genutzt – das ist schneller und liefert mehr Infos (Programm, Beschreibungen).</p>`}
    ${err?`<div class="err">${err}</div>`:''}
-   <button type="submit" class="btn pri f">Verbinden</button><div class="or">oder</div><button type="button" class="btn f" data-act="demo">Demo ansehen – ohne Abo</button>${window.NFK&&NFK.backupLoad?'<button type="button" class="btn f" data-act="bkload" style="margin-top:.6rem">Sicherung wiederherstellen</button>':''}
-   <p class="hint">Deine Zugangsdaten bleiben nur auf diesem Gerät gespeichert.</p></form></div>`,'login');
+   <button type="submit" class="btn pri f lgo">Verbinden</button>
+   <div class="lalt">${window.NFK&&NFK.backupLoad?'<button type="button" class="btn ghost f" data-act="bkload">↺ Sicherung laden</button>':''}<button type="button" class="btn ghost f" data-act="demo">Demo ansehen</button></div>
+   <p class="hint lsafe"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Deine Zugangsdaten bleiben nur auf diesem Gerät.</p></form></div>`,'login');
   $('#lf').addEventListener('submit',e=>{e.preventDefault();
     if(tab==='xt'){const server=$('#srv').value.trim(),user=$('#usr').value.trim(),pass=$('#pwd').value;if(!server||!user||!pass)return vLogin('Bitte Server-URL, Benutzername und Passwort ausfüllen.',tab);APP.cfg={...(APP.cfg||{}),mode:'xtream',server:normServer(server),user,pass}}
     else{const u=$('#m3u').value.trim();if(!/^https?:\/\//i.test(u))return vLogin('Der Link muss mit http:// oder https:// beginnen.',tab);const m=u.match(/^(https?:\/\/[^/]+)\/get\.php\?(.*)$/i);
