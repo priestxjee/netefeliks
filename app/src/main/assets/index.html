@@ -240,6 +240,10 @@ h2.big{font-size:2.4rem;margin:0 0 .4rem;font-weight:800;letter-spacing:-.01em;t
 .ev .pb i{display:block;height:100%;background:var(--red)}
 .ev.team{background:linear-gradient(135deg,#6a1216,#221313 72%);box-shadow:inset 0 0 0 1px rgba(255,84,90,.45)}
 .tbadge{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--fg);color:#111;font:800 .62rem/1 var(--f-body);margin-right:.3rem;vertical-align:middle}
+.uplert{position:fixed;left:max(calc(var(--rail) + 1.5rem),env(safe-area-inset-left,0px));bottom:max(1.5rem,env(safe-area-inset-bottom,0px));z-index:96;background:#191515;border:1.5px solid var(--gold);border-radius:.7rem;padding:1.1rem 1.3rem;display:flex;flex-direction:column;gap:.8rem;width:min(28rem,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.7);animation:fade .25s}
+.uplert .lg2{display:flex;gap:.6rem;align-items:center}
+.uplert .notes{margin:.5rem 0;color:#ddd5d2;white-space:pre-line;line-height:1.45;font-size:.92rem}
+.uplert small{color:var(--mute);display:block}
 .talert{position:fixed;right:max(1.5rem,env(safe-area-inset-right,0px));bottom:max(1.5rem,env(safe-area-inset-bottom,0px));z-index:95;background:#1f1515;border:1.5px solid var(--red);border-radius:.7rem;padding:1.1rem 1.3rem;display:flex;flex-direction:column;gap:.8rem;width:min(26rem,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.7);animation:fade .25s}
 .talert .lg2{display:flex;gap:.6rem;align-items:center}
 .talert .tt{font-weight:800;font-size:1.15rem;margin:.4rem 0 .2rem}
@@ -761,6 +765,7 @@ const META={mem:new Map(),
 
 // ---------- EPG ----------
 // ---------- Lieblingsteams ----------
+const NATS=new Set();
 const TEAMS=[
  ['Deutschland','DE','Bundesliga','FC Bayern München|Bayern|FC Bayern|Bayern München;Borussia Dortmund|Dortmund|BVB;Bayer 04 Leverkusen|Leverkusen|Bayer Leverkusen;RB Leipzig|Leipzig;VfB Stuttgart|Stuttgart;Eintracht Frankfurt|Frankfurt;SC Freiburg|Freiburg;VfL Wolfsburg|Wolfsburg;Borussia Mönchengladbach|Gladbach|Mönchengladbach;1. FC Köln|FC Köln|Köln;Werder Bremen|Bremen|Werder;1. FC Union Berlin|Union Berlin;1. FSV Mainz 05|Mainz|Mainz 05;TSG Hoffenheim|Hoffenheim;FC Augsburg|Augsburg;Hamburger SV|HSV;FC St. Pauli|St. Pauli;Fortuna Düsseldorf|Düsseldorf|Fortuna;FC Schalke 04|Schalke|Schalke 04;Hertha BSC|Hertha;Hannover 96|Hannover;1. FC Nürnberg|Nürnberg;1. FC Kaiserslautern|Kaiserslautern;VfL Bochum|Bochum'],
  ['Spanien','ES','LaLiga','Real Madrid|Real Madrid CF|R. Madrid|رئال مادرید|ریال مادرید;FC Barcelona|Barcelona|Barça|Barca|بارسلونا;Atlético Madrid|Atlético|Atletico Madrid|Atl. Madrid;Sevilla FC|Sevilla;Real Betis|Betis;Real Sociedad;Villarreal;Athletic Club|Athletic Bilbao;Valencia CF|Valencia;Girona FC|Girona'],
@@ -771,14 +776,16 @@ const TEAMS=[
  ['Türkei','TR','Süper Lig','Galatasaray;Fenerbahçe|Fenerbahce;Beşiktaş|Besiktas;Trabzonspor'],
  ['Weitere Vereine','PT','Liga','Benfica;FC Porto|Porto;Sporting CP|Sporting Lissabon;Ajax|Ajax Amsterdam;PSV|PSV Eindhoven;Feyenoord;Al-Hilal|Al Hilal|الهلال;Al-Nassr|Al Nassr|النصر;Celtic;Inter Miami'],
  ['Nationalteams','XX','Länderspiel','Deutschland|Germany|DFB-Team;Iran|Team Melli|ایران;Spanien|Spain|España;England;Frankreich|France;Brasilien|Brazil|Brasil;Argentinien|Argentina;Portugal;Italien|Italy|Italia;Niederlande|Netherlands;Türkei|Türkiye|Turkey'],
-].map(([g,c,lg,str])=>({g,c,lg,teams:str.split(';').map(x=>{const a=x.split('|');return{n:a[0],al:a,lg}})}));
+].map(([g,c,lg,str])=>({g,c,lg,teams:str.split(';').map(x=>{const a=x.split('|');if(g==='Nationalteams')NATS.add(a[0]);return{n:a[0],al:a,lg}})}));
 const TEX={'AC Milan':['inter milan','inter mailand'],'Real Madrid':['real madrid castilla'],'Iran':['iran international'],'England':['new england']};
 const normT=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ß/g,'ss');
 const escRe=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const _tre=new Map();
 function teamIn(t,txt){const n=normT(txt);if((TEX[t.n]||[]).some(x=>n.includes(x)))return false;
   let re=_tre.get(t.n);if(!re){re=new RegExp('(^|[^\\p{L}\\p{N}])('+t.al.map(a=>escRe(normT(a))).join('|')+')($|[^\\p{L}\\p{N}])','u');_tre.set(t.n,re)}return re.test(n)}
-const isMatchy=s=>/(\s(vs\.?|v\.?|gegen|–|—|-)\s)|\d+\s*:\s*\d+|\s–|–\s/i.test(String(s||''));
+// Spiel-Erkennung: „vs“/„gegen“/Spielstand – oder „A – B“ nur auf Sportsendern bzw. mit Fußball-Begriff (sonst wäre z. B. „Doku – Deutschland“ ein Spiel)
+const FOOTY=/(fu(ss|ß)ball|football|soccer|liga|league|ligue|serie a|eredivisie|pokal|\bcup\b|copa|coppa|länderspiel|landerspiel|\bwm\b|\bem\b|world cup|qualifi|nations|champions|europa league|conference|derby|لیگ|فوتبال|جام)/i;
+function isMatchy(s,ch){s=String(s||'');if(/\s(vs\.?|v\.?|gegen)\s|\d+\s*:\s*\d+\b/i.test(s)&&(FOOTY.test(s)||(ch&&ch.sport)||/\s(vs\.?|gegen)\s/i.test(s)))return true;return/\s[–—-]\s/.test(s)&&(FOOTY.test(s)||!!(ch&&ch.sport))}
 // Findet alle Spiele der Lieblingsteams (laufend oder in den nächsten 24 h) über EPG und Sendernamen und sortiert die Sender:
 // Wunschsprache des Profils > beste Qualität > Sportsender
 function findTeamGames(){
@@ -786,9 +793,11 @@ function findTeamGames(){
   const now=Date.now(),hits=new Map();
   for(const ch of pool('live')){
     const cands=EPG.entries(ch).map(e=>({e,txt:e.title}));
-    if(isMatchy(ch.title))cands.push({e:{title:ch.title,start:now-60e3,end:now+3*36e5},txt:ch.title});
-    for(const{e,txt}of cands){if(!e||e.end<now||e.start>now+864e5||!isMatchy(txt))continue;const t=p.teams.find(t=>teamIn(t,txt));if(!t)continue;
-      const k=t.n+'|'+normT(String(txt).split(':').slice(-1)[0]).replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(' ').sort().join(' ')+'|'+new Date(e.start).toDateString();let h=hits.get(k);if(!h){h={team:t,title:e.title,start:e.start,end:e.end,chans:[]};hits.set(k,h)}if(!h.chans.includes(ch))h.chans.push(ch)}}
+    if(isMatchy(ch.title,ch)){const d0=new Date();d0.setHours(0,0,0,0);cands.push({e:{title:ch.title,start:d0.getTime(),end:now+3*36e5,byName:1},txt:ch.title})}
+    for(const{e,txt}of cands){if(!e||e.end<now||e.start>now+864e5||!isMatchy(txt,ch))continue;
+      // Nationalteams nur mit klarem Fußball-Bezug oder auf Sportsendern
+      const t=p.teams.find(t=>teamIn(t,txt)&&(!NATS.has(t.n)||FOOTY.test(txt)||ch.sport));if(!t)continue;
+      const k=t.n+'|'+normT(String(txt).split(':').slice(-1)[0]).replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(' ').sort().join(' ')+'|'+new Date(e.start).toDateString();let h=hits.get(k);if(!h){h={key:k,team:t,title:e.title,start:e.start,end:e.end,chans:[]};hits.set(k,h)}if(!h.chans.includes(ch))h.chans.push(ch)}}
   const ti=t=>p.teams.findIndex(x=>x.n===t.n);
   const arr=[...hits.values()];arr.forEach(h=>{h.live=h.start<=now;h.chans.sort((a,b)=>prefIdx(a.country)-prefIdx(b.country)||QR[b.q]-QR[a.q]||(b.sport?1:0)-(a.sport?1:0))});
   arr.sort((a,b)=>(b.live-a.live)||(a.live?ti(a.team)-ti(b.team):a.start-b.start));const up=new Set();
@@ -801,13 +810,39 @@ function teamZoneHTML(){const hits=findTeamGames();APP.teamHits=hits;if(!hits.le
   return`<h3 class="pad">Dein Team<small>${esc(p.teams.map(t=>t.n).join(', '))} · bester Stream automatisch gewählt</small></h3><div class="track pad">${hits.map(teamCard).join('')}</div>`}
 let _tzT=null;
 function refreshTeamZones(){clearTimeout(_tzT);_tzT=setTimeout(()=>{$$('#teamzone').forEach(z=>{if(z.contains(document.activeElement))return;z.innerHTML=teamZoneHTML()});checkTeamAlert()},800)}
-function checkTeamAlert(){if(!prof())return;APP.alerted=APP.alerted||new Set(LS.get('nfk.al.'+APP.pid,[]));const h=findTeamGames().find(x=>x.live&&!APP.alerted.has(x.team.n+'|'+x.start));if(!h)return;
-  APP.alerted.add(h.team.n+'|'+h.start);LS.set('nfk.al.'+APP.pid,[...APP.alerted].slice(-40));if(P.el&&h.chans.includes(P.it))return;showAlert(h)}
+function checkTeamAlert(){if(!prof())return;APP.alerted=APP.alerted||new Set(LS.get('nfk.al.'+APP.pid,[]));if($('.talert'))return;const day=new Date().toDateString();const h=findTeamGames().find(x=>x.live&&!APP.alerted.has(x.team.n+'|'+day));if(!h)return;
+  APP.alerted.add(h.team.n+'|'+day);LS.set('nfk.al.'+APP.pid,[...APP.alerted].slice(-60));if(P.el&&h.chans.includes(P.it))return;showAlert(h)}
 function showAlert(h){$$('.talert').forEach(x=>x.remove());APP.alertHit=h;const ch=h.chans[0];const d=document.createElement('div');d.className='talert';
-  d.innerHTML=`<div><div class="lg2"><span class="live">LIVE</span><b>${esc(h.team.n)} spielt jetzt</b></div><div class="tt" dir="auto">${esc(h.title)}</div><small>${esc(ch.title)} · ${esc(langName(ch.country))}${ch.q?' · '+ch.q:''}</small></div><div class="bar-row"><button class="btn pri sm f" data-act="aplay">Jetzt ansehen</button><button class="btn sm f" data-act="ax">Später</button></div>`;
-  document.body.appendChild(d);$('[data-act="aplay"]',d).focus({preventScroll:true});setTimeout(()=>{if(d.isConnected){const had=d.contains(document.activeElement);d.remove();if(had)navMove('down')}},45000)}
+  d.innerHTML=`<div><div class="lg2"><span class="live">LIVE</span><b>${esc(h.team.n)} spielt jetzt</b></div><div class="tt" dir="auto">${esc(h.title)}</div><small>${esc(ch.title)} · ${esc(langName(ch.country))}${ch.q?' · '+ch.q:''}</small></div><div class="bar-row"><button class="btn pri sm f" data-act="aplay">Jetzt ansehen</button><button class="btn sm f" data-act="ax">Nein, danke</button></div>`;
+  popOpen(d,'aplay');setTimeout(()=>{if(d.isConnected)popClose(d)},45000)}
+// Pop-ups (Team-Hinweis, Update): sofort ausgewählt, Fernbedienung bleibt im Pop-up, bis man wählt; danach zurück, wo man war
+function popOpen(d,act){d._back=document.activeElement;document.body.appendChild(d);const b=$(`[data-act="${act}"]`,d);b.focus({preventScroll:true});setTimeout(()=>{if(d.isConnected&&!d.contains(document.activeElement))b.focus({preventScroll:true})},80)}
+function popClose(d){const back=d._back;d.remove();if(back&&back.isConnected)back.focus({preventScroll:true});else(focusables()[0]||document.body).focus()}
 let _tw=null;
-function startTeamWatch(){EPG.prefetch();setTimeout(checkTeamAlert,2500);if(_tw)return;_tw=setInterval(()=>{EPG.prefetch();refreshTeamZones()},60000)}
+function startTeamWatch(){EPG.prefetch();setTimeout(checkTeamAlert,2500);if(_tw)return;_tw=setInterval(()=>{EPG.prefetch();refreshTeamZones()},60000);setTimeout(()=>UPD.check(),5000);setInterval(()=>UPD.check(),6*36e5)}
+// ---------- Updates (nur in der Fire-TV-App) ----------
+// Werte werden beim Bauen auf GitHub eingesetzt
+const NFK_REPO='__NFK_REPO__',NFK_VERSION=+'__NFK_VERSION__'||0;
+const UPD={
+  base(){return NFK_REPO.startsWith('__')?null:`https://github.com/${NFK_REPO}/releases/latest/download/`},
+  has(){return!!(window.NFK&&UPD.base())},
+  ver(){return UPD.has()?NFK.webVersion():NFK_VERSION},
+  async check(manual){if(!UPD.has()){if(manual)toast('Updates gibt es nur in der Fire-TV-App');return}
+    try{const j=await(await fetch(UPD.base()+'version.json?t='+Date.now(),{cache:'no-store'})).json();
+      const nat=+j.native>NFK.nativeVersion(),webNew=+j.version>NFK.webVersion();
+      if(nat||webNew){UPD.info=Object.assign({},j,{nat});UPD.show()}else if(manual)toast('Du hast die neueste Version ('+NFK.webVersion()+')')}
+    catch(e){if(manual)toast('Update-Server nicht erreichbar')}},
+  show(){$$('.uplert').forEach(x=>x.remove());const i=UPD.info;const d=document.createElement('div');d.className='uplert';
+    d.innerHTML=`<div><div class="lg2"><span class="tag k">NEU</span><b>Update verfügbar · Version ${esc(i.version)}</b></div>${i.notes?`<p class="notes">${esc(i.notes)}</p>`:''}<small class="ust">${i.nat?'Größeres Update: Die App wird neu installiert, deine Profile bleiben erhalten.':'Dauert nur ein paar Sekunden. Deine Profile bleiben erhalten.'}</small></div><div class="bar-row"><button class="btn pri sm f" data-act="upd">Jetzt updaten</button><button class="btn sm f" data-act="ux">Später</button></div>`;
+    popOpen(d,'upd')},
+  async run(){const i=UPD.info;if(!i)return;const st=$('.uplert .ust');if(st)st.textContent='Lade Update…';
+    try{if(i.nat){NFK.installApk(UPD.base()+'Netefeliks.apk');return}
+      const h=await(await fetch(UPD.base()+'index.html?t='+Date.now(),{cache:'no-store'})).text();
+      if(!h.includes('NETEFELIKS')||!h.includes('</html>'))throw new Error('Datei unvollständig');
+      if(st)st.textContent='Wird installiert…';if(!NFK.saveWeb(h,+i.version))throw new Error('Speichern fehlgeschlagen')}
+    catch(e){window.nfkUpd('error',e.message)}},
+};
+window.nfkUpd=(k,v)=>{const msg={progress:`Lade Update… ${v} %`,confirm:'Fast fertig – bitte im Fenster auf „Installieren“ drücken.',permission:'Einmalig nötig: In den Einstellungen, die sich jetzt öffnen, Netefeliks erlauben, Apps zu installieren. Danach mit Zurück hierher und nochmal „Jetzt updaten“ drücken.',error:'Update fehlgeschlagen: '+(v||'unbekannter Fehler')+'. Später erneut versuchen.'}[k];const el=$('.uplert .ust');if(el)el.textContent=msg;else toast(msg)};
 // Demo: lässt die Lieblingsteams des Profils im Demo-Programm spielen (Team 1 live, Team 2 heute Abend …)
 function demoFix(){const p=prof();const key=p?p.id+'|'+(p.teams||[]).map(t=>t.n).join(',')+'|'+p.countries.join()+'|'+APP.catVer:'';if(EPG._fk===key)return EPG._fix;const fix=new Map();EPG._fk=key;EPG._fix=fix;
   if(p&&APP.cfg&&APP.cfg.mode==='demo'&&(p.teams||[]).length){const sp=pool('live').filter(c=>c.sport&&!/UFC|NBA|F1|TENNIS|GOLF/i.test(c.title));const now=Date.now();
@@ -999,6 +1034,8 @@ VIEWS.settings=(el)=>{
    <div class="box"><h4>Abo</h4><div class="kv"><span>Quelle</span><b>${mode}</b>${c.mode==='xtream'?`<span>Server</span><b>${esc(c.server)}</b><span>Benutzer</span><b>${esc(c.user)}</b>${c.exp?`<span>Läuft ab</span><b>${new Date(c.exp).toLocaleDateString('de-DE')}</b>`:''}${c.maxc?`<span>Verbindungen</span><b>${esc(c.maxc)}</b>`:''}`:c.mode==='m3u'?`<span>Playlist</span><b>${esc(c.m3u)}</b>`:''}
      <span>Einträge</span><b>${nf(APP.items.length)} (nach Zusammenführung)</b></div>
     <div class="bar-row"><button class="btn sm f" data-act="rescan">Playlist neu einlesen</button><button class="btn sm f" data-act="logout" id="lo">Abmelden</button></div></div>
+   <div class="box"><h4>App & Updates</h4><div class="kv"><span>Version</span><b>${UPD.has()?UPD.ver():'Browser-Vorschau'}</b><span>Updates</span><b>${UPD.has()?'automatisch – die App meldet sich':'nur in der Fire-TV-App'}</b></div>
+    <div class="bar-row"><button class="btn sm f" data-act="updcheck">Nach Updates suchen</button></div></div>
    <div class="box"><h4>Profil</h4><div class="bar-row"><span class="av sm" style="background:${p.color}"><span>${esc(p.name[0])}</span></span><b>${esc(p.name)}</b></div>
     <div class="bar-row"><button class="btn sm f" data-act="profiles">Profil wechseln</button><button class="btn sm f" data-act="delprof" id="dp">Profil löschen</button></div></div>
   </div></div>`;
@@ -1223,8 +1260,11 @@ document.addEventListener('click',e=>{
    case'tback':if(draft.onlyTeams){draft=null;renderApp()}else vGenres();break;
    case'editteams':{const p=prof();draft={countries:p.countries,other:p.other,genres:p.genres,teams:(p.teams||[]).slice(),edit:true,onlyTeams:true};vTeams();break}
    case'tplay':{const h=(APP.teamHits||[])[+b.dataset.k];if(!h)break;P.open(h.chans[0],{alts:h.chans});if(!h.live)toast('Anstoß um '+hhmm(h.start)+' – der Sender läuft schon');break}
-   case'aplay':{const h=APP.alertHit;$$('.talert').forEach(x=>x.remove());if(h)P.open(h.chans[0],{alts:h.chans});break}
-   case'ax':$$('.talert').forEach(x=>x.remove());(focusables()[0]||document.body).focus();break;
+   case'aplay':{const h=APP.alertHit;$$('.talert').forEach(x=>{x._back=null;x.remove()});if(h)P.open(h.chans[0],{alts:h.chans});break}
+   case'upd':UPD.run();break;
+   case'ux':$$('.uplert').forEach(popClose);break;
+   case'updcheck':UPD.check(true);break;
+   case'ax':$$('.talert').forEach(popClose);break;
    case'alt':{const a=P.o.alts;const n=a[(a.indexOf(P.it)+1)%a.length];P.open(n,{alts:a});toast(n.title+' · '+langName(n.country)+(n.q?' · '+n.q:''));break}
    case'gback':if(draft.onlyGenres){draft=null;renderApp()}else vCountries({keep:true,edit:draft.edit});break;
    case'color':draft.color=b.dataset.c;$$('.sw').forEach(x=>x.classList.toggle('on',x===b));break;
@@ -1241,8 +1281,8 @@ document.addEventListener('click',e=>{
 });
 
 // ---------- Fernbedienung / Tastatur (räumliche Navigation) ----------
-function layer(){return $('#player')||(APP.modal&&APP.modal.el)||$('#app')}
-function focusables(){return[...$$('.f',layer()),...$$('.talert .f')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&!el.disabled})}
+function layer(){return $('.talert')||$('.uplert')||$('#player')||(APP.modal&&APP.modal.el)||$('#app')}
+function focusables(){return $$('.f',layer()).filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&!el.disabled})}
 function navMove(dir){
   const list=focusables();const cur=document.activeElement&&list.includes(document.activeElement)?document.activeElement:null;
   if(!cur){(list.find(x=>x.closest('#main'))||list[0])?.focus();return}
@@ -1270,6 +1310,7 @@ document.addEventListener('focusin',e=>{const el=e.target;if(APP.view==='home'&&
 document.addEventListener('mouseover',e=>{const el=e.target.closest('.f');if(!el||el===document.activeElement||el.tagName==='INPUT')return;if(APP._mm){el.focus({preventScroll:true})}});
 document.addEventListener('mousemove',()=>{APP._mm=true;APP.kbd=false;if(P.el)P.wake()},{passive:true});
 function goBack(){
+  {const a=$('.talert')||$('.uplert');if(a){popClose(a);return true}}
   if(P.el){P.close();return true}if(APP.modal){closeModal();return true}
   if($('.scr')){if(APP.cfg&&APP.items.length&&prof()&&!$('.login')&&!$('.pfs')){renderApp();return true}return false}
   if(APP.hist.length){const h=APP.hist.pop();APP.view=h.v;APP.args=h.a;renderApp(h.f?`#main [data-id="${h.f}"]`:null);return true}
@@ -1285,6 +1326,7 @@ document.addEventListener('keydown',e=>{
   if(P.el&&!dir&&(k===' '||k==='MediaPlayPause'||kc===179||kc===85)){e.preventDefault();P.pp();return}
   if(P.el&&(k==='MediaFastForward'||kc===228||kc===90)){P.seek(30);return}
   if(P.el&&(k==='MediaRewind'||kc===227||kc===89)){P.seek(-10);return}
+  if(dir&&($('.talert')||$('.uplert'))){e.preventDefault();navMove(dir);return}
   if(dir){
     if(inInput&&(dir==='left'||dir==='right'))return;
     if(P.el&&document.activeElement&&document.activeElement.id==='scrub'&&(dir==='left'||dir==='right')){e.preventDefault();P.seek(dir==='left'?-10:30);return}
