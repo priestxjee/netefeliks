@@ -59,9 +59,10 @@ class TrailerView {
                 // direkt unter die App-Oberfläche (die WebView ist das oberste Element)
                 root.addView(box, Math.max(0, root.getChildCount() - 1));
             }
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, c.getInt("w")), Math.max(1, c.getInt("h")));
-            lp.leftMargin = c.getInt("x");
-            lp.topMargin = c.getInt("y");
+            int[] r = VideoEngine.rect(c, root);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, r[2]), Math.max(1, r[3]), Gravity.TOP | Gravity.LEFT);
+            lp.leftMargin = r[0];
+            lp.topMargin = r[1];
             box.setLayoutParams(lp);
             box.setVisibility(View.VISIBLE);
             if (player == null) {
@@ -84,7 +85,7 @@ class TrailerView {
             player.setMediaItem(MediaItem.fromUri(c.getString("url")));
             player.prepare();
             player.play();
-            events.emit("start");
+            events.emit("start " + r[0] + "," + r[1] + " " + r[2] + "x" + r[3] + " von " + root.getWidth() + "x" + root.getHeight());
         } catch (Exception e) {
             events.emit("error:" + e);
         }

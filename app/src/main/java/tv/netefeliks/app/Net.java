@@ -27,6 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.nio.charset.Charset;
 
 /**
@@ -179,11 +181,38 @@ class Net {
                         gz.close();
                         data = un.toByteArray();
                     }
+                    // ZIP (z. B. Podnapisi): erste Untertitel-Datei herausholen
+                    if (data.length > 4 && data[0] == 'P' && data[1] == 'K' && data[2] == 3 && data[3] == 4) {
+                        ZipInputStream z = new ZipInputStream(new ByteArrayInputStream(data));
+                        ZipEntry ze; byte[] best = null;
+                        while ((ze = z.getNextEntry()) != null) {
+                            String nm = ze.getName().toLowerCase();
+                            if (ze.isDirectory() || !(nm.endsWith(".srt") || nm.endsWith(".sub") || nm.endsWith(".txt"))) continue;
+                            ByteArrayOutputStream un = new ByteArrayOutputStream(64 * 1024);
+                            while ((n = z.read(b)) > 0) un.write(b, 0, n);
+                            if (best == null || nm.endsWith(".srt")) { best = un.toByteArray(); if (nm.endsWith(".srt")) break; }
+                        }
+                        z.close();
+                        if (best == null) throw new Exception("Keine Untertitel-Datei im Archiv");
+                        data = best;
+                    }
                     Charset cs = Charset.forName("UTF-8");
                     boolean utf8bom = data.length > 2 && (data[0] & 0xff) == 0xEF && (data[1] & 0xff) == 0xBB && (data[2] & 0xff) == 0xBF;
-                    if (!utf8bom && enc != null && enc.length() > 0 && !enc.toUpperCase().contains("UTF")) {
-                        String e = enc.toUpperCase().replace("CP", "windows-");
-                        try { cs = Charset.forName(e); } catch (Exception x) { try { cs = Charset.forName(enc); } catch (Exception y) { /* UTF-8 */ } }
+                    String encU = enc == null ? "" : enc;
+                    // Ohne Angabe: gültiges UTF-8? sonst typische Windows-Zeichensätze (Persisch/Arabisch: 1256)
+                    if (!utf8bom && (encU.length() == 0 || encU.startsWith("auto"))) {
+                        try {
+                            java.nio.charset.Charset.forName("UTF-8").newDecoder()
+                                    .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                                    .decode(java.nio.ByteBuffer.wrap(data));
+                            encU = "UTF-8";
+                        } catch (Exception bad) {
+                            encU = encU.contains("fa") || encU.contains("ar") ? "windows-1256" : encU.contains("tr") ? "windows-1254" : encU.contains("ru") ? "windows-1251" : "windows-1252";
+                        }
+                    }
+                    if (!utf8bom && encU.length() > 0 && !encU.toUpperCase().contains("UTF")) {
+                        String e = encU.toUpperCase().replace("CP", "windows-");
+                        try { cs = Charset.forName(e); } catch (Exception x) { try { cs = Charset.forName(encU); } catch (Exception y) { /* UTF-8 */ } }
                     }
                     String text = new String(data, cs);
                     if (text.length() > 0 && text.charAt(0) == '\uFEFF') text = text.substring(1);

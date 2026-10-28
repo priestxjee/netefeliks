@@ -6,15 +6,15 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <application
         android:label="Netefeliks"
-        android:icon="@drawable/ic_launcher"
-        android:banner="@drawable/banner"
+        android:icon="@drawable/app_icon"
+        android:banner="@drawable/tv_banner"
         android:usesCleartextTraffic="true"
         android:hardwareAccelerated="true"
         android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         <activity
             android:name=".MainActivity"
-            android:banner="@drawable/banner"
-            android:icon="@drawable/ic_launcher"
+            android:banner="@drawable/tv_banner"
+            android:icon="@drawable/app_icon"
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"

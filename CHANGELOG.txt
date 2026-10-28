@@ -1,3 +1,14 @@
+Viel schneller: Filme-/Serien-Seiten bauen sich 3–4× schneller auf, Blättern ruckelt weniger
+Menü „Sprache & Audio“ und Auswahlmenüs scrollen jetzt mit – man sieht immer, wo man ist
+Ton verschieben bei Ton aus anderer Fassung: zusätzlich −1 min / −10 s / +10 s / +1 min (bis ±10 Minuten)
+Weiterschauen ganz oben bei Filmen und Serien; Folgen starten wieder dort, wo du aufgehört hast
+Neue Reihen: „Neu: Iranische Serien“ / „Neu: Iranische Filme“ (zuletzt hinzugefügt)
+Sortieren/Filtern zeigt jetzt ein großes Raster mit viel mehr Titeln auf einer Seite
+Suche findet Titel auch bei anderer Schreibweise („Shah Gol“ = „Shahgol“) und in allen Kategorien
+Untertitel: zweite Quelle (Podnapisi) zusätzlich zu OpenSubtitles, Ergebnisse direkt auswählbar
+Live-Minifenster sitzt jetzt genau im Rahmen; Trailer werden an der richtigen Stelle angezeigt
+Top 10: bis zu 10 Titel (aktuelle Woche zuerst, dann Vorwochen), Ziffern besser sichtbar
+App-Symbol neu eingebunden, damit der Fire TV das alte Bild vergisst
 Serien wie Filme: Sprache (Ton), Bildqualität und Untertitel getrennt wählbar – z. B. 4K-Bild aus der deutschen Fassung mit persischem Ton, Folge für Folge
 Untertitel-Aussehen: Größe, Farbe, Hintergrund, 6 Schriftarten, Fett und Position – unter Einstellungen → Sprache und direkt im Player
 Spulen repariert: kein Hin-und-Her mehr; mehrmals drücken oder gedrückt halten springt immer weiter (bis mehrere Minuten pro Druck), mit Zeitanzeige

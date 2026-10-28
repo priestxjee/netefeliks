@@ -36,6 +36,8 @@ import androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.MergingMediaSource;
+import androidx.media3.exoplayer.source.ClippingMediaSource;
+import android.view.TextureView;
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.SubtitleView;
@@ -83,6 +85,15 @@ class VideoEngine {
     private boolean mixPending;
     private String[] mixLangs = new String[0];
     private volatile String state = "{}";
+    // Großer Ton-Versatz (z. B. 2 Minuten, wenn der Ton aus einer anderen Fassung kommt): ein Stream wird vorne gekürzt
+    private long clipV = 0, clipA = 0;
+    private JSONObject lastCfg;
+    private boolean lastMix;
+    // Mini-Fenster: eigenes TextureView (lässt sich zuverlässig verschieben und verkleinern)
+    private FrameLayout miniBox;
+    private AspectRatioFrameLayout miniAr;
+    private TextureView miniTex;
+    private boolean miniOn;
     private volatile String tracks = "{\"audio\":[],\"text\":[]}";
 
     private final Runnable poll = new Runnable() {
@@ -91,11 +102,11 @@ class VideoEngine {
             try {
                 JSONObject s = new JSONObject();
                 long dur = player.getDuration();
-                s.put("pos", Math.max(0, player.getCurrentPosition() - delayMs));
+                s.put("pos", Math.max(0, player.getCurrentPosition() - delayMs + clipV));
                 s.put("dur", dur == C.TIME_UNSET ? 0 : dur);
                 s.put("playing", player.isPlaying());
                 s.put("buf", player.getPlaybackState() == Player.STATE_BUFFERING);
-                s.put("delay", delayMs);
+                s.put("delay", delayMs + clipV - clipA);
                 s.put("bw", DefaultBandwidthMeter.getSingletonInstance(act).getBitrateEstimate());
                 s.put("vh", player.getVideoFormat() != null ? player.getVideoFormat().height : 0);
                 state = s.toString();
@@ -153,7 +164,7 @@ class VideoEngine {
             }
             @Override public void onCues(CueGroup cueGroup) { subs.setCues(cueGroup.cues); }
             @Override public void onVideoSizeChanged(VideoSize v) {
-                if (v.width > 0 && v.height > 0) { videoRatio = v.width * v.pixelWidthHeightRatio / v.height; applyAspect(); }
+                if (v.width > 0 && v.height > 0) { videoRatio = v.width * v.pixelWidthHeightRatio / v.height; applyAspect(); if (miniAr != null) miniAr.setAspectRatio(videoRatio); }
             }
             @Override public void onTracksChanged(Tracks t) { if (mixPending) applyMix(); buildTracks(); events.emit("tracks", ""); }
         });
@@ -169,6 +180,8 @@ class VideoEngine {
         try {
             JSONObject c = new JSONObject(json);
             ensure();
+            lastCfg = c;
+            miniOff();
             if (frame != null) frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
             String[] langs = arr(c.optJSONArray("langs"));
             String[] subLangs = arr(c.optJSONArray("subs"));
@@ -180,7 +193,14 @@ class VideoEngine {
                     .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, !subsOn)
                     .build();
             player.setTrackSelectionParameters(p);
-            setDelayMain(c.optLong("delay", 0));
+            String audioUrl = c.optString("audioUrl", "");
+            lastMix = audioUrl.length() > 0;
+            long d = c.optLong("delay", 0);
+            // ab 3 s Versatz (nur bei Ton aus anderer Fassung): ganze Sekunden durch Kürzen, Rest über die Uhr
+            long big = lastMix && Math.abs(d) >= 3000 ? (d / 1000) * 1000 : 0;
+            clipV = big > 0 ? big : 0;
+            clipA = big < 0 ? -big : 0;
+            setDelayMain(d - big);
             aspectMode = c.optInt("aspect", 0);
             applyAspect();
             float size = (float) c.optDouble("subSize", 0.0533);
@@ -190,13 +210,14 @@ class VideoEngine {
             subs.setCues(new ArrayList<androidx.media3.common.text.Cue>());
             surface.setVisibility(View.VISIBLE);
             subs.setVisibility(View.VISIBLE);
-            long start = Math.max(0, c.optLong("start", 0));
-            String audioUrl = c.optString("audioUrl", "");
+            long start = Math.max(0, c.optLong("start", 0) - clipV);
             MediaItem main = item(c.getString("url"), c.optString("subUrl", ""), c.optString("subLang", ""));
             if (audioUrl.length() > 0) {
                 // Bild aus Fassung 1 + Ton aus Fassung 2: beide Streams laden und zusammenführen
                 MediaSource pic = sources.createMediaSource(main);
                 MediaSource snd = sources.createMediaSource(MediaItem.fromUri(audioUrl));
+                if (clipV > 0) pic = new ClippingMediaSource(pic, clipV * 1000, C.TIME_END_OF_SOURCE);
+                if (clipA > 0) snd = new ClippingMediaSource(snd, clipA * 1000, C.TIME_END_OF_SOURCE);
                 mixPending = true;
                 mixLangs = langs;
                 player.setMediaSource(new MergingMediaSource(true, true, pic, snd), start);
@@ -238,26 +259,77 @@ class VideoEngine {
         }
     }
 
-    /** Mini-Fenster (Live-TV läuft weiter, während man Sender aussucht): Rechteck in Pixeln, leer = Vollbild. */
+    /** Mini-Fenster (Live-TV läuft weiter, während man Sender aussucht).
+     *  Lage als Anteil des Bildschirms (fx, fy, fw, fh von 0 bis 1) – unabhängig von der Pixeldichte der Oberfläche. Leer = Vollbild. */
     void mini(final String json) {
         ui.post(new Runnable() {
             @Override public void run() {
-                if (frame == null) return;
+                if (frame == null || player == null) return;
                 try {
-                    if (json == null || json.length() == 0) {
-                        frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
-                        subs.setVisibility(player != null ? View.VISIBLE : View.GONE);
-                    } else {
-                        JSONObject c = new JSONObject(json);
-                        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, c.getInt("w")), Math.max(1, c.getInt("h")), Gravity.TOP | Gravity.LEFT);
-                        lp.leftMargin = c.getInt("x");
-                        lp.topMargin = c.getInt("y");
-                        frame.setLayoutParams(lp);
-                        subs.setVisibility(View.GONE);
+                    if (json == null || json.length() == 0) { miniOff(); return; }
+                    JSONObject c = new JSONObject(json);
+                    ViewGroup root = (ViewGroup) frame.getParent();
+                    int[] r = rect(c, root);
+                    if (miniBox == null) {
+                        miniBox = new FrameLayout(act);
+                        miniBox.setBackgroundColor(0xFF000000);
+                        miniAr = new AspectRatioFrameLayout(act);
+                        miniAr.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+                        miniTex = new TextureView(act);
+                        miniAr.addView(miniTex, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                        miniBox.addView(miniAr, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+                        root.addView(miniBox, root.indexOfChild(frame) + 1);
                     }
+                    miniAr.setAspectRatio(videoRatio);
+                    FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, r[2]), Math.max(1, r[3]), Gravity.TOP | Gravity.LEFT);
+                    lp.leftMargin = r[0];
+                    lp.topMargin = r[1];
+                    miniBox.setLayoutParams(lp);
+                    miniBox.setVisibility(View.VISIBLE);
+                    if (!miniOn) { player.setVideoTextureView(miniTex); miniOn = true; }
+                    frame.setVisibility(View.INVISIBLE);
+                    subs.setVisibility(View.GONE);
                 } catch (Exception ignored) { }
             }
         });
+    }
+
+    /** Rechteck in Bildschirm-Pixeln: bevorzugt Anteile (fx…), sonst alte Pixelangaben. */
+    static int[] rect(JSONObject c, View root) {
+        int W = root.getWidth(), H = root.getHeight();
+        if (c.has("fw") && W > 0 && H > 0) {
+            return new int[]{ (int) Math.round(c.optDouble("fx", 0) * W), (int) Math.round(c.optDouble("fy", 0) * H),
+                    (int) Math.round(c.optDouble("fw", 1) * W), (int) Math.round(c.optDouble("fh", 1) * H) };
+        }
+        return new int[]{ c.optInt("x", 0), c.optInt("y", 0), c.optInt("w", 1), c.optInt("h", 1) };
+    }
+
+    private void miniOff() {
+        if (miniOn && player != null) player.setVideoSurfaceView(surface);
+        miniOn = false;
+        if (miniBox != null) miniBox.setVisibility(View.GONE);
+        if (frame != null) {
+            frame.setVisibility(View.VISIBLE);
+            frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+        }
+        if (player != null && lastCfg != null) subs.setVisibility(View.VISIBLE);
+    }
+
+    /** Ton verschieben während der Wiedergabe. Große Sprünge (ab 3 s, Ton aus anderer Fassung) laden den Stream an der gleichen Stelle neu. */
+    private void changeDelay(long d) {
+        if (player == null) return;
+        long big = lastMix && Math.abs(d) >= 3000 ? (d / 1000) * 1000 : 0;
+        if (lastCfg != null && (big > 0 ? big : 0) == clipV && (big < 0 ? -big : 0) == clipA) { setDelayMain(d - big); return; }
+        if (lastCfg == null) { setDelayMain(d); return; }
+        try {
+            long pos = Math.max(0, player.getCurrentPosition() - delayMs + clipV);
+            JSONObject c = new JSONObject(lastCfg.toString());
+            c.put("delay", d);
+            c.put("start", pos);
+            boolean wasMini = miniOn;
+            openMain(c.toString());
+            if (wasMini) miniOff();
+        } catch (Exception e) { setDelayMain(d); }
     }
 
     /** Untertitel-Aussehen vom Nutzer: Farbe, Hintergrund, Umrandung/Schatten, Schrift, Größe, Position. */
@@ -295,8 +367,8 @@ class VideoEngine {
                 if (player == null) return;
                 if ("play".equals(c)) player.play();
                 else if ("pause".equals(c)) player.pause();
-                else if ("seekTo".equals(c)) player.seekTo(Math.max(0, (long) arg + delayMs));
-                else if ("delay".equals(c)) setDelayMain((long) arg);
+                else if ("seekTo".equals(c)) player.seekTo(Math.max(0, (long) arg + delayMs - clipV));
+                else if ("delay".equals(c)) changeDelay((long) arg);
                 else if ("aspect".equals(c)) { aspectMode = (int) arg; applyAspect(); }
                 else if ("stop".equals(c)) stopMain();
             }
@@ -360,6 +432,9 @@ class VideoEngine {
 
     private void stopMain() {
         ui.removeCallbacks(poll);
+        miniOff();
+        lastCfg = null;
+        clipV = clipA = 0;
         if (player != null) { player.stop(); player.clearMediaItems(); }
         subs.setCues(new ArrayList<androidx.media3.common.text.Cue>());
         surface.setVisibility(View.GONE);
