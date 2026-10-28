@@ -44,6 +44,11 @@ import androidx.media3.ui.SubtitleView;
 import androidx.media3.ui.CaptionStyleCompat;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.Bitmap;
+import android.os.Build;
+import android.view.PixelCopy;
+import java.io.File;
+import java.io.FileOutputStream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -94,6 +99,9 @@ class VideoEngine {
     private AspectRatioFrameLayout miniAr;
     private TextureView miniTex;
     private boolean miniOn;
+    // „Weiterschauen“-Bild: letztes Bild beim Beenden speichern
+    private String thumbKey;
+    private int openGen = 0;
     private volatile String tracks = "{\"audio\":[],\"text\":[]}";
 
     private final Runnable poll = new Runnable() {
@@ -180,6 +188,7 @@ class VideoEngine {
         try {
             JSONObject c = new JSONObject(json);
             ensure();
+            openGen++;
             lastCfg = c;
             miniOff();
             if (frame != null) frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
@@ -370,7 +379,7 @@ class VideoEngine {
                 else if ("seekTo".equals(c)) player.seekTo(Math.max(0, (long) arg + delayMs - clipV));
                 else if ("delay".equals(c)) changeDelay((long) arg);
                 else if ("aspect".equals(c)) { aspectMode = (int) arg; applyAspect(); }
-                else if ("stop".equals(c)) stopMain();
+                else if ("stop".equals(c)) stopWithThumb();
             }
         });
     }
@@ -428,6 +437,58 @@ class VideoEngine {
     private void setDelayMain(long ms) {
         delayMs = Math.max(-10000, Math.min(10000, ms));
         if (audio != null) audio.offsetUs = delayMs * 1000;
+    }
+
+    void thumbKey(final String k) {
+        ui.post(new Runnable() { @Override public void run() {
+            thumbKey = k == null || k.length() == 0 ? null : k.replaceAll("[^A-Za-z0-9_-]", "");
+        } });
+    }
+
+    static File thumbDir(Context ctx) {
+        File d = new File(ctx.getFilesDir(), "thumbs");
+        if (!d.exists()) d.mkdirs();
+        return d;
+    }
+
+    /** Vor dem Beenden das aktuelle Bild abgreifen (für die Karte „Weiterschauen“), dann stoppen. */
+    private void stopWithThumb() {
+        final String k = thumbKey;
+        thumbKey = null;
+        if (k == null || player == null || Build.VERSION.SDK_INT < 24 || miniOn || surface.getVisibility() != View.VISIBLE
+                || surface.getWidth() <= 0 || player.getVideoFormat() == null) { stopMain(); return; }
+        try {
+            final int gen = openGen;
+            final boolean[] done = { false };
+            final Runnable fin = new Runnable() { @Override public void run() {
+                if (done[0]) return;
+                done[0] = true;
+                if (gen == openGen) stopMain();
+            } };
+            int h = Math.max(120, Math.round(480f / Math.max(0.5f, videoRatio)));
+            final Bitmap bmp = Bitmap.createBitmap(480, Math.min(480, h), Bitmap.Config.ARGB_8888);
+            player.pause();
+            PixelCopy.request(surface, bmp, new PixelCopy.OnPixelCopyFinishedListener() {
+                @Override public void onPixelCopyFinished(int r) {
+                    if (r == PixelCopy.SUCCESS) {
+                        try {
+                            File d = thumbDir(act);
+                            File[] old = d.listFiles();
+                            if (old != null && old.length > 80) {
+                                java.util.Arrays.sort(old, new java.util.Comparator<File>() { @Override public int compare(File a, File b) { return Long.compare(a.lastModified(), b.lastModified()); } });
+                                for (int i = 0; i < old.length - 60; i++) old[i].delete();
+                            }
+                            FileOutputStream fo = new FileOutputStream(new File(d, k + ".jpg"));
+                            bmp.compress(Bitmap.CompressFormat.JPEG, 82, fo);
+                            fo.close();
+                        } catch (Exception ignored) { }
+                    }
+                    bmp.recycle();
+                    fin.run();
+                }
+            }, ui);
+            ui.postDelayed(fin, 900);
+        } catch (Throwable t) { stopMain(); }
     }
 
     private void stopMain() {

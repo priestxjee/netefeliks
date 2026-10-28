@@ -64,6 +64,9 @@ class TrailerView {
             lp.leftMargin = r[0];
             lp.topMargin = r[1];
             box.setLayoutParams(lp);
+            boolean fit = c.optBoolean("fit", false);
+            ar.setResizeMode(fit ? AspectRatioFrameLayout.RESIZE_MODE_FIT : AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
+            box.setBackgroundColor(fit ? 0xFF000000 : 0x00000000);
             box.setVisibility(View.VISIBLE);
             if (player == null) {
                 player = new ExoPlayer.Builder(act)

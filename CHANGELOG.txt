@@ -1,3 +1,8 @@
+Trailer neu: zuerst offizielle Apple-Trailer (iTunes, wird nicht blockiert), dann IMDb, dann YouTube als direkte Datei
+Neuer Knopf „Trailer“ in den Details: Trailer im Vollbild mit Ton, Zurück beendet
+Suche übersichtlich: Reiter Alles · Filme · Serien · Sender; Filme und Serien als eigene Reihen, Sender als klare Liste mit Logo und laufender Sendung
+Weiterschauen zeigt das letzte Bild, bei dem du aufgehört hast (sonst Szenenbild, sonst Poster – keine bunten Platzhalter mehr)
+Die vier Linien über „Weiterschauen“ sind weg
 Live-TV neu: drei Spalten (Kategorien · Sender · Vorschau mit Programm „Jetzt/Danach“)
 Live: Sender wählen = erst Mini-Vorschau, nochmal OK = Vollbild; im Vollbild ▲/▼ = Sender wechseln
 Mini-Fenster rutscht beim Scrollen nicht mehr weg

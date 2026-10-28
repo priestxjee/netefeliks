@@ -272,6 +272,14 @@ class Net {
     /** Antwort für https://nfk.img/?w=300&u=<Bild-Adresse> */
     WebResourceResponse image(String full) {
         try {
+            // „Weiterschauen“-Bild: https://nfk.img/thumb?k=<Schlüssel>
+            if (full.startsWith("https://" + IMG_HOST + "/thumb")) {
+                int i = full.indexOf("k=");
+                String k = i < 0 ? "" : full.substring(i + 2).replaceAll("[&#].*$", "").replaceAll("[^A-Za-z0-9_-]", "");
+                File f = new File(VideoEngine.thumbDir(ctx), k + ".jpg");
+                if (k.length() == 0 || !f.exists() || f.length() < 500) return notFound();
+                return ok(new FileInputStream(f));
+            }
             String q = full.substring(full.indexOf('?') + 1);
             Map<String, String> p = new HashMap<String, String>();
             for (String kv : q.split("&")) {
