@@ -366,6 +366,14 @@ html.vidmode #app,html.vidmode .modal{visibility:hidden}
 .apo .apdot{width:1.1rem;height:1.1rem;flex:0 0 auto}
 .apo:focus{background:var(--fg);color:#111}
 .apo:focus svg{color:#111}
+.skb{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(.92);z-index:6;background:rgba(10,8,8,.82);border:1px solid rgba(255,255,255,.14);border-radius:1rem;padding:.7rem 1.4rem;text-align:center;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
+.skb.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.skb b{display:block;font-size:2rem;font-variant-numeric:tabular-nums}
+.skb span{color:var(--red,#e50914);font-weight:700;font-size:1rem}
+.subprev{position:relative;width:min(30rem,100%);aspect-ratio:16/9;border-radius:.6rem;overflow:hidden;background:linear-gradient(160deg,#3b4a5e,#16202c 55%,#5a3a2a);display:flex;align-items:flex-end;justify-content:center;container-type:size}
+.subprev>span{font-size:calc(var(--sz) * 100cqh);line-height:1.25;text-align:center;padding:.05em .35em;margin-bottom:calc(var(--sp) * 100cqh);border-radius:.15em;max-width:92%}
+.subprev.sm{width:100%;margin:.2rem 0 .4rem}
+.sw{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:.35em;vertical-align:-.05em;border:1px solid rgba(255,255,255,.4)}
 .aph{color:var(--mute);font-size:.82rem;line-height:1.45;margin:.1rem 0 .3rem}
 .apsync{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin:.2rem 0}
 .apsync b{min-width:4.6rem;text-align:center;font-variant-numeric:tabular-nums;font-size:1.05rem}
@@ -968,7 +976,7 @@ function pool(type){
   return type==='vod'?[...APP._pool.movie,...APP._pool.series]:APP._pool[type];
 }
 // ---------- Profil-Einstellungen ----------
-const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'native',autonext:1,seek:10,subs:'off',subSize:'m',plotLang:'DE',mix:'auto',mixMode:'stream',conns:'auto',akeep:2,aspect:0,audio:'pref',
+const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'native',autonext:1,seek:10,subs:'off',subSize:'m',subColor:'w',subBg:'shadow',subFont:'sans-serif',subBold:0,subPos:'low',plotLang:'DE',mix:'auto',mixMode:'stream',conns:'auto',akeep:2,aspect:0,audio:'pref',
   hero:1,heroSec:10,trailer:1,trailerSound:0,poster:'m',motion:'auto',trailerDelay:1,teamAlert:1,liveNums:1,livePip:1,liveStart:'__all',liveOrder:[],livePins:[],liveFav:[],liveOpen:{},
   rows:{cont:1,top:1,because:1,top10:1,sport:1,recent:1,new:1,pop:1,genre:1,list:1}};
 const PS=k=>{const p=prof();const v=p&&p.set?p.set[k]:undefined;return v===undefined?SET_DEF[k]:v};
@@ -1002,7 +1010,7 @@ function qRank(q){const m=PS('quality');const r=QR[q||'']||0;const cap=m==='best
 // Sprachversionen: Reihenfolge der Länder im Profil = Wunschsprache, danach beste Qualität
 function prefIdx(l){const p=prof();const i=p?p.countries.indexOf(l):-1;return i<0?99:i}
 function sortedVersions(it){return it.versions.slice().sort((a,b)=>prefIdx(a.lang)-prefIdx(b.lang)||qRank(b.q)-qRank(a.q))}
-function curVer(it){if(it._vsel&&it.versions.includes(it._vsel))return it._vsel;const c=(LS.get('nfk.vs.'+APP.pid,{})||{})[it.id];
+function curVer(it){if(it.type==='series')return playPlan(it).pic;if(it._vsel&&it.versions.includes(it._vsel))return it._vsel;const c=(LS.get('nfk.vs.'+APP.pid,{})||{})[it.id];
   if(c){const v=sortedVersions(it).find(x=>x.lang===c.l&&(!c.q||x.q===c.q))||sortedVersions(it).find(x=>x.lang===c.l);if(v)return v}return sortedVersions(it)[0]}
 // Eigene Wahl (Sprache/Qualität) pro Titel merken; autoQ = Qualität automatisch
 function setVsel(it,v,autoQ){const m=LS.get('nfk.vs.'+APP.pid,{})||{};if(v){m[it.id]={l:v.lang,q:autoQ?'':v.q};it._vsel=autoQ?null:v}else{delete m[it.id];it._vsel=null}
@@ -1318,12 +1326,13 @@ document.addEventListener('scroll',e=>{const f=TR.f;if(f&&f.nat&&e.target&&e.tar
 function trlPrefetch(list){if(!(window.NFK&&NFK.tOpen))return;(async()=>{for(const it of list.slice(0,6)){if(P.el)return;try{await TRL.find(it)}catch(e){}}})()}
 // Trailer-Suche: sofort und unabhängig von den Bewertungen. Bevorzugt der offizielle IMDb-Trailer als direkte Videodatei
 // (leicht, startet schnell); nur wenn es den nicht gibt, YouTube.
-const TRL={mem:new Map(),cache:LS.get('nfk.trl',{})||{},
-  save(){clearTimeout(TRL._st);TRL._st=setTimeout(()=>{const k=Object.keys(TRL.cache);if(k.length>600)k.slice(0,k.length-600).forEach(x=>delete TRL.cache[x]);LS.set('nfk.trl',TRL.cache)},3000)},
+const TRL={mem:new Map(),cache:LS.get('nfk.trl2',{})||{},
+  save(){clearTimeout(TRL._st);TRL._st=setTimeout(()=>{const k=Object.keys(TRL.cache);if(k.length>600)k.slice(0,k.length-600).forEach(x=>delete TRL.cache[x]);LS.set('nfk.trl2',TRL.cache)},3000)},
   pickTitle(list,it){const tv=it.type==='series';list=list.filter(x=>/^tt/.test(x.id));
     return list.find(x=>(!it.year||!x.y||Math.abs(x.y-it.year)<=1)&&(tv?/tv/i.test(x.qid||x.q||''):!/tv/i.test(x.qid||x.q||'')))||list.find(x=>!it.year||!x.y||Math.abs(x.y-it.year)<=1)},
   async vi(it){const m=META.cache[it.id]||{};let ts=uniq([m.engTitle,m.oname,it.title].filter(Boolean));
     if(!m.oname&&APP.cfg&&APP.cfg.mode==='xtream'&&it.type==='movie'){try{const d=await XT.vodInfo(APP.cfg,it.versions[0].src.id);if(d.oname){ts=uniq([d.oname,...ts]);META.cache[it.id]=Object.assign(META.cache[it.id]||{},{oname:d.oname})}}catch(e){}}
+    if(it.year)ts=uniq([...ts,...ts.map(t=>t+' '+it.year)]);
     for(const t of ts){const q=normT(t).replace(/[^\p{L}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);if(!q)continue;
       const f=(/[a-z0-9]/.exec(q)||['x'])[0];const g=await NET.grab(`https://v3.sg.media-imdb.com/suggestion/${f}/${encodeURIComponent(q)}.json?includeVideos=1`,{body:true,max:800000});
       const c=TRL.pickTitle((JSON.parse(g.body||'{}').d)||[],it);TRL.log('IMDb-Suche „'+t+'“: '+(c?c.id+' ('+(c.v||[]).length+' Videos)':'nichts gefunden'));if(!c)continue;TRL.tt[it.id]=c.id;const vs=c.v||[];const v=vs.find(x=>/trailer/i.test(x.l||''))||vs.find(x=>/teaser/i.test(x.l||''))||vs[0];if(v&&v.id)return v.id}return null},
@@ -1346,7 +1355,7 @@ const TRL={mem:new Map(),cache:LS.get('nfk.trl',{})||{},
   find(it){if(it.demo)return Promise.resolve(null);const mm=TRL.mem.get(it.id);if(mm&&Date.now()-mm.t<30*6e4)return mm.p;
     const p=(async()=>{const c=TRL.cache[it.id]||{};
       if(c.mp4&&c.exp>Date.now()+3e5)return{mp4:c.mp4};
-      try{let vi=c.vi;if(vi===undefined){vi=await TRL.vi(it);TRL.cache[it.id]=Object.assign(TRL.cache[it.id]||{},{vi:vi||null});TRL.save()}
+      try{let vi=c.vi;if(vi===undefined||(vi===null&&Date.now()-(c.vt||0)>12*36e5)){vi=await TRL.vi(it);TRL.cache[it.id]=Object.assign(TRL.cache[it.id]||{},{vi:vi||null,vt:Date.now()});TRL.save()}
         if(vi){const u=await TRL.mp4(vi,TRL.tt[it.id]);if(u){const ex=+((u.match(/[?&]Expires=(\d+)/)||[])[1]||0)*1000||Date.now()+6*36e5;Object.assign(TRL.cache[it.id],{mp4:u,exp:ex});TRL.save();return{mp4:u}}}}catch(e){}
       if(window.NFK&&NFK.tOpen)return null; // YouTube zeigt auf dem Fire TV oft nur Ton – dann lieber kein Trailer
       let yt=c.yt||(META.cache[it.id]||{}).yt;
@@ -1552,6 +1561,19 @@ VIEWS.search=(el,a)=>{
 // ----- Einstellungen -----
 // ----- Einstellungen: pro Profil, in Bereiche gegliedert -----
 const SECS=[['profil','Profil'],['sprache','Sprache & Synchron'],['inhalte','Inhalte & Jugendschutz'],['darstellung','Darstellung'],['wiedergabe','Wiedergabe'],['sport','Sport & Teams'],['live','Live-TV'],['empf','Empfehlungen'],['update','Updates'],['konto','Abo & App']];
+// Untertitel-Aussehen: Größe, Farbe, Hintergrund, Schrift, Stärke, Position
+const SUBST=[['subSize','Größe',[['s','Klein',.042],['m','Mittel',.0533],['l','Groß',.066],['xl','Sehr groß',.082]]],
+  ['subColor','Farbe',[['w','Weiß','#FFFFFF'],['y','Gelb','#FFE14D'],['c','Hellblau','#7FE3FF'],['g','Grün','#8CFF8C'],['p','Rosa','#FF9AD8'],['o','Orange','#FFB347']]],
+  ['subBg','Hintergrund',[['shadow','Schatten'],['outline','Umrandung'],['box','Halbtransparenter Kasten'],['solid','Schwarzer Kasten'],['none','Ohne']]],
+  ['subFont','Schrift',[['sans-serif','Standard','Roboto,"Segoe UI",Arial,sans-serif'],['sans-serif-condensed','Schmal','"Roboto Condensed","Arial Narrow",sans-serif'],['serif','Klassisch','"Noto Serif",Georgia,"Times New Roman",serif'],['monospace','Schreibmaschine','"Droid Sans Mono","Courier New",monospace'],['casual','Locker','"Coming Soon","Comic Sans MS","Chalkboard SE",cursive'],['cursive','Handschrift','"Dancing Script","Segoe Script","Brush Script MT",cursive']]],
+  ['subBold','Stärke',[[0,'Normal'],[1,'Fett']]],
+  ['subPos','Position',[['low','Unten'],['mid','Etwas höher']]]];
+function subOpt(k){const e=SUBST.find(x=>x[0]===k);const v=String(PS(k));return e[2].find(o=>String(o[0])===v)||e[2][k==='subSize'?1:0]}
+function subStyleObj(){const c=subOpt('subColor')[2],bg=subOpt('subBg')[0];return{size:subOpt('subSize')[2],fg:'#FF'+c.slice(1),bg:bg==='box'?'#A6000000':bg==='solid'?'#FF000000':'#00000000',win:'#00000000',edge:bg==='shadow'?2:bg==='outline'?1:0,edgeColor:'#FF000000',font:subOpt('subFont')[0],bold:!!+PS('subBold'),pos:PS('subPos')==='mid'?.2:.08}}
+function subCSS(){const c=subOpt('subColor')[2],bg=subOpt('subBg')[0];return`color:${c};font-family:${subOpt('subFont')[2]};font-weight:${+PS('subBold')?800:500};background:${bg==='box'?'rgba(0,0,0,.65)':bg==='solid'?'#000':'transparent'};text-shadow:${bg==='shadow'?'2px 2px 3px #000,0 0 5px rgba(0,0,0,.9)':bg==='outline'?'-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 2px 0 #000,0 -2px 0 #000,2px 0 0 #000,-2px 0 0 #000':'none'}`}
+function subPrev(cls){const s=subStyleObj();return`<div class="subprev ${cls||''}" style="--sz:${s.size};--sp:${s.pos}"><span style='${subCSS()}'>Das ist ein Beispiel-Untertitel.<br><span dir="rtl">این یک زیرنویس نمونه است.</span></span></div>`}
+function subApply(){try{if(window.NFK&&NFK.vSubStyle)NFK.vSubStyle(JSON.stringify(subStyleObj()))}catch(e){}
+  let st=document.getElementById('cuest');if(!st){st=document.createElement('style');st.id='cuest';document.head.appendChild(st)}const sz=subStyleObj().size;st.textContent=`video::cue{${subCSS()};font-size:${(sz*100).toFixed(2)}vh}`}
 function optRow(label,hint,ctl){return`<div class="orow"><div class="ol"><b>${label}</b>${hint?`<small>${hint}</small>`:''}</div><div class="oc">${ctl}</div></div>`}
 function tgl(k,on){return`<button class="tgl f${on?' on':''}" data-act="set" data-k="${k}" data-v="${on?0:1}" role="switch" aria-checked="${on?'true':'false'}"><i></i><span>${on?'An':'Aus'}</span></button>`}
 function chs(k,cur,opts){return`<div class="chips">${opts.map(([v,l])=>`<button class="chip f${String(cur)===String(v)?' on':''}" data-act="set" data-k="${k}" data-v="${esc(v)}">${l}</button>`).join('')}</div>`}
@@ -1568,7 +1590,8 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Wunschsprache','Gibt es einen Titel in mehreren Sprachen, startet er in Sprache 1. Tonspuren im Stream werden genauso gewählt.',`<div style="width:100%">${p.countries.map((k,i)=>`<div class="lrow"><b>${i+1}. ${CBY[k].flag||''} ${esc(langName(k))} <span style="color:var(--mute);font-weight:500">· ${esc(CBY[k].name)}</span></b>${i?`<button class="btn sm f" data-act="lup" data-k="${k}">Nach vorne</button>`:'<span class="tag k">Wunschsprache</span>'}</div>`).join('')}</div>`)}
     ${optRow('Tonspur','Bei Filmen mit mehreren Tonspuren in einer Datei.',chs('audio',PS('audio'),[['pref','Wunschsprache (Synchron)'],['orig','Originalton']]))}
     ${optRow('Untertitel','Werden automatisch eingeschaltet, wenn vorhanden.',chs('subs',PS('subs'),[['off','Aus'],['auto','In Wunschsprache'],['DE','Deutsch'],['EN','Englisch'],['IR','Persisch']]))}
-    ${optRow('Untertitel-Größe','',chs('subSize',PS('subSize'),[['s','Klein'],['m','Mittel'],['l','Groß']]))}
+    ${optRow('Untertitel-Aussehen','So sehen Untertitel bei Filmen, Serien und Live aus. Lässt sich auch im Player unter „Sprache & Audio“ ändern.',subPrev()+`<button class="btn sm f" data-act="subreset" style="margin-top:.5rem">Standard wiederherstellen</button>`)}
+    ${SUBST.map(([k,lab,o])=>optRow(lab,'',chs(k,PS(k),o.map(x=>[x[0],k==='subFont'?`<span style='font-family:${x[2]}'>${x[1]}</span>`:k==='subColor'?`<i class="sw" style="background:${x[2]}"></i>${x[1]}`:x[1]])))).join('')}
     ${optRow('Audio-Synchronisation','Lässt sich während des Films unter „Sprache & Audio“ einstellen und wird pro Titel gemerkt.',`<button class="btn sm f" data-act="syncreset">Alle Anpassungen zurücksetzen</button>`)}
     ${optRow('Länder & Sprachen ändern','',`<button class="btn sm f" data-act="editctry">Länder bearbeiten</button>`)}`;
   else if(sec==='inhalte'){const gc={};pool('vod').forEach(i=>i.genres.forEach(g=>gc[g]=1));APP._pool=null;const all=uniq([...Object.keys(gc),...PS('hideGenres')]).sort();
@@ -1665,15 +1688,16 @@ async function openDetails(id){
 // kommt das Bild aus einer anderen Fassung und der Ton aus der gewählten Sprache.
 function selOf(it){const c=(LS.get('nfk.vs.'+APP.pid,{})||{})[it.id]||{};const ls=langsOf(it);return{l:c.l&&ls.includes(c.l)?c.l:ls[0],q:c.q&&it.versions.some(v=>(v.q||'-')===c.q)?c.q:''}}
 function saveSel(it,l,q){const m=LS.get('nfk.vs.'+APP.pid,{})||{};m[it.id]={l,q:q||''};const k=Object.keys(m);if(k.length>400)delete m[k[0]];LS.set('nfk.vs.'+APP.pid,m);it._vsel=null;it._mixA=it._mixV=null}
-function playPlan(it){const{l,q}=selOf(it);const own=it.versions.filter(v=>v.lang===l).sort((a,b)=>qRank(b.q)-qRank(a.q));let pic=null;
-  if(q)pic=own.find(v=>(v.q||'-')===q)||it.versions.filter(v=>(v.q||'-')===q).sort((a,b)=>prefIdx(a.lang)-prefIdx(b.lang))[0];
-  if(!pic){pic=own[0];const best=it.versions.slice().sort((a,b)=>qRank(b.q)-qRank(a.q)||(a.lang===l?-1:b.lang===l?1:prefIdx(a.lang)-prefIdx(b.lang)))[0];if(PS('mix')!=='off'&&it.type==='movie'&&best&&pic&&best.lang!==l&&qRank(best.q)>qRank(pic.q))pic=best}
-  pic=pic||sortedVersions(it)[0];const aud=it.type==='movie'&&pic.lang!==l&&PS('mix')!=='off'?audioVer(it,l):null;return{pic,aud,l,q}}
+function mixOk(it){return it.type==='movie'||(it.type==='series'&&(it.demo||mixDirect()))}
+function playPlan(it){const{l,q}=selOf(it);const own=it.versions.filter(v=>v.lang===l).sort((a,b)=>qRank(b.q)-qRank(a.q));let pic=null;const mo=mixOk(it);
+  if(q)pic=own.find(v=>(v.q||'-')===q)||(mo?it.versions.filter(v=>(v.q||'-')===q).sort((a,b)=>prefIdx(a.lang)-prefIdx(b.lang))[0]:null);
+  if(!pic){pic=own[0];const best=it.versions.slice().sort((a,b)=>qRank(b.q)-qRank(a.q)||(a.lang===l?-1:b.lang===l?1:prefIdx(a.lang)-prefIdx(b.lang)))[0];if(PS('mix')!=='off'&&mo&&best&&pic&&best.lang!==l&&qRank(best.q)>qRank(pic.q))pic=best}
+  pic=pic||sortedVersions(it)[0];const aud=mo&&pic.lang!==l&&PS('mix')!=='off'?audioVer(it,l):null;return{pic,aud,l,q}}
 const fl=l=>CBY[l]&&CBY[l].flag?CBY[l].flag+' ':'';
 function prepEta(it,l){const a=audioVer(it,l)||{};const mb=({'8K':40,'4K':18,FHD:6,HD:3.5,SD:1.5})[a.q]||2;const tot=mb*(it.dur||110)*60/8;const b=BW.get();return b?Math.max(1,Math.round(tot*8/(b.mbps*.85)/60)):null}
 function dfocus(m,k){$$('.ddm').forEach(x=>x.remove());const b=$(`[data-act="ddet"][data-k="${k}"]`,m)||$('[data-act="ddet"]',m)||$('.f',m);b&&b.focus({preventScroll:true})}
 // Film-Details: Sprache, Bild und Untertitel als eine Zeile mit Auswahlmenüs
-function detBar(it){const mov=it.type==='movie';let lang,qLabel;
+function detBar(it){const mov=it.type==='movie'||it.type==='series';let lang,qLabel;
   if(mov){const pl=playPlan(it);lang=pl.l;qLabel=pl.q?qName(pl.q==='-'?'':pl.q):'Automatisch · '+qName(pl.pic.q)}else{const cv=curVer(it);lang=cv.lang;qLabel=qName(cv.q)}
   const sub=SUBS.pref(it);const ls=langsOf(it);const nq=uniq(it.versions.map(v=>v.q||'-')).length;
   let h='<div class="vbar dbar">';
@@ -1681,7 +1705,7 @@ function detBar(it){const mov=it.type==='movie';let lang,qLabel;
   if(nq>1)h+=`<button class="ddb f" data-act="ddet" data-k="q" data-id="${it.id}">Bild: <b>${esc(qLabel)}</b> ▾</button>`;
   h+=`<button class="ddb f" data-act="ddet" data-k="s" data-id="${it.id}">Untertitel: <b>${sub==='off'?'Aus':fl(sub)+esc(langName(sub))}</b> ▾</button></div>`;
   if(mov){const pl=playPlan(it);if(pl.aud){const pic=pl.pic;let st='';const ready=!!prepared(it,pl.l),run=APP.prepRun&&APP.prepRun.itemId===it.id&&APP.prepRun.lang===pl.l;
-      if(mixDirect())st='Bild und Ton werden gleichzeitig gestreamt.';else if(ready)st='✓ Ton gespeichert – startet sofort.';else if(run)st=`Ton wird vorbereitet … ${APP.prepRun.pct} %`;else st=`Der ${esc(langName(pl.l))}-Ton wird vorher einmal geladen. <button class="chip f" data-act="dprep" data-id="${it.id}" data-l="${pl.l}">Jetzt vorbereiten</button>`;
+      if(mixDirect())st='Bild und Ton werden gleichzeitig gestreamt.';else if(ready)st='✓ Ton gespeichert – startet sofort.';else if(run)st=`Ton wird vorbereitet … ${APP.prepRun.pct} %`;else st=it.type==='series'?'':`Der ${esc(langName(pl.l))}-Ton wird vorher einmal geladen. <button class="chip f" data-act="dprep" data-id="${it.id}" data-l="${pl.l}">Jetzt vorbereiten</button>`;
       h+=`<div class="pplan"><b>${esc(qName(pic.q))}-Bild aus der ${fl(pic.lang)}${esc(langName(pic.lang))}-Fassung · ${fl(pl.l)}${esc(langName(pl.l))}-Ton</b> <span>${st}</span></div>`}}
   return h}
 function langChips(it){return detBar(it)}
@@ -1716,12 +1740,18 @@ function movieChips(it){const pl=playPlan(it);const ls=langsOf(it);let h='';
   h+=`<div class="pplan"><b>▶ ${esc(qName(pic.q))}-Bild${pl.aud?` aus der ${fl(pic.lang)}${esc(langName(pic.lang))}-Fassung`:''} · ${fl(pl.l)}${esc(langName(pl.l))}-Ton</b>${st?`<div>${st}</div>`:''}</div>`;
   return h}
 function sideHTML(it){const s=[];if(it.cast.length)s.push(`<div><b>Besetzung:</b> <span dir="auto">${esc(it.cast.slice(0,5).join(', '))}</span></div>`);if(it.director)s.push(`<div><b>${it.type==='series'?'Idee':'Regie'}:</b> <span dir="auto">${esc(it.director)}</span></div>`);if(it.genres.length)s.push(`<div><b>Genres:</b> ${esc(it.genres.join(', '))}</div>`);if(it.country!=='XX'&&CBY[it.country])s.push(`<div><b>Land:</b> ${esc(CBY[it.country].name)}</div>`);{const gs=it.groups.filter(Boolean);if(gs.length)s.push(`<div><b>Kategorie:</b> <span dir="auto">${esc(gs.slice(0,2).join(' · '))}</span>${gs.length>2?` <span style="color:var(--dim)">+${gs.length-2} weitere</span>`:''}</div>`)}if(it.type!=='live'&&langsOf(it).length>1)s.push(`<div><b>Sprachen:</b> ${langsOf(it).length} Fassungen – oben unter „Sprache“ wählbar</div>`);return s.join('')}
+async function seasonsFor(it,v){it._sv=it._sv||new Map();if(it._sv.has(v))return it._sv.get(v);let S;
+  if(it.demo){const rr=rng(hstr(it.id));S={};for(let s=1;s<=(it.seasons||1);s++){const n=6+Math.floor(rr()*5);S[s]=[];for(let e=1;e<=n;e++)S[s].push({id:it.id+'-'+s+'-'+e,n:e,title:pick(rr,DEMO.epi),dur:40+Math.floor(rr()*18),plot:'Folge '+e+' der '+s+'. Staffel: '+pick(rr,['Ein alter Bekannter taucht auf und bringt alles durcheinander.','Ein Hinweis führt in eine Richtung, mit der niemand gerechnet hat.','Die Lage spitzt sich zu – und eine Entscheidung fällt.','Ein Geheimnis kommt ans Licht, das nicht mehr zu verbergen ist.']),src:{demo:1}})}}
+  else if(v.sd)S=v.sd;else if(v.src&&v.src.id!=null){const d=await XT.seriesInfo(APP.cfg,v.src.id);if(!it.plot&&d.plot)it.plot=d.plot;if(!it.cast.length&&d.cast)it.cast=d.cast.split(/\s*,\s*/);if(!it.director&&d.director)it.director=d.director;if(!it.backdrop&&d.backdrop)it.backdrop=d.backdrop;S=d.seasons||{}}
+  else S=it.seasonsData||{};
+  for(const k in S)for(const e of S[k])if(!e._s)e._s=k;
+  if(it._sv.size>6)it._sv.delete(it._sv.keys().next().value);it._sv.set(v,S);return S}
 async function loadSeasons(it){
-  const cvr=curVer(it);if(it._seasons&&it._sk===cvr)return it._seasons;it._sk=cvr;
-  if(it.demo){const rr=rng(hstr(it.id));const S={};for(let s=1;s<=(it.seasons||1);s++){const n=6+Math.floor(rr()*5);S[s]=[];for(let e=1;e<=n;e++)S[s].push({id:it.id+'-'+s+'-'+e,n:e,title:pick(rr,DEMO.epi),dur:40+Math.floor(rr()*18),plot:'Folge '+e+' der '+s+'. Staffel: '+pick(rr,['Ein alter Bekannter taucht auf und bringt alles durcheinander.','Ein Hinweis führt in eine Richtung, mit der niemand gerechnet hat.','Die Lage spitzt sich zu – und eine Entscheidung fällt.','Ein Geheimnis kommt ans Licht, das nicht mehr zu verbergen ist.']),src:{demo:1}})}return it._seasons=S}
-  if(cvr.sd||it.seasonsData)return it._seasons=cvr.sd||it.seasonsData;
-  const d=await XT.seriesInfo(APP.cfg,cvr.src.id);if(!it.plot&&d.plot)it.plot=d.plot;if(!it.cast.length&&d.cast)it.cast=d.cast.split(/\s*,\s*/);if(!it.director&&d.director)it.director=d.director;if(!it.backdrop&&d.backdrop)it.backdrop=d.backdrop;it.seasons=Object.keys(d.seasons).length;return it._seasons=d.seasons;
-}
+  const cvr=curVer(it);if(it._seasons&&it._sk===cvr)return it._seasons;
+  const S=await seasonsFor(it,cvr);it._sk=cvr;it.seasons=Object.keys(S).length||it.seasons;return it._seasons=S}
+// Dieselbe Folge (Staffel + Nummer) in einer anderen Sprach-/Qualitätsfassung
+async function epFind(it,v,ep){if(!v||!ep)return null;try{const S=await seasonsFor(it,v);const k=String(ep._s||'');const L=S[k]||S[+k]||[];return L.find(e=>+e.n===+ep.n)||null}catch(e){return null}}
+function epsRefresh(it,m){if(it.type!=='series'||!m||!$('#eps',m))return;if(it._seasons&&it._sk===curVer(it))return;$('#eps',m).innerHTML='<h4>Folgen</h4><div class="spin"></div>';loadSeasons(it).then(()=>{if(APP.modal&&APP.modal.el===m)renderEps(it,m)}).catch(()=>{})}
 function renderEps(it,m,sel){const S=it._seasons;const keys=Object.keys(S).sort((a,b)=>a-b);const pr=getProg()[it.id];sel=sel||(pr&&pr.ep?String(pr.ep.s):keys[0]);const ep=getProg();
   $('#eps',m).innerHTML=`<h4>Folgen</h4><div class="chips">${keys.map(k=>`<button class="chip f${k===sel?' on':''}" data-act="season" data-s="${k}" data-id="${it.id}">Staffel ${k}</button>`).join('')}</div>
   <div class="eps">${(S[sel]||[]).map(e=>{const p=ep['e:'+e.id];const img=e.img&&!it.demo?`<img class="pi" src="${esc(e.img)}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:artHTML({...it,title:e.title,year:null},true);
@@ -1754,7 +1784,7 @@ const P={
       if(it.type==='live'){const list=(o.alts&&o.alts.length>1)?o.alts:chanList(it);cfg.chans=list.slice(0,600).map(c=>({id:c.id,title:c.title,items:vItems(c,sortedVersions(c))}));cfg.chanIndex=Math.max(0,list.indexOf(it))}
       P.native=1;NFK.play(JSON.stringify(cfg));return}
     P.native=0;P.engine=P.demo?'demo':natE?'nat':'web';P.cur=null;P.tried=new Set();P.mix=-1;P.subWant=it.type==='live'?'off':SUBS.pref(it);P.subFile=null;P.subTried=0;P.subRes=null;
-    if(!ep&&it.type==='movie'&&o.fixed){P.ver=Math.max(0,P.vers.indexOf(o.fixed))}else if(!ep&&it.type==='movie'){const pl=playPlan(it);P.ver=Math.max(0,P.vers.indexOf(pl.pic));
+    P.epA='';if(!ep&&it.type==='movie'&&o.fixed){P.ver=Math.max(0,P.vers.indexOf(o.fixed))}else if((!ep&&it.type==='movie')||(ep&&it.type==='series')){const pl=playPlan(it);P.ver=Math.max(0,P.vers.indexOf(pl.pic));
       if(pl.aud&&(P.engine==='nat'||P.engine==='demo')&&(P.engine==='demo'||mixDirect()||prepared(it,pl.l)))P.mix=P.vers.indexOf(pl.aud)}
     if(P.engine==='nat'){el.classList.add('nat');document.documentElement.classList.add('vidmode')}
     if(P.mix>-1)sub=(sub?sub+' · ':'')+mixLabel();
@@ -1762,23 +1792,31 @@ const P={
      <div class="pt"><h2 dir="auto">${esc(title)}</h2><p dir="auto">${esc(sub)}</p></div>
      <div class="pc">${it.type==='live'?'':`<button class="scrub f" id="scrub" aria-label="Spulen (links/rechts)"><div class="tr"><i id="pf"></i><b id="pk"></b></div></button><div class="ptime"><span id="tc">0:00</span><span id="tr">-0:00</span></div>`}
       <div class="pbtns">${it.type==='live'?`<button class="btn ic f" data-act="ch" data-d="-1" aria-label="Vorheriger Sender">${I.chUp}</button><button class="btn ic f" data-act="ch" data-d="1" aria-label="Nächster Sender">${I.chDn}</button><span class="live">LIVE</span>${o.alts&&o.alts.length>1?`<button class="btn sm f" data-act="alt">Andere Übertragung (${o.alts.length-1})</button>`:''}`:`<button class="btn ic f" data-act="seek" data-d="-10" aria-label="10 Sekunden zurück">${I.back10}</button><button class="btn ic f" data-act="pp" id="ppb" data-autofocus aria-label="Pause">${I.pause}</button><button class="btn ic f" data-act="seek" data-d="30" aria-label="30 Sekunden vor">${I.fwd10}</button>`}
-       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}${!ep&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}${P.engine==='nat'||P.engine==='web'?`<button class="btn sm f" data-act="aspcyc" id="aspb" aria-label="Bildformat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 10V9h2M17 14v1h-2"/></svg>${esc(ASP[aspOf(it)][1])}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Sprache & Audio</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
+       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}${(!ep||it.type==='series')&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}${P.engine==='nat'||P.engine==='web'?`<button class="btn sm f" data-act="aspcyc" id="aspb" aria-label="Bildformat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 10V9h2M17 14v1h-2"/></svg>${esc(ASP[aspOf(it)][1])}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Sprache & Audio</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
     document.body.appendChild(el);P.el=el;P.playing=true;
-    {const s0=ep?ep.src:P.vers[P.ver].src;if(fromPip&&P.engine==='nat'){P.cur={url:s0.url,alt:s0.alt||''};APP.pip=null;document.documentElement.classList.remove('pip');NFK.vMini('')}else if(!P.demo)P.load(s0.url,s0.alt)}
-    P.tick=setInterval(()=>{if(P.engine==='nat'){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos!=null){P.pos=st.pos/1000;if(st.dur>0)P.dur=st.dur/1000;P.playing=!!st.playing;P.el.classList.toggle('buf',!!st.buf||(!st.playing&&!st.dur));if(st.bw>0)P.bwMax=Math.max(P.bwMax||0,st.bw);P.rebuf(!!st.buf)}}
+    {const s0=ep?ep.src:P.vers[P.ver].src;if(fromPip&&P.engine==='nat'){P.cur={url:s0.url,alt:s0.alt||''};APP.pip=null;document.documentElement.classList.remove('pip');NFK.vMini('')}else if(!P.demo){if(ep&&P.mix>-1)P.reload();else P.load(s0.url,s0.alt)}}
+    P.tick=setInterval(()=>{if(P.engine==='nat'){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos!=null&&P.skT!=null&&(!P.skDone||(Math.abs(st.pos/1000-P.skT)>2.5&&Date.now()<P.skUntil))){st.pos=null}else if(P.skT!=null&&P.skDone){P.skT=null}if(st.pos!=null){P.pos=st.pos/1000;if(st.dur>0)P.dur=st.dur/1000;P.playing=!!st.playing;P.el.classList.toggle('buf',!!st.buf||(!st.playing&&!st.dur));if(st.bw>0)P.bwMax=Math.max(P.bwMax||0,st.bw);P.rebuf(!!st.buf)}}
       if(P.demo&&P.playing&&P.dur){P.pos=Math.min(P.dur,P.pos+.25*60);if(P.pos>=P.dur){P.ended();return}}P.ui();if(Date.now()-P.last>4500&&!$('#player:focus-within .scrub:focus')&&!$('.ap'))P.el.classList.add('idle')},250);
     P.saveT=setInterval(()=>{P.save();NOW.save()},5000);setTimeout(NOW.save,0);P.last=Date.now();P.ui();
     requestAnimationFrame(()=>{const f=$('[data-autofocus]',el);f&&f.focus()});
   },
   load(url,alt){P.cur={url,alt:alt||''};
     if(P.engine==='nat'){const pref=(prof().countries||[]).flatMap(c=>(LANG[c]||[]).slice(1));const sb=PS('subs');
-      const au=P.mix>-1&&P.vers[P.mix]?P.vers[P.mix]:null;const pre=au?prepared(P.it,au.lang):null;
-      NFK.vOpen(JSON.stringify({url,audioUrl:pre?'file://'+pre.path:au?au.src.url:'',start:Math.round((P.startPos||0)*1000),langs:au?(LANG[au.lang]||[]).slice(1):PS('audio')==='orig'?[]:pref,subs:P.subWant&&P.subWant!=='off'?(LANG[P.subWant]||[]).slice(1):[],subsOn:!!P.subWant&&P.subWant!=='off',subUrl:P.subFile?'file://'+P.subFile.path:'',subLang:P.subFile?((LANG[P.subFile.lang]||[])[1]||''):'',aspect:aspOf(P.it),subSize:{s:.045,m:.0533,l:.066}[PS('subSize')]||.0533,delay:P.sync()}));return}
-    const v=$('#vid');P.v=v;P.hls&&P.hls.destroy();P.hls=null;
+      const au=P.mix>-1&&P.vers[P.mix]?P.vers[P.mix]:null;const pre=au&&!P.ep?prepared(P.it,au.lang):null;const aUrl=pre?'file://'+pre.path:au?(P.ep?P.epA||'':au.src.url):'';
+      NFK.vOpen(JSON.stringify({url,audioUrl:aUrl,start:Math.round((P.startPos||0)*1000),langs:au?(LANG[au.lang]||[]).slice(1):PS('audio')==='orig'?[]:pref,subs:P.subWant&&P.subWant!=='off'?(LANG[P.subWant]||[]).slice(1):[],subsOn:!!P.subWant&&P.subWant!=='off',subUrl:P.subFile?'file://'+P.subFile.path:'',subLang:P.subFile?((LANG[P.subFile.lang]||[])[1]||''):'',aspect:aspOf(P.it),subSize:subStyleObj().size,subStyle:subStyleObj(),delay:P.sync()}));return}
+    subApply();const v=$('#vid');P.v=v;P.hls&&P.hls.destroy();P.hls=null;
     v.ontimeupdate=()=>{P.pos=v.currentTime;if(v.duration&&isFinite(v.duration))P.dur=v.duration};v.onended=()=>P.ended();
     v.onerror=()=>{if(alt&&!P.triedAlt){P.triedAlt=1;P.load(alt)}else P.err()};
     if(/\.m3u8(\?|$)/i.test(url)&&window.Hls&&Hls.isSupported()){P.hls=new Hls({maxBufferLength:30});P.hls.loadSource(url);P.hls.attachMedia(v);P.hls.on(Hls.Events.MANIFEST_PARSED,()=>P.audio());P.hls.on(Hls.Events.AUDIO_TRACKS_UPDATED,()=>P.audio());P.hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal){if(alt&&!P.triedAlt){P.triedAlt=1;P.load(alt)}else P.err()}})}else v.src=url;
     v.addEventListener('loadedmetadata',()=>{if(P.startPos>5&&isFinite(v.duration))v.currentTime=P.startPos;P.audio()},{once:true});webAsp(v,aspOf(P.it));v.play().catch(()=>{})},
+  reload(){if(!P.el)return;P.startPos=P.pos;const it=P.it,ep=P.ep,pic=P.vers[P.ver];if(P.demo||!pic)return;
+    if(!ep){if(P.engine==='nat')P.load(pic.src.url,pic.src.alt);return}
+    const tk=P.rk=(P.rk||0)+1;const au=P.mix>-1?P.vers[P.mix]:null;
+    Promise.all([epFind(it,pic,ep),au?epFind(it,au,ep):null]).then(([pe,ae])=>{if(P.rk!==tk||P.ep!==ep||!P.el)return;
+      if(!pe){toast('Diese Folge gibt es in dieser Fassung nicht');pe=ep}
+      if(au&&!ae){P.mix=-1;toast('Folge gibt es nicht auf '+langName(au.lang)+' – Ton der Bild-Fassung')}
+      P.epA=ae&&ae.src?ae.src.url:'';const t=$('.pt p',P.el);if(t&&P.ep)t.textContent=`Staffel ${P.ep._s||'?'} · Folge ${P.ep.n}: ${P.ep.title}`+(P.mix>-1?' · '+mixLabel():'');
+      if(P.engine==='nat')P.load(pe.src.url,pe.src.alt);else if(P.engine==='web'&&P.mix<0)P.load(pe.src.url,pe.src.alt)}).catch(()=>{})},
   langs(){return uniq(P.vers.map(v=>v.lang))},
   quals(){const l=P.vers[P.ver].lang;return P.vers.filter(v=>v.lang===l)},
   switchTo(i,auto){const v=P.vers[i];if(!v||i===P.ver)return;P.ver=i;if(!auto&&!P.ep)setVsel(P.it,v);else P.it._vsel=v;const qb=$('#qb');if(qb)qb.innerHTML=I.hd+esc(qName(v.q));P.triedAlt=0;P.aSet=0;if(!P.demo){P.startPos=P.pos;P.load(v.src.url,v.src.alt)}if(P.engine!=='web'){toast(langName(v.lang)+' · '+qName(v.q));return}
@@ -1793,17 +1831,17 @@ const P={
   // Audio-Synchronisation pro Titel merken
   skey(){return P.it.id+(P.mix>-1&&P.vers&&P.vers[P.mix]?'|'+P.vers[P.mix].lang:'')},
   sync(){if(!P.it)return 0;const k=P.skey();if(P._sy&&P._sy[k]!=null)return P._sy[k];const m=LS.get('nfk.sync',{});if(m[k]!=null)return m[k];const a=P.mix>-1&&P.vers[P.mix];const pre=a&&prepared(P.it,a.lang);return pre?pre.offsetMs||0:0},
-  setSync(ms){ms=clamp(Math.round(ms/50)*50,-5000,5000);const k=P.skey();P._sy=P._sy||{};P._sy[k]=ms;const m=LS.get('nfk.sync',{});if(ms)m[k]=ms;else delete m[k];LS.set('nfk.sync',m);if(P.engine==='nat')NFK.vCmd('delay',ms);const e=$('#apsync');if(e)e.textContent=(ms>0?'+':'')+(ms/1000).toFixed(2).replace('.',',')+' s'},
+  setSync(ms){ms=clamp(Math.round(ms/50)*50,-10000,10000);const k=P.skey();P._sy=P._sy||{};P._sy[k]=ms;const m=LS.get('nfk.sync',{});if(ms)m[k]=ms;else delete m[k];LS.set('nfk.sync',m);if(P.engine==='nat')NFK.vCmd('delay',ms);const e=$('#apsync');if(e)e.textContent=(ms>0?'+':'')+(ms/1000).toFixed(2).replace('.',',')+' s'},
   ntracks(){try{return JSON.parse(NFK.vTracks()||'{}')}catch(e){return{}}},
   panel(keep,focus){if(!P.el)return;const old=$('.ap');const fa=keep&&old&&document.activeElement&&old.contains(document.activeElement)?document.activeElement.dataset.k:null;if(old)old.remove();
     const it=P.it,nat=P.engine==='nat';const d=document.createElement('div');d.className='ap';let h='<h3>Sprache & Audio</h3>';
     const row=(k,act,label,on,extra='')=>`<button class="apo f${on?' on':''}" data-act="${act}" data-k="${k}" ${extra}>${on?I.check:'<i class="apdot"></i>'}<span>${label}</span></button>`;
-    const movieSplit=!P.ep&&it.type==='movie'&&(nat||P.engine==='demo');
+    const movieSplit=((!P.ep&&it.type==='movie')||(P.ep&&it.type==='series'))&&(nat||P.engine==='demo');const ser=!!P.ep;
     if(movieSplit){const pic=P.vers[P.ver];const aL=P.mix>-1?P.vers[P.mix].lang:pic.lang;const qs=uniq(P.vers.map(v=>v.q||'')).sort((a,b)=>QR[b]-QR[a]);
       if(qs.length>1)h+=`<h4>Bildqualität</h4><p class="aph">Bleibt gleich, wenn du unten die Sprache wechselst. Dein Internet: ${esc(BW.label())}.</p>`+qs.map(q=>{const src=P.vers.some(v=>(v.q||'')===q&&v.lang===aL)?null:P.vers.filter(v=>(v.q||'')===q).sort((a,b)=>prefIdx(a.lang)-prefIdx(b.lang))[0];
         return row('q'+(q||'-'),'apq',esc(qName(q))+(src?` <small style="opacity:.65">· Bild aus ${fl(src.lang)}${esc(langName(src.lang))}-Fassung</small>`:''),(pic.q||'')===q,`data-q="${q||'-'}"`)}).join('');
-      const ls=langsOf(it);if(ls.length>1)h+=`<h4>Sprache (Ton)</h4>`+ls.map(l=>{const same=pic.lang===l;const direct=P.vers.some(v=>v.lang===l&&(v.q||'')===(pic.q||''));const ok=same||direct||P.engine==='demo'||mixDirect()||!!prepared(it,l);
-        const note=same||direct?'':ok?(prepared(it,l)?' · Ton gespeichert':''):' · Ton wird einmal vorbereitet (Film stoppt kurz)';
+      const ls=langsOf(it);if(ls.length>1)h+=`<h4>Sprache (Ton)</h4>`+ls.map(l=>{const same=pic.lang===l;const direct=P.vers.some(v=>v.lang===l&&(v.q||'')===(pic.q||''));const ok=same||direct||P.engine==='demo'||mixDirect()||(!ser&&!!prepared(it,l));
+        const note=same||direct?'':ok?(!ser&&prepared(it,l)?' · Ton gespeichert':''):ser?' · in eigener Bildqualität':' · Ton wird einmal vorbereitet (Film stoppt kurz)';
         return row('l'+l,'apl',`${fl(l)}${esc(langName(l))}<small style="opacity:.65">${note}</small>`,aL===l,`data-l="${l}"`)}).join('')}
     if(!movieSplit&&!P.ep&&P.vers.length>1){const multi=uniq(P.vers.map(v=>v.lang)).length>1;const ord=P.vers.map((v,i)=>[v,i]).sort((a,b)=>prefIdx(a[0].lang)-prefIdx(b[0].lang)||QR[b[0].q]-QR[a[0].q]);
       h+=`<h4>${multi?'Qualität & Sprachfassung':'Qualität'}</h4><p class="aph">Dein Internet: ${esc(BW.label())}. „Automatisch“ wählt die beste passende Qualität und schaltet bei Ruckeln runter.</p>`+ord.map(([v,i])=>row('v'+i,'apver',`${multi?(CBY[v.lang]&&CBY[v.lang].flag?CBY[v.lang].flag+' ':'')+esc(langName(v.lang))+' · ':''}${esc(qName(v.q))}${ord.filter(([x])=>x.lang===v.lang&&x.q===v.q).length>1?' <small style="opacity:.6">'+esc(String(v.name||'').slice(0,40))+'</small>':''}`,i===P.ver,`data-i="${i}"`)).join('')}
@@ -1813,16 +1851,18 @@ const P={
       h+=row('m-1','apmix','Aus – Ton der Bild-Fassung',P.mix<0,'data-l=""')+langsOf(it).filter(l=>l!==vl&&(!have.has(C2L[l])||(P.mix>-1&&P.vers[P.mix].lang===l))).map(l=>{const fl=CBY[l]&&CBY[l].flag?CBY[l].flag+' ':'';
         if(nat&&!mixDirect()&&!prepared(it,l))return row('p'+l,'apprep',`${fl}${esc(langName(l))}-Ton vorbereiten (Film wird kurz beendet)`,false,`data-l="${l}"`);
         return row('m'+l,'apmix',`${fl}${esc(langName(l))}-Ton zu diesem Bild${prepared(it,l)?' · gespeichert':''}`,P.mix>-1&&P.vers[P.mix].lang===l,`data-l="${l}"`)}).join('')}
+    // Audio-Synchronisation: weit oben, damit man sie schnell findet
+    if(nat||P.engine==='demo'){const ms=P.sync();h+=`<h4>Ton verschieben (Synchronisation)</h4><p class="aph">Ton kommt zu früh? → „später“ (+). Ton hinkt hinterher? → „früher“ (−). Wird für diesen Titel gemerkt.</p>
+      <div class="apsync"><button class="btn sm f" data-act="apsync" data-k="y1" data-d="-1000">−1 s</button><button class="btn sm f" data-act="apsync" data-k="y2" data-d="-500">−0,5</button><b id="apsync">${(ms>0?'+':'')+(ms/1000).toFixed(2).replace('.',',')} s</b><button class="btn sm f" data-act="apsync" data-k="y3" data-d="500">+0,5</button><button class="btn sm f" data-act="apsync" data-k="y4" data-d="1000">+1 s</button></div>
+      <div class="apsync"><button class="btn sm f" data-act="apsync" data-k="y5" data-d="-100">−0,1</button><button class="btn sm f" data-act="apsync" data-k="y6" data-d="100">+0,1</button><button class="btn sm f" data-act="apsync" data-k="y0" data-d="0">Zurücksetzen</button></div>
+      <p class="aph" style="margin-top:.2rem">− = Ton früher · + = Ton später · bis ±10 s</p>`}
     h+='<h4>Bildformat</h4>'+ASP.map(([m,l])=>row('ar'+m,'apasp',l,aspOf(it)===m,`data-m="${m}"`)).join('');
     let au=[],tx=[];if(nat){const t=P.ntracks();au=dedupeAudio(t.audio||[]);tx=t.text||[]}else{au=P.tracks().map(t=>({g:t.i,t:0,label:t.name,sel:t.i===P.curTrack()}));if(P.hls&&P.hls.subtitleTracks)tx=P.hls.subtitleTracks.map((t,i)=>({g:i,t:0,label:t.name||t.lang||('Untertitel '+(i+1)),sel:P.hls.subtitleTrack===i}))}
     h+='<h4>Tonspur</h4>'+(au.length?au.map(a=>row('a'+a.g+'_'+a.t,'apaud',esc(a.label)+(P.mix>-1?(a.src?' · Ton-Fassung':' · Bild-Fassung'):''),a.sel,`data-g="${a.g}" data-t="${a.t}"`)).join(''):'<p class="aph">Dieser Stream hat nur eine Tonspur. Andere Sprachen findest du oben unter „Qualität &amp; Sprachfassung“.</p>');
     {const off=!tx.some(t=>t.sel);h+='<h4>Untertitel</h4>'+row('s-1','apsub','Aus',off,'data-g="-1" data-t="0"')+tx.map(t=>row('s'+t.g+'_'+t.t,'apsub',esc(t.label)+(P.subFile&&nlang(t.lang)===C2L[P.subFile.lang]?' · online geladen':''),t.sel,`data-g="${t.g}" data-t="${t.t}" data-l="${esc(t.lang||'')}"`)).join('');
       if(it.type!=='live'&&nat){h+='<p class="aph" style="margin-top:.6rem">Weitere Untertitel online suchen:</p>'+SUBS.langs().map(l=>row('so'+l,'apsubo',`${fl(l)}${esc(langName(l))} suchen`,false,`data-l="${l}"`)).join('');
         if(P.subRes)h+=(P.subRes.length?`<p class="aph">${esc(langName(P.subResL))} – passend zu deiner Fassung zuerst:</p>`+P.subRes.map((r,i)=>row('sf'+i,'apsubf',`${esc(r.name.slice(0,48)||'Untertitel '+(i+1))} <small style="opacity:.6">· ${nf(r.dl)}×</small>`,false,`data-i="${i}"`)).join(''):`<p class="aph">Keine ${esc(langName(P.subResL))}-Untertitel gefunden.</p>`)}}
-    if(nat&&it.type!=='live'||nat){const ms=P.sync();h+=`<h4>Audio-Synchronisation</h4><p class="aph">Ton läuft dem Bild voraus? → „später“. Ton hinkt hinterher? → „früher“. Wird für diesen Titel gemerkt.</p>
-      <div class="apsync"><button class="btn sm f" data-act="apsync" data-k="y1" data-d="-500">−0,5</button><button class="btn sm f" data-act="apsync" data-k="y2" data-d="-100">−0,1</button><b id="apsync">${(ms>0?'+':'')+(ms/1000).toFixed(2).replace('.',',')} s</b><button class="btn sm f" data-act="apsync" data-k="y3" data-d="100">+0,1</button><button class="btn sm f" data-act="apsync" data-k="y4" data-d="500">+0,5</button></div>
-      <div class="apsync"><span class="aph" style="margin:0">− = Ton früher · + = Ton später</span><button class="btn sm f" data-act="apsync" data-k="y0" data-d="0">Zurücksetzen</button></div>`}
-    else h+='<h4>Audio-Synchronisation</h4><p class="aph">Nur im Fire-TV-Player verfügbar.</p>';
+    h+='<h4>Untertitel-Aussehen</h4>'+subPrev('sm')+SUBST.map(([k,lab])=>row('st'+k,'apsty',`${lab}: <b>${esc(subOpt(k)[1])}</b> <small style="opacity:.6">› ändern</small>`,false,`data-s="${k}"`)).join('');
     h+='<button class="btn sm f" data-act="apclose" data-k="x" style="margin-top:1rem">Schließen</button>';
     d.innerHTML=h;if(!P.el)return;P.el.appendChild(d);const f=(fa&&$(`[data-k="${fa}"]`,d))||(focus==='q'&&$(`[data-k="v${P.ver}"]`,d))||$('.apo.on',d)||$('.f',d);f&&f.focus({preventScroll:true})},
   err(){if(!P.el)return;$$('.perr',P.el).forEach(x=>x.remove());const d=document.createElement('div');d.className='perr';d.innerHTML='<div><b>Stream lässt sich nicht abspielen.</b><br>Der Server antwortet nicht oder das Format wird hier nicht unterstützt. Auf dem Fire TV klappt es meist; sonst eine andere Qualität wählen.</div>';P.el.appendChild(d)},
@@ -1832,13 +1872,20 @@ const P={
     const it=P.it,l=P.subWant;SUBS.search(it,P.ep,l).then(r=>{if(!P.el||P.it!==it)return;if(!r.length){toast('Keine '+langName(l)+'-Untertitel gefunden');return}return SUBS.dl(r[0]).then(path=>{if(P.el&&P.it===it){P.applySub(path,l);toast(langName(l)+'-Untertitel geladen')}})}).catch(()=>{})},
   applySub(path,l){P.subFile={path,lang:l};P.subWant=l;if(P.engine!=='nat'||!P.cur)return;P.startPos=P.pos;P.load(P.cur.url,P.cur.alt)},
   // Ruckelt es mehrmals kurz hintereinander, automatisch eine Qualitätsstufe runter (nur bei „Automatisch“)
-  rebuf(b){const now=Date.now();if(b&&!P._wb&&now-P.start>12000){P._bt=(P._bt||[]).filter(t=>now-t<120000);P._bt.push(now);
+  rebuf(b){const now=Date.now();if(b&&!P._wb&&now-P.start>12000&&!(P.skUntil&&now<P.skUntil)){P._bt=(P._bt||[]).filter(t=>now-t<120000);P._bt.push(now);
       if(P._bt.length>=3&&PS('quality')==='auto'&&P.mix<0&&!P.ep){const v=P.vers[P.ver];const lo=P.vers.map((x,i)=>[x,i]).filter(([x])=>x.lang===v.lang&&QR[x.q]<QR[v.q]).sort((a,b)=>QR[b[0].q]-QR[a[0].q])[0];
         if(lo){P._bt=[];BW.note([1,2.5,5,10,25,60][QR[lo[0].q]]/.8,'Ruckeln');toast('Internet gerade langsam – wechsle auf '+qName(lo[0].q));P.switchTo(lo[1],true)}}}
     P._wb=b},
   wake(){if(!P.el)return;P.last=Date.now();P.el.classList.remove('idle')},
   pp(){P.playing=!P.playing;if(P.engine==='nat')NFK.vCmd(P.playing?'play':'pause',0);if(P.v)P.playing?P.v.play():P.v.pause();P.ui()},
-  seek(d){if(P.it.type==='live')return;d=d<0?-PS('seek'):PS('seek')*(d>10?3:1);P.pos=clamp(P.pos+d*(P.demo?6:1),0,P.dur-1);if(P.v)P.v.currentTime=P.pos;if(P.engine==='nat')NFK.vCmd('seekTo',P.pos*1000);P.ui()},
+  // Spulen: Tastendrücke sammeln (Ziel wächst), erst nach kurzer Pause wirklich springen – kein Hin-und-Her mehr.
+  // Gedrückt halten / schnell drücken = immer größere Schritte (bis 4 Min. pro Druck).
+  seek(d){if(P.it.type==='live'||!P.dur)return;const now=Date.now();const same=P.skDir===Math.sign(d)&&now-(P.skLast||0)<700;P.skN=same?(P.skN||0)+1:0;P.skDir=Math.sign(d);P.skLast=now;
+    const base=d<0?-PS('seek'):PS('seek')*(d>10?3:1);const mul=P.skN<4?1:P.skN<8?2:P.skN<14?4:P.skN<22?8:Math.min(16,240/Math.abs(base));
+    const from=P.skT!=null?P.skT:P.pos;if(P.skT==null)P.skFrom=P.pos;const to=clamp(from+base*mul*(P.demo?6:1),0,Math.max(0,P.dur-3));P.skT=to;P.pos=to;P.skDone=0;
+    P.last=now;P.el&&P.el.classList.remove('idle');P.skBub();P.ui();clearTimeout(P.skTm);P.skTm=setTimeout(P.skGo,P.engine==='nat'?650:350)},
+  skGo(){if(P.skT==null||!P.el)return;const t=P.skT;P.skDone=1;P.skUntil=Date.now()+8000;if(P.v)P.v.currentTime=t;if(P.engine==='nat')NFK.vCmd('seekTo',t*1000);if(P.engine!=='nat')P.skT=null;setTimeout(()=>{const x=$('.skb',P.el);x&&x.classList.remove('on')},900)},
+  skBub(){if(!P.el)return;let x=$('.skb',P.el);if(!x){x=document.createElement('div');x.className='skb';P.el.appendChild(x)}const df=P.skT-(P.skFrom||0);x.innerHTML=`<b>${fmtT(P.skT)}</b><span>${df<0?'−':'+'}${fmtT(Math.abs(df))}</span>`;x.classList.add('on')},
   save(){const it=P.it;if(!it||it.type==='live'||!P.dur)return;const done=P.pos/P.dur>.92;
     if(P.ep){const S=it._seasons;const p0=getProg();p0['e:'+P.ep.id]=P.pos/P.dur;LS.set('nfk.pr.'+APP.pid,p0);const nx=P.nextEp();
       if(done&&nx)setProg(it.id,{p:0,d:(nx.dur||45)*60,t:Date.now(),ep:{s:+nx._s,n:nx.n,id:nx.id}});else setProg(it.id,{p:P.pos,d:P.dur,t:Date.now(),done:done&&!nx,ep:{s:+P.ep._s,n:P.ep.n,id:P.ep.id}})}
@@ -1847,7 +1894,7 @@ const P={
   ended(){P.save();const nx=PS('autonext')?P.nextEp():null;if(nx){toast('Nächste Folge startet');P.open(P.it,{ep:nx})}else P.close()},
   logEnd(){const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}},
   after(it){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?`#main [data-id="${it.id}"]`:null)},
-  close(silent){if(!P.el)return;P.save();if(P.bwMax>2e6&&Date.now()-P.start>30000)BW.note(P.bwMax/1e6,'Wiedergabe');P.bwMax=0;P._bt=[];clearInterval(P.tick);clearInterval(P.saveT);const pip=!silent&&P.engine==='nat'&&P.it&&P.it.type==='live'&&APP.view==='live'&&!APP.modal&&PS('livePip')!==0&&!!(window.NFK&&NFK.vMini);if(P.engine==='nat'){if(pip)APP.pip={it:P.it};else NFK.vCmd('stop',0);document.documentElement.classList.remove('vidmode')}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
+  close(silent){if(!P.el)return;clearTimeout(P.skTm);P.skT=null;P.skN=0;P.save();if(P.bwMax>2e6&&Date.now()-P.start>30000)BW.note(P.bwMax/1e6,'Wiedergabe');P.bwMax=0;P._bt=[];clearInterval(P.tick);clearInterval(P.saveT);const pip=!silent&&P.engine==='nat'&&P.it&&P.it.type==='live'&&APP.view==='live'&&!APP.modal&&PS('livePip')!==0&&!!(window.NFK&&NFK.vMini);if(P.engine==='nat'){if(pip)APP.pip={it:P.it};else NFK.vCmd('stop',0);document.documentElement.classList.remove('vidmode')}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
     const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}
     P.el.remove();P.el=null;P.v=null;P.triedAlt=0;if(UPD.info&&!UPD.shownAfter){UPD.shownAfter=1;setTimeout(()=>UPD.show(),800)}
     if(!silent){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?(APP.pip?'#pipbox':`#main [data-id="${it.id}"]`):null)}},
@@ -2095,7 +2142,7 @@ document.addEventListener('click',e=>{
    case'ver':{const qs=P.quals();const j=qs.indexOf(P.vers[P.ver]);P.switchTo(P.vers.indexOf(qs[(j+1)%qs.length]));break}
    case'plang':{const ls=P.langs();const j=ls.indexOf(P.vers[P.ver].lang);const nl=ls[(j+1)%ls.length];P.switchTo(P.vers.findIndex(v=>v.lang===nl));break}
    case'atrack':{const tr=P.tracks();if(!tr.length)break;const j=tr.findIndex(t=>t.i===P.curTrack());const n=tr[(j+1)%tr.length];P.setTrack(n.i);b.textContent='Tonspur: '+n.name;break}
-   case'ddet':{const k=b.dataset.k;$$('.ddm').forEach(x=>x.remove());let opts=[];const mov=it.type==='movie';
+   case'ddet':{const k=b.dataset.k;$$('.ddm').forEach(x=>x.remove());let opts=[];const mov=it.type==='movie'||it.type==='series';
      if(k==='l'){const cur=mov?playPlan(it).l:curVer(it).lang;opts=langsOf(it).map(l=>`<button class="f${l===cur?' on':''}" data-act="dlang" data-id="${it.id}" data-l="${l}"><span>${fl(l)}${esc(langName(l))}</span><small>${esc(qName(bestQ(it,l)))}</small></button>`)}
      else if(k==='q'){if(mov){const pl=playPlan(it);const own=new Set(it.versions.filter(v=>v.lang===pl.l).map(v=>v.q||'-'));const qs=uniq(it.versions.map(v=>v.q||'-')).sort((a,c)=>QR[c==='-'?'':c]-QR[a==='-'?'':a]);
          opts=[`<button class="f${!pl.q?' on':''}" data-act="dq" data-id="${it.id}" data-q="auto"><span>Automatisch</span><small>${esc(BW.label())}</small></button>`,...qs.map(q=>{const src=own.has(q)?null:it.versions.filter(v=>(v.q||'-')===q).sort((a,c)=>prefIdx(a.lang)-prefIdx(c.lang))[0];return`<button class="f${pl.q===q?' on':''}" data-act="dq" data-id="${it.id}" data-q="${q}"><span>${esc(qName(q==='-'?'':q))}</span><small>${src?'Bild aus '+fl(src.lang)+esc(langName(src.lang))+'-Fassung':''}</small></button>`})]}
@@ -2104,7 +2151,7 @@ document.addEventListener('click',e=>{
      const mm=document.createElement('div');mm.className='ddm';mm.style.setProperty('--cols',1);mm._btn=b;mm.innerHTML=opts.join('');document.body.appendChild(mm);
      const r=b.getBoundingClientRect();mm.style.left=Math.max(8,Math.min(r.left,innerWidth-mm.offsetWidth-12))+'px';{const below=innerHeight-r.bottom-14,above=r.top-14;if(below<Math.min(mm.offsetHeight,200)&&above>below){mm.style.bottom=(innerHeight-r.top+6)+'px';mm.style.maxHeight=above+'px'}else{mm.style.top=(r.bottom+6)+'px';mm.style.maxHeight=below+'px'}}
      ($('.on',mm)||$('.f',mm)).focus({preventScroll:true});break}
-   case'dlang':{if(it.type==='movie'){saveSel(it,b.dataset.l,selOf(it).q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'l')}toast('Sprache: '+langName(b.dataset.l));break}setVsel(it,sortedVersions(it).find(v=>v.lang===b.dataset.l),true);it._sk=null;const m=APP.modal&&APP.modal.el;if(!m)break;$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'l');if(it.type==='series'){$('#eps',m).innerHTML='<h4>Folgen</h4><div class="spin"></div>';loadSeasons(it).then(()=>renderEps(it,m))}toast('Sprache: '+langName(b.dataset.l));break}
+   case'dlang':{if(it.type==='movie'||it.type==='series'){saveSel(it,b.dataset.l,selOf(it).q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'l');epsRefresh(it,m)}toast('Sprache: '+langName(b.dataset.l));break}setVsel(it,sortedVersions(it).find(v=>v.lang===b.dataset.l),true);it._sk=null;const m=APP.modal&&APP.modal.el;if(!m)break;$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'l');if(it.type==='series'){$('#eps',m).innerHTML='<h4>Folgen</h4><div class="spin"></div>';loadSeasons(it).then(()=>renderEps(it,m))}toast('Sprache: '+langName(b.dataset.l));break}
    case'lup':{const p=prof(),k=b.dataset.k,i=p.countries.indexOf(k);if(i>0){p.countries.splice(i,1);p.countries.splice(i-1,0,k);saveProfiles();APP._pool=null}renderApp(`[data-act="lup"][data-k="${k}"]`);break}
    case'profiles':APP.hist=[];vProfiles();break;
    case'psel':APP.pid=id;LS.set('nfk.pid',id);APP.alerted=null;APP.view='home';APP.args={};APP.hist=[];renderApp();startTeamWatch();break;
@@ -2129,7 +2176,9 @@ document.addEventListener('click',e=>{
    case'updcheck':UPD.check(true).then(()=>{if(APP.view==='settings'&&!$('.uplert'))renderApp('[data-act="updcheck"]')});break;
    case'lall':APP.args={all:b.dataset.v==='1'};renderApp(`[data-act="lall"][data-v="${b.dataset.v}"]`);break;
    case'sec':APP.args={sec:b.dataset.s};renderApp(`.cat[data-s="${b.dataset.s}"]`);break;
-   case'set':{let v=b.dataset.v;const k=b.dataset.k;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;setPS(k,v);if(k==='akeep')syncKeep();renderApp(`[data-act="set"][data-k="${k}"]`);toast('Gespeichert');break}
+   case'subreset':{SUBST.forEach(([k])=>setPS(k,SET_DEF[k]));subApply();renderApp('[data-act="subreset"]');toast('Untertitel: Standard');break}
+   case'apsty':{const k=b.dataset.s;const e=SUBST.find(x=>x[0]===k);const o=e[2];const i=o.findIndex(x=>String(x[0])===String(subOpt(k)[0]));setPS(k,o[(i+1)%o.length][0]);subApply();P.panel(true);break}
+   case'set':{let v=b.dataset.v;const k=b.dataset.k;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;setPS(k,v);if(k==='akeep')syncKeep();if(/^sub/.test(k))subApply();renderApp(`[data-act="set"][data-k="${k}"]`);toast('Gespeichert');break}
    case'setrow':{const r=Object.assign({},PS('rows'));r[b.dataset.k]=r[b.dataset.k]===0?1:0;setPS('rows',r);renderApp(`[data-act="setrow"][data-k="${b.dataset.k}"]`);break}
    case'hidegen':{const g=b.dataset.g;const h=PS('hideGenres');setPS('hideGenres',h.includes(g)?h.filter(x=>x!==g):[...h,g]);renderApp(`[data-act="hidegen"][data-g="${CSS.escape(g)}"]`);break}
    case'pother':{const p=prof();p.other=!p.other;saveProfiles();APP._pool=null;renderApp('[data-act="pother"]');break}
@@ -2160,17 +2209,18 @@ document.addEventListener('click',e=>{
    // Bildqualität wählen: Ton-Sprache bleibt
    case'apq':{const it=P.it,q=b.dataset.q==='-'?'':b.dataset.q;const aL=P.mix>-1?P.vers[P.mix].lang:P.vers[P.ver].lang;
      const own=P.vers.find(v=>(v.q||'')===q&&v.lang===aL);const pic=own||P.vers.filter(v=>(v.q||'')===q).sort((a,c)=>prefIdx(a.lang)-prefIdx(c.lang))[0];if(!pic)break;
-     saveSel(it,aL,q||'-');if(!own&&!(P.engine==='demo'||mixDirect()||prepared(it,aL))){P.close();setTimeout(()=>askMix(it,playPlan(it)),300);break}
-     P.ver=P.vers.indexOf(pic);P.mix=own?-1:P.vers.indexOf(audioVer(it,aL));P.startPos=P.pos;P.it._vsel=pic;if(P.engine==='nat')P.load(pic.src.url,pic.src.alt);
-     {const qb=$('#qb');if(qb)qb.innerHTML=I.hd+esc(qName(pic.q));const t=$('.pt p',P.el);if(t)t.textContent=P.mix>-1?mixLabel():''}toast(qName(pic.q)+'-Bild · '+langName(aL)+'-Ton');setTimeout(()=>P.panel(true),600);break}
+     if(!own&&P.ep&&!(P.engine==='demo'||mixDirect())){toast('Diese Bildqualität gibt es nur in einer anderen Sprache');break}saveSel(it,aL,q||'-');if(!own&&!(P.engine==='demo'||mixDirect()||prepared(it,aL))){P.close();setTimeout(()=>askMix(it,playPlan(it)),300);break}
+     P.ver=P.vers.indexOf(pic);P.mix=own?-1:P.vers.indexOf(audioVer(it,aL));P.startPos=P.pos;P.it._vsel=pic;P.reload();
+     {const qb=$('#qb');if(qb)qb.innerHTML=I.hd+esc(qName(pic.q));const t=$('.pt p',P.el);if(t&&!P.ep)t.textContent=P.mix>-1?mixLabel():''}toast(qName(pic.q)+'-Bild · '+langName(aL)+'-Ton');setTimeout(()=>P.panel(true),600);break}
    // Sprache wählen: Bildqualität bleibt
    case'apl':{const it=P.it,l=b.dataset.l;const pic=P.vers[P.ver];const q=pic.q||'';saveSel(it,l,q||'-');
      const direct=P.vers.find(v=>v.lang===l&&(v.q||'')===q);
-     if(direct){P.ver=P.vers.indexOf(direct);P.mix=-1;P.it._vsel=direct;P.startPos=P.pos;if(P.engine==='nat')P.load(direct.src.url,direct.src.alt)}
-     else if(pic.lang===l){P.mix=-1;P.startPos=P.pos;if(P.engine==='nat')P.load(pic.src.url,pic.src.alt)}
-     else if(P.engine==='demo'||mixDirect()||prepared(it,l)){P.mix=P.vers.indexOf(audioVer(it,l));P.startPos=P.pos;if(P.engine==='nat')P.load(pic.src.url,pic.src.alt)}
+     if(direct){P.ver=P.vers.indexOf(direct);P.mix=-1;P.it._vsel=direct;P.reload()}
+     else if(pic.lang===l){P.mix=-1;P.reload()}
+     else if(P.engine==='demo'||mixDirect()||(!P.ep&&prepared(it,l))){P.mix=P.vers.indexOf(audioVer(it,l));P.reload()}
+     else if(P.ep){const own=it.versions.filter(v=>v.lang===l).sort((a,c)=>QR[c.q]-QR[a.q])[0];saveSel(it,l,'');P.ver=P.vers.indexOf(own);P.mix=-1;P.reload()}
      else{P.close();setTimeout(()=>askMix(it,playPlan(it)),300);break}
-     {const t=$('.pt p',P.el);if(t)t.textContent=P.mix>-1?mixLabel():''}toast(qName((P.vers[P.ver]||{}).q)+'-Bild · '+langName(l)+'-Ton');setTimeout(()=>P.panel(true),600);break}
+     {const t=$('.pt p',P.el);if(t&&!P.ep)t.textContent=P.mix>-1?mixLabel():''}toast(qName((P.vers[P.ver]||{}).q)+'-Bild · '+langName(l)+'-Ton');setTimeout(()=>P.panel(true),600);break}
    case'apmix':{const l=b.dataset.l;const it=P.it;if(!l){P.mix=-1;it._mixA=it._mixV=null}else{const a=audioVer(it,l);P.mix=P.vers.indexOf(a);it._mixA=a;it._mixV=P.vers[P.ver]}
      const t=$('.pt p',P.el);if(t)t.textContent=P.mix>-1?mixLabel():'';if(P.engine==='nat'){P.startPos=P.pos;const v=P.vers[P.ver];P.load(v.src.url,v.src.alt)}toast(P.mix>-1?mixLabel():'Ton der Bild-Fassung');setTimeout(()=>P.panel(true),600);break}
    case'apprep':{const it=P.it,l=b.dataset.l;P.close();setTimeout(()=>startPrep(it,l),300);break}
@@ -2195,7 +2245,7 @@ document.addEventListener('click',e=>{
    case'bgnow':toast('Playlist wird im Hintergrund aktualisiert …');bgRefresh().then(()=>{CACHE.t=Date.now();toast('Playlist ist aktuell')});break;
    case'hero':showHero(+b.dataset.i,'d'+b.dataset.i);break;
       case'dmix':{const cv=curVer(it);if(it._mixA&&it._mixA.lang===cv.lang){it._mixA=it._mixV=null;toast('Normale Fassung')}else{it._mixV=bestPic(it);it._mixA=audioVer(it,cv.lang);toast((it._mixV.q||'')+'-Bild + '+langName(cv.lang)+'-Ton')}const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);$('[data-act="dmix"]',m).focus()}break}
-   case'dq':if(it.type==='movie'){const q=b.dataset.q==='auto'?'':b.dataset.q;saveSel(it,selOf(it).l,q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'q')}const pl=playPlan(it);toast(q?qName(pl.pic.q)+'-Bild + '+langName(pl.l)+'-Ton':'Qualität automatisch');break}
+   case'dq':if(it.type==='movie'||it.type==='series'){const q=b.dataset.q==='auto'?'':b.dataset.q;saveSel(it,selOf(it).l,q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'q');epsRefresh(it,m)}const pl=playPlan(it);toast(q?qName(pl.pic.q)+'-Bild + '+langName(pl.l)+'-Ton':'Qualität automatisch');break}
    {const cv=curVer(it);const q=b.dataset.q==='-'?'':b.dataset.q;const l=b.dataset.l||cv.lang;if(q==='auto')setVsel(it,cv,true);else setVsel(it,sortedVersions(it).find(v=>v.lang===l&&(v.q||'')===q)||cv);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'q')}toast(b.dataset.q==='auto'?'Qualität: automatisch nach Internet-Tempo':'Qualität: '+qName(b.dataset.q==='-'?'':b.dataset.q));break}
    case'ax':$$('.talert').forEach(popClose);break;
    case'alt':{const a=P.o.alts;const n=a[(a.indexOf(P.it)+1)%a.length];P.open(n,{alts:a});toast(n.title+' · '+langName(n.country)+(n.q?' · '+n.q:''));break}

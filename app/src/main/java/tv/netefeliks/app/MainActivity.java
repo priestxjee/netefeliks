@@ -44,7 +44,7 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 12;
+    static final int NATIVE_VERSION = 13;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
@@ -258,6 +258,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface public String vTracks() { return video.tracks(); }
         @JavascriptInterface public void vSelect(String type, int g, int t) { video.select(type, g, t); }
         @JavascriptInterface public void vMini(String json) { video.mini(json); }
+        @JavascriptInterface public void vSubStyle(String json) { video.subStyle(json); }
 
         // ---------- Ton vorbereiten (für Abos mit nur einer Verbindung) ----------
         @JavascriptInterface public void aPrep(String key, String url, String langs) { prep.start(key, url, langs); }

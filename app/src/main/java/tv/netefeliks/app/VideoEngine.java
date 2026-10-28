@@ -39,6 +39,9 @@ import androidx.media3.exoplayer.source.MergingMediaSource;
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
 import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.SubtitleView;
+import androidx.media3.ui.CaptionStyleCompat;
+import android.graphics.Color;
+import android.graphics.Typeface;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -182,6 +185,8 @@ class VideoEngine {
             applyAspect();
             float size = (float) c.optDouble("subSize", 0.0533);
             subs.setFractionalTextSize(size);
+            JSONObject st = c.optJSONObject("subStyle");
+            if (st != null) applySubStyle(st);
             subs.setCues(new ArrayList<androidx.media3.common.text.Cue>());
             surface.setVisibility(View.VISIBLE);
             subs.setVisibility(View.VISIBLE);
@@ -255,6 +260,35 @@ class VideoEngine {
         });
     }
 
+    /** Untertitel-Aussehen vom Nutzer: Farbe, Hintergrund, Umrandung/Schatten, Schrift, Größe, Position. */
+    void subStyle(final String json) {
+        ui.post(new Runnable() {
+            @Override public void run() {
+                try { applySubStyle(new JSONObject(json)); } catch (Exception e) { }
+            }
+        });
+    }
+
+    private static int col(JSONObject s, String k, int d) {
+        try { String v = s.optString(k, ""); return v.length() > 0 ? Color.parseColor(v) : d; } catch (Exception e) { return d; }
+    }
+
+    private void applySubStyle(JSONObject s) {
+        try {
+            int fg = col(s, "fg", Color.WHITE);
+            int bg = col(s, "bg", Color.TRANSPARENT);
+            int win = col(s, "win", Color.TRANSPARENT);
+            int edge = s.optInt("edge", CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW);
+            int edgeColor = col(s, "edgeColor", Color.BLACK);
+            Typeface tf = Typeface.create(s.optString("font", "sans-serif"), s.optBoolean("bold", false) ? Typeface.BOLD : Typeface.NORMAL);
+            subs.setApplyEmbeddedStyles(false);
+            subs.setApplyEmbeddedFontSizes(false);
+            subs.setStyle(new CaptionStyleCompat(fg, bg, win, edge, edgeColor, tf));
+            subs.setFractionalTextSize((float) s.optDouble("size", 0.0533));
+            subs.setBottomPaddingFraction((float) s.optDouble("pos", 0.08));
+        } catch (Exception e) { }
+    }
+
     void cmd(final String c, final double arg) {
         ui.post(new Runnable() {
             @Override public void run() {
@@ -320,7 +354,7 @@ class VideoEngine {
     String tracks() { return tracks; }
 
     private void setDelayMain(long ms) {
-        delayMs = Math.max(-5000, Math.min(5000, ms));
+        delayMs = Math.max(-10000, Math.min(10000, ms));
         if (audio != null) audio.offsetUs = delayMs * 1000;
     }
 

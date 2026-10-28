@@ -1,3 +1,8 @@
+Serien wie Filme: Sprache (Ton), Bildqualität und Untertitel getrennt wählbar – z. B. 4K-Bild aus der deutschen Fassung mit persischem Ton, Folge für Folge
+Untertitel-Aussehen: Größe, Farbe, Hintergrund, 6 Schriftarten, Fett und Position – unter Einstellungen → Sprache und direkt im Player
+Spulen repariert: kein Hin-und-Her mehr; mehrmals drücken oder gedrückt halten springt immer weiter (bis mehrere Minuten pro Druck), mit Zeitanzeige
+Ton verschieben weiter oben im Menü „Sprache & Audio“: in 1 s, 0,5 s und 0,1 s Schritten, bis ±10 Sekunden
+Trailer: Titel, bei denen die Suche einmal fehlschlug, werden wieder neu gesucht (vorher für immer gesperrt)
 Wichtig: Neue Oberflächen werden jetzt direkt geladen – vorher blieb auf manchen Fire TVs die alte Ansicht stehen
 Film-Details aufgeräumt: Sprache, Bild und Untertitel als eine Zeile mit Auswahlmenüs; weniger Flaggen und Kategorien; insgesamt kleinere Schrift
 Zurück-Taste im Film blendet zuerst die Steuerleiste aus – erst beim zweiten Drücken verlässt du den Film
