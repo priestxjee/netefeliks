@@ -189,6 +189,7 @@ label.lb{display:block;font-size:.8rem;font-weight:700;letter-spacing:.08em;text
 .panel{background:rgba(22,18,18,.92);border:1px solid var(--line);border-radius:.7rem;padding:1.8rem;display:flex;flex-direction:column;gap:1rem;box-shadow:0 30px 80px rgba(0,0,0,.6);min-width:0}
 .tabs{display:flex;gap:.4rem;background:#0f0c0c;padding:.3rem;border-radius:.5rem}
 .tabs .chip{flex:1;border:0;border-radius:.35rem;text-align:center}
+.plist{display:flex;flex-direction:column;gap:.45rem;align-items:flex-start}.prow{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;font-size:.9rem}
 .hint{font-size:.85rem;color:var(--mute);line-height:1.5;margin:0}
 .err{background:rgba(227,38,45,.14);border:1px solid rgba(227,38,45,.5);color:#ffd3d4;border-radius:.4rem;padding:.75rem .9rem;font-size:.9rem;line-height:1.45}
 .or{display:flex;align-items:center;gap:.8rem;color:var(--dim);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
@@ -359,6 +360,9 @@ html.vidmode #app,html.vidmode .modal{visibility:hidden}
 .updbox{border:1px solid rgba(242,194,48,.5);background:rgba(242,194,48,.06);border-radius:.6rem;padding:1rem 1.1rem;margin:.6rem 0 1rem;display:flex;flex-direction:column;gap:.35rem}
 .updbox p{margin:.2rem 0;white-space:pre-line;color:#ddd5d2;font-size:.9rem;line-height:1.5}
 .updbox small,.updbox .ust{color:var(--mute);font-size:.85rem}
+.prepill{position:fixed;left:max(calc(var(--rail) + 1.2rem),env(safe-area-inset-left,0px));bottom:max(1.2rem,env(safe-area-inset-bottom,0px));z-index:90;background:rgba(25,21,21,.95);border:1px solid var(--line);border-radius:.55rem;padding:.6rem .8rem .8rem;display:flex;flex-direction:column;gap:.15rem;width:min(19rem,calc(100vw - 32px));font-size:.82rem;overflow:hidden}
+.prepill span{color:var(--mute)}
+.prepill i{position:absolute;left:0;bottom:0;height:.2rem;background:var(--red);transition:width .4s}
 .perr{position:absolute;inset:0;display:grid;place-items:center;z-index:4;text-align:center;padding:2rem}
 .perr div{max-width:34rem;background:rgba(0,0,0,.75);padding:1.6rem;border-radius:.6rem;border:1px solid var(--line);line-height:1.5}
 
@@ -808,7 +812,7 @@ function pool(type){
   return type==='vod'?[...APP._pool.movie,...APP._pool.series]:APP._pool[type];
 }
 // ---------- Profil-Einstellungen ----------
-const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'native',autonext:1,seek:10,subs:'off',subSize:'m',mix:'ask',audio:'pref',
+const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'native',autonext:1,seek:10,subs:'off',subSize:'m',mix:'ask',conns:'auto',akeep:2,audio:'pref',
   hero:1,heroSec:10,trailer:1,trailerSound:0,poster:'m',motion:1,teamAlert:1,liveNums:1,liveStart:'__all',liveOrder:[],livePins:[],liveFav:[],liveOpen:{},
   rows:{cont:1,top:1,because:1,top10:1,sport:1,recent:1,new:1,pop:1,genre:1,list:1}};
 const PS=k=>{const p=prof();const v=p&&p.set?p.set[k]:undefined;return v===undefined?SET_DEF[k]:v};
@@ -1272,7 +1276,13 @@ VIEWS.settings=(el,a)=>{
   else if(sec==='wiedergabe')body=`<h3>Wiedergabe</h3>
     ${optRow('Player','Der Fire-TV-Player kann 4K/HEVC, MKV, Tonspuren und Untertitel.',chs('player',PS('player'),[['native','Fire-TV-Player (empfohlen)'],['web','Einfacher Player']]))}
     ${optRow('Bevorzugte Qualität','Bei langsamem Internet eine niedrigere Stufe wählen.',chs('quality',PS('quality'),[['auto','Beste verfügbare (bis 4K)'],['fhd','Höchstens Full HD'],['hd','Datensparen (HD)']]))}
-    ${optRow('Bild & Ton kombinieren','Bestes Bild einer Fassung + Ton einer anderen Sprache. Braucht 2 gleichzeitige Verbindungen im Abo; bei abweichenden Schnittfassungen mit „Audio-Synchronisation“ nachjustieren.',chs('mix',PS('mix'),[['off','Nie'],['ask','Wenn ich es wähle'],['auto','Automatisch: bestes Bild + Wunschsprache']]))}
+    ${optRow('Bild & Ton kombinieren','Bestes Bild einer Fassung + Ton einer anderen Sprache. Bei nur 1 Verbindung im Abo wird der Ton vorher gespeichert. Weicht die Schnittfassung leicht ab, mit „Audio-Synchronisation“ nachjustieren.',chs('mix',PS('mix'),[['off','Nie'],['ask','Wenn ich es wähle'],['auto','Automatisch: bestes Bild + Wunschsprache']]))}
+    ${optRow('Gleichzeitige Verbindungen im Abo',`Bei 1 Verbindung wird der fremde Ton vorher auf dem Fire TV gespeichert.${APP.cfg&&APP.cfg.maxc?' Laut Server: '+esc(APP.cfg.maxc)+'.':''}`,chs('conns',PS('conns'),[['auto','Automatisch'],['1','1 Verbindung'],['2','2 oder mehr']]))}
+    ${optRow('Gespeicherte Tonspuren (max.)','So viele vorbereitete Tonspuren bleiben auf dem Fire TV. Kommt eine neue dazu, wird die älteste automatisch gelöscht – willst du den Film nochmal so sehen, wird der Ton einfach neu vorbereitet.',chs('akeep',aKeep(),[[1,'1'],[2,'2'],[3,'3']]))}
+    ${(()=>{const l=prepList();const free=window.NFK&&NFK.aFree?NFK.aFree():0;const tot=l.reduce((a,r)=>a+(r.size||0),0);
+      const rows=l.map((r,i)=>{const it=APP.byId.get(r.itemId);return`<div class="prow"><span>${esc(it?it.title:'Film')} · ${esc(langName(r.lang))} · ${fmtMB(r.size||0)}</span><button class="btn sm f" data-act="prepdel" data-i="${i}">Löschen</button></div>`}).join('');
+      const run=APP.prepRun?`<div class="prow"><span>${esc(langName(APP.prepRun.lang))}-Ton wird vorbereitet · ${APP.prepRun.pct} %</span><button class="btn sm f" data-act="prepcancel">Abbrechen</button></div>`:'';
+      return optRow('Gespeicherter Ton',`${l.length} von ${aKeep()} belegt${tot?' · '+fmtMB(tot):''}.${free?' Freier Speicher: '+fmtMB(free)+'.':''}`,(rows||run)?`<div class="plist">${run}${rows}${l.length>1?'<button class="btn sm f" data-act="prepdelall">Alle löschen</button>':''}</div>`:'<span class="hint">Nichts gespeichert.</span>')})()}
     ${optRow('Nächste Folge automatisch','',tgl('autonext',PS('autonext')))}
     ${optRow('Spul-Schritt','Links/rechts auf der Fernbedienung.',chs('seek',PS('seek'),[[10,'10 s'],[15,'15 s'],[30,'30 s']]))}`;
   else if(sec==='sport')body=`<h3>Sport & Teams</h3>
@@ -1329,7 +1339,10 @@ async function openDetails(id){
 function langChips(it){const ls=langsOf(it);const cv=curVer(it);let h='';
   if(ls.length>1)h+=`<label class="lb">Sprache</label><div class="chips" style="margin-bottom:.8rem">${ls.map(l=>`<button class="chip f${l===cv.lang?' on':''}" data-act="dlang" data-id="${it.id}" data-l="${l}">${CBY[l]&&CBY[l].flag?CBY[l].flag+' ':''}${esc(langName(l))}${bestQ(it,l)?' · '+bestQ(it,l):''}</button>`).join('')}</div>`;
   {const bp=bestPic(it);const myQ=QR[(sortedVersions(it).find(v=>v.lang===cv.lang)||{}).q||''];if(PS('mix')!=='off'&&it.type==='movie'&&bp&&bp.lang!==cv.lang&&QR[bp.q]>myQ){const on=!!(it._mixA&&it._mixA.lang===cv.lang);
-    h+=`<label class="lb">Bild & Ton kombinieren</label><div class="chips" style="margin-bottom:.8rem"><button class="chip f${on?' on':''}" data-act="dmix" data-id="${it.id}">${bp.q==='4K'?'4K':bp.q}-Bild + ${CBY[cv.lang]&&CBY[cv.lang].flag?CBY[cv.lang].flag+' ':''}${esc(langName(cv.lang))}-Ton</button></div>`}}
+    const fl=CBY[cv.lang]&&CBY[cv.lang].flag?CBY[cv.lang].flag+' ':'';const run=APP.prepRun&&APP.prepRun.itemId===it.id&&APP.prepRun.lang===cv.lang;
+    const needPrep=canPrep()&&conns()<2&&!prepared(it,cv.lang);
+    h+=`<label class="lb">Bild & Ton kombinieren</label><div class="chips" style="margin-bottom:.8rem">${needPrep?`<button class="chip f" data-act="dprep" data-id="${it.id}" data-l="${cv.lang}">${run?`${fl}${esc(langName(cv.lang))}-Ton wird vorbereitet … ${APP.prepRun.pct} %`:`${bp.q==='4K'?'4K':bp.q}-Bild + ${fl}${esc(langName(cv.lang))}-Ton: Ton vorbereiten (einmalig, ca. 100–600 MB)`}</button>`
+      :`<button class="chip f${on?' on':''}" data-act="dmix" data-id="${it.id}">${bp.q==='4K'?'4K':bp.q}-Bild + ${fl}${esc(langName(cv.lang))}-Ton${prepared(it,cv.lang)?' · Ton gespeichert':''}</button>`}</div>`}}
   const qs=uniq(sortedVersions(it).filter(v=>v.lang===cv.lang).map(v=>v.q||'Standard'));
   if(qs.length>1)h+=`<label class="lb">Qualität</label><div class="chips">${qs.map(q=>`<button class="chip f${(cv.q||'Standard')===q?' on':''}" data-act="dq" data-id="${it.id}" data-q="${q}">${q==='4K'?'4K UHD · braucht schnelles Internet':q==='FHD'?'Full HD':q}</button>`).join('')}</div>`;
   return h}
@@ -1370,8 +1383,9 @@ const P={
       P.native=1;NFK.play(JSON.stringify(cfg));return}
     P.native=0;P.engine=P.demo?'demo':natE?'nat':'web';P.cur=null;P.tried=new Set();P.mix=-1;
     if(!ep&&it.type!=='live'&&(P.engine==='nat'||P.engine==='demo')){
-      if(it._mixA&&P.vers.includes(it._mixA)&&P.vers.includes(it._mixV)){P.ver=P.vers.indexOf(it._mixV);P.mix=P.vers.indexOf(it._mixA)}
-      else if(PS('mix')==='auto'){const pv=P.vers[P.ver];const best=bestPic(it);if(best&&best.lang!==pv.lang&&qRank(best.q)>qRank(pv.q)){P.ver=P.vers.indexOf(best);P.mix=P.vers.indexOf(audioVer(it,pv.lang))}}}
+      const okMix=l=>P.engine==='demo'||conns()>=2||!!prepared(it,l);
+      if(it._mixA&&P.vers.includes(it._mixA)&&P.vers.includes(it._mixV)&&okMix(it._mixA.lang)){P.ver=P.vers.indexOf(it._mixV);P.mix=P.vers.indexOf(it._mixA)}
+      else if(PS('mix')==='auto'){const pv=P.vers[P.ver];const best=bestPic(it);if(best&&best.lang!==pv.lang&&qRank(best.q)>qRank(pv.q)&&okMix(pv.lang)){P.ver=P.vers.indexOf(best);P.mix=P.vers.indexOf(audioVer(it,pv.lang))}}}
     if(P.engine==='nat'){el.classList.add('nat');document.documentElement.classList.add('vidmode')}
     if(P.mix>-1)sub=(sub?sub+' · ':'')+mixLabel();
     el.innerHTML=`${P.demo?`<div class="sim">${it.type==='live'?`<div class="simlogo">${logoHTML(it)}</div>`:artHTML(ep?{...it,title:ep.title}:it,true)}<span class="lab">Demo-Wiedergabe${it.type==='live'?'':' · 60× schneller, damit du den Verlauf siehst'}</span></div>`:P.engine==='nat'?'<div class="pspin"><div class="spin"></div></div>':'<video id="vid" playsinline autoplay></video>'}
@@ -1388,8 +1402,8 @@ const P={
   },
   load(url,alt){P.cur={url,alt:alt||''};
     if(P.engine==='nat'){const pref=(prof().countries||[]).flatMap(c=>(LANG[c]||[]).slice(1));const sb=PS('subs');
-      const au=P.mix>-1&&P.vers[P.mix]?P.vers[P.mix]:null;
-      NFK.vOpen(JSON.stringify({url,audioUrl:au?au.src.url:'',start:Math.round((P.startPos||0)*1000),langs:au?(LANG[au.lang]||[]).slice(1):PS('audio')==='orig'?[]:pref,subs:sb==='auto'?pref.slice(0,3):sb==='off'?[]:(LANG[sb]||[]).slice(1),subsOn:sb!=='off',subSize:{s:.045,m:.0533,l:.066}[PS('subSize')]||.0533,delay:P.sync()}));return}
+      const au=P.mix>-1&&P.vers[P.mix]?P.vers[P.mix]:null;const pre=au?prepared(P.it,au.lang):null;
+      NFK.vOpen(JSON.stringify({url,audioUrl:pre?'file://'+pre.path:au?au.src.url:'',start:Math.round((P.startPos||0)*1000),langs:au?(LANG[au.lang]||[]).slice(1):PS('audio')==='orig'?[]:pref,subs:sb==='auto'?pref.slice(0,3):sb==='off'?[]:(LANG[sb]||[]).slice(1),subsOn:sb!=='off',subSize:{s:.045,m:.0533,l:.066}[PS('subSize')]||.0533,delay:P.sync()}));return}
     const v=$('#vid');P.v=v;P.hls&&P.hls.destroy();P.hls=null;
     v.ontimeupdate=()=>{P.pos=v.currentTime;if(v.duration&&isFinite(v.duration))P.dur=v.duration};v.onended=()=>P.ended();
     v.onerror=()=>{if(alt&&!P.triedAlt){P.triedAlt=1;P.load(alt)}else P.err()};
@@ -1408,7 +1422,7 @@ const P={
     const c=tr.find(t=>t.i===P.curTrack())||tr[0];box.innerHTML=`<button class="btn sm f" data-act="atrack">Tonspur: ${esc(c.name)}</button>`},
   // Audio-Synchronisation pro Titel merken
   skey(){return P.it.id+(P.mix>-1&&P.vers&&P.vers[P.mix]?'|'+P.vers[P.mix].lang:'')},
-  sync(){if(!P.it)return 0;const k=P.skey();if(P._sy&&P._sy[k]!=null)return P._sy[k];const m=LS.get('nfk.sync',{});return m[k]||0},
+  sync(){if(!P.it)return 0;const k=P.skey();if(P._sy&&P._sy[k]!=null)return P._sy[k];const m=LS.get('nfk.sync',{});if(m[k]!=null)return m[k];const a=P.mix>-1&&P.vers[P.mix];const pre=a&&prepared(P.it,a.lang);return pre?pre.offsetMs||0:0},
   setSync(ms){ms=clamp(Math.round(ms/50)*50,-5000,5000);const k=P.skey();P._sy=P._sy||{};P._sy[k]=ms;const m=LS.get('nfk.sync',{});if(ms)m[k]=ms;else delete m[k];LS.set('nfk.sync',m);if(P.engine==='nat')NFK.vCmd('delay',ms);const e=$('#apsync');if(e)e.textContent=(ms>0?'+':'')+(ms/1000).toFixed(2).replace('.',',')+' s'},
   ntracks(){try{return JSON.parse(NFK.vTracks()||'{}')}catch(e){return{}}},
   panel(keep){if(!P.el)return;const old=$('.ap');const fa=keep&&old&&document.activeElement&&old.contains(document.activeElement)?document.activeElement.dataset.k:null;if(old)old.remove();
@@ -1416,9 +1430,11 @@ const P={
     const row=(k,act,label,on,extra='')=>`<button class="apo f${on?' on':''}" data-act="${act}" data-k="${k}" ${extra}>${on?I.check:'<i class="apdot"></i>'}<span>${label}</span></button>`;
     if(!P.ep&&P.vers.length>1){h+='<h4>Version</h4>'+P.vers.map((v,i)=>row('v'+i,'apver',`${CBY[v.lang]&&CBY[v.lang].flag?CBY[v.lang].flag+' ':''}${esc(langName(v.lang))} · ${v.q==='4K'?'4K UHD':v.q==='FHD'?'Full HD':esc(v.q||'Standard')}`,i===P.ver,`data-i="${i}"`)).join('')}
     if(!P.ep&&it.type!=='live'&&(nat||P.engine==='demo')&&langsOf(it).length>1){const vl=P.vers[P.ver].lang;const pic=P.vers[P.ver];
-      h+='<h4>Ton aus anderer Fassung</h4><p class="aph">Behält das Bild ('+esc(langName(vl))+' · '+esc(pic.q||'Standard')+') und nimmt nur den Ton einer anderen Sprachfassung.'+(APP.cfg&&APP.cfg.maxc&&+APP.cfg.maxc<2?' Hinweis: Dein Abo erlaubt nur 1 Verbindung – Kombinieren braucht 2.':'')+'</p>';
+      h+='<h4>Ton aus anderer Fassung</h4><p class="aph">Behält das Bild ('+esc(langName(vl))+' · '+esc(pic.q||'Standard')+') und nimmt nur den Ton einer anderen Sprachfassung.'+(conns()<2?' Dein Abo erlaubt nur 1 Verbindung: Der Ton wird deshalb einmal vorbereitet und auf dem Fire TV gespeichert.':'')+'</p>';
       const have=nat?new Set(((P.ntracks().audio)||[]).filter(a=>!a.src).map(a=>nlang(a.lang))):new Set();
-      h+=row('m-1','apmix','Aus – Ton der Bild-Fassung',P.mix<0,'data-l=""')+langsOf(it).filter(l=>l!==vl&&(!have.has(C2L[l])||(P.mix>-1&&P.vers[P.mix].lang===l))).map(l=>row('m'+l,'apmix',`${CBY[l]&&CBY[l].flag?CBY[l].flag+' ':''}${esc(langName(l))}-Ton zu diesem Bild`,P.mix>-1&&P.vers[P.mix].lang===l,`data-l="${l}"`)).join('')}
+      h+=row('m-1','apmix','Aus – Ton der Bild-Fassung',P.mix<0,'data-l=""')+langsOf(it).filter(l=>l!==vl&&(!have.has(C2L[l])||(P.mix>-1&&P.vers[P.mix].lang===l))).map(l=>{const fl=CBY[l]&&CBY[l].flag?CBY[l].flag+' ':'';
+        if(nat&&conns()<2&&!prepared(it,l))return row('p'+l,'apprep',`${fl}${esc(langName(l))}-Ton vorbereiten (Film wird kurz beendet)`,false,`data-l="${l}"`);
+        return row('m'+l,'apmix',`${fl}${esc(langName(l))}-Ton zu diesem Bild${prepared(it,l)?' · gespeichert':''}`,P.mix>-1&&P.vers[P.mix].lang===l,`data-l="${l}"`)}).join('')}
     let au=[],tx=[];if(nat){const t=P.ntracks();au=dedupeAudio(t.audio||[]);tx=t.text||[]}else{au=P.tracks().map(t=>({g:t.i,t:0,label:t.name,sel:t.i===P.curTrack()}));if(P.hls&&P.hls.subtitleTracks)tx=P.hls.subtitleTracks.map((t,i)=>({g:i,t:0,label:t.name||t.lang||('Untertitel '+(i+1)),sel:P.hls.subtitleTrack===i}))}
     h+='<h4>Tonspur</h4>'+(au.length?au.map(a=>row('a'+a.g+'_'+a.t,'apaud',esc(a.label)+(P.mix>-1?(a.src?' · Ton-Fassung':' · Bild-Fassung'):''),a.sel,`data-g="${a.g}" data-t="${a.t}"`)).join(''):'<p class="aph">Dieser Stream hat nur eine Tonspur. Andere Sprachen findest du oben unter „Version“.</p>');
     h+='<h4>Untertitel</h4>'+(tx.length?row('s-1','apsub','Aus',!tx.some(t=>t.sel),'data-g="-1" data-t="0"')+tx.map(t=>row('s'+t.g+'_'+t.t,'apsub',esc(t.label),t.sel,`data-g="${t.g}" data-t="${t.t}"`)).join(''):'<p class="aph">Keine Untertitel in diesem Stream.</p>');
@@ -1459,6 +1475,35 @@ const C2L={DE:'de',AT:'de',CH:'de',EN:'en',IR:'fa',AF:'fa',TR:'tr',AR:'ar',KU:'k
 function dedupeAudio(list){const seen=new Map();const out=[];
   for(const a of list.slice().sort((x,y)=>(y.sel?1:0)-(x.sel?1:0)||(x.src||0)-(y.src||0))){const k=nlang(a.lang)==='und'?'und|'+a.label+'|'+(a.src||0):nlang(a.lang)+'|'+((a.ch||2)>=6?'51':'20');if(seen.has(k))continue;seen.set(k,1);out.push(a)}
   return out.sort((x,y)=>(x.src||0)-(y.src||0)||String(x.label).localeCompare(String(y.label)))}
+// ---------- Ton vorbereiten (Abo mit nur 1 Verbindung) ----------
+const conns=()=>{const c=PS('conns');if(c&&c!=='auto')return +c;return APP.cfg&&APP.cfg.maxc?+APP.cfg.maxc:1};
+const canPrep=()=>!!(window.NFK&&NFK.aPrep);
+// Mehrere gespeicherte Tonspuren (max. 1–3, einstellbar); die älteste wird automatisch gelöscht
+const aKeep=()=>Math.max(1,Math.min(3,+PS('akeep')||2));
+function prepList(){let l=LS.get('nfk.aprep',[]);if(l&&!Array.isArray(l))l=[l];l=(l||[]).filter(r=>r&&r.path);
+  try{if(window.NFK&&NFK.aList){const ex=new Set(JSON.parse(NFK.aList()).map(f=>f.path));const n=l.filter(r=>ex.has(r.path));if(n.length!==l.length){l=n;LS.set('nfk.aprep',l)}}}catch(e){}
+  return l.sort((a,b)=>(b.t||0)-(a.t||0))}
+function prepTrim(){const l=prepList(),k=aKeep();if(l.length<=k)return l;
+  for(const r of l.slice(k))try{window.NFK&&NFK.aDelete&&NFK.aDelete(r.path)}catch(e){}
+  const n=l.slice(0,k);LS.set('nfk.aprep',n);return n}
+function syncKeep(){try{window.NFK&&NFK.aKeep&&NFK.aKeep(aKeep())}catch(e){}prepTrim()}
+function prepared(it,lang){return prepList().find(r=>r.itemId===it.id&&r.lang===lang)||null}
+const fmtMB=b=>b>=1e9?(b/1e9).toFixed(1).replace('.',',')+' GB':Math.round(b/1e6)+' MB';
+function startPrep(it,lang){if(!canPrep()){toast('Ton vorbereiten geht nur in der Fire-TV-App');return}
+  if(NFK.aBusy()){toast('Es wird schon ein Ton vorbereitet');return}
+  syncKeep();const l0=prepList();if(l0.length>=aKeep()){const o=l0[l0.length-1],oi=APP.byId.get(o.itemId);toast(`Platz wird frei gemacht: „${oi?oi.title:'ältester Ton'}“ (${langName(o.lang)}) wird gelöscht`)}
+  if(P.el)P.close(true),document.documentElement.classList.remove('vidmode');
+  const v=audioVer(it,lang);const key=it.id+'|'+lang;APP.prepRun={key,itemId:it.id,lang,title:it.title,pct:0};
+  NFK.aPrep(key,v.src.url,(LANG[lang]||[]).slice(1).join(','));prepPill()}
+function prepPill(){let d=$('.prepill');const r=APP.prepRun;if(!r){d&&d.remove();return}
+  if(!d){d=document.createElement('div');d.className='prepill';document.body.appendChild(d)}
+  d.innerHTML=`<b>${esc(langName(r.lang))}-Ton für „${esc(r.title)}“</b><span>wird vorbereitet · ${r.pct} %</span><i style="width:${r.pct}%"></i>`}
+window.nfkA=(ev,key,arg)=>{const r=APP.prepRun;
+  if(ev==='progress'){if(r&&r.key===key){r.pct=+arg||0;prepPill()}return}
+  if(ev==='done'){let o={};try{o=JSON.parse(arg)}catch(e){}const k=(key||'').split('|');const l=prepList().filter(r=>r.path!==o.path&&!(r.itemId===k[0]&&r.lang===k[1]));l.unshift({itemId:k[0],lang:k[1],path:o.path,offsetMs:o.offsetMs||0,size:o.size||0,t:Date.now()});LS.set('nfk.aprep',l);prepTrim();
+    APP.prepRun=null;prepPill();const it=APP.byId.get(k[0]);if(it){it._mixV=bestPic(it);it._mixA=audioVer(it,k[1])}
+    toast(`${langName(k[1])}-Ton ist bereit – jetzt mit bestem Bild abspielbar`);const m=APP.modal&&APP.modal.el;if(m&&it&&$('#d-lang',m))$('#d-lang',m).innerHTML=langChips(it);return}
+  if(ev==='error'||ev==='cancel'){APP.prepRun=null;prepPill();toast(ev==='cancel'?'Vorbereiten abgebrochen':'Ton vorbereiten fehlgeschlagen: '+arg)}};
 function chanList(it){if(APP.view==='live'){const g=APP.args.g||'__all',lv=livePool(APP.args.all);if(g==='__fav')return(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(Boolean);return(g==='__all'?lv:g==='__sport'?lv.filter(c=>c.sport):g.startsWith('__c:')?lv.filter(c=>c.country===g.slice(4)):lv.filter(c=>c.groups.includes(g)))}return APP.view==='live'&&APP.args.g?(APP.args.g==='__sport'?pool('live').filter(c=>c.sport):APP.args.g==='__fav'?getRecentCh().map(id=>APP.byId.get(id)).filter(Boolean):pool('live').filter(c=>c.groups.includes(APP.args.g))):pool('live').filter(c=>c.groups.includes(it.group))}
 // Ereignisse des eingebetteten Android-Players
 window.nfkV=(ev,arg)=>{if(!P.el||P.engine!=='nat')return;
@@ -1601,7 +1646,7 @@ document.addEventListener('click',e=>{
    case'updcheck':UPD.check(true).then(()=>{if(APP.view==='settings'&&!$('.uplert'))renderApp('[data-act="updcheck"]')});break;
    case'lall':APP.args={all:b.dataset.v==='1'};renderApp(`[data-act="lall"][data-v="${b.dataset.v}"]`);break;
    case'sec':APP.args={sec:b.dataset.s};renderApp(`.cat[data-s="${b.dataset.s}"]`);break;
-   case'set':{let v=b.dataset.v;const k=b.dataset.k;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;setPS(k,v);renderApp(`[data-act="set"][data-k="${k}"]`);toast('Gespeichert');break}
+   case'set':{let v=b.dataset.v;const k=b.dataset.k;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;setPS(k,v);if(k==='akeep')syncKeep();renderApp(`[data-act="set"][data-k="${k}"]`);toast('Gespeichert');break}
    case'setrow':{const r=Object.assign({},PS('rows'));r[b.dataset.k]=r[b.dataset.k]===0?1:0;setPS('rows',r);renderApp(`[data-act="setrow"][data-k="${b.dataset.k}"]`);break}
    case'hidegen':{const g=b.dataset.g;const h=PS('hideGenres');setPS('hideGenres',h.includes(g)?h.filter(x=>x!==g):[...h,g]);renderApp(`[data-act="hidegen"][data-g="${CSS.escape(g)}"]`);break}
    case'pother':{const p=prof();p.other=!p.other;saveProfiles();APP._pool=null;renderApp('[data-act="pother"]');break}
@@ -1614,6 +1659,11 @@ document.addEventListener('click',e=>{
    case'apsub':{const g=+b.dataset.g;if(P.engine==='nat')NFK.vSelect('text',g,+b.dataset.t);else if(P.hls)P.hls.subtitleTrack=g;toast(g<0?'Untertitel aus':'Untertitel: '+b.textContent.trim());setTimeout(()=>P.panel(true),500);break}
    case'apmix':{const l=b.dataset.l;const it=P.it;if(!l){P.mix=-1;it._mixA=it._mixV=null}else{const a=audioVer(it,l);P.mix=P.vers.indexOf(a);it._mixA=a;it._mixV=P.vers[P.ver]}
      const t=$('.pt p',P.el);if(t)t.textContent=P.mix>-1?mixLabel():'';if(P.engine==='nat'){P.startPos=P.pos;const v=P.vers[P.ver];P.load(v.src.url,v.src.alt)}toast(P.mix>-1?mixLabel():'Ton der Bild-Fassung');setTimeout(()=>P.panel(true),600);break}
+   case'apprep':{const it=P.it,l=b.dataset.l;P.close();setTimeout(()=>startPrep(it,l),300);break}
+   case'dprep':{if(APP.prepRun){toast('Läuft schon – Fortschritt unten links');break}startPrep(it,b.dataset.l);const m=APP.modal&&APP.modal.el;if(m)$('#d-lang',m).innerHTML=langChips(it);break}
+   case'prepdel':{const l=prepList(),r=l[+b.dataset.i||0];if(r){try{window.NFK&&NFK.aDelete&&NFK.aDelete(r.path)}catch(e){}l.splice(l.indexOf(r),1);LS.set('nfk.aprep',l)}toast('Gespeicherter Ton gelöscht');renderApp('[data-act="prepdel"]');break}
+   case'prepdelall':{try{window.NFK&&NFK.aDeleteAll&&NFK.aDeleteAll()}catch(e){}LS.set('nfk.aprep',[]);toast('Alle gespeicherten Tonspuren gelöscht');renderApp('[data-act="set"][data-k="akeep"]');break}
+   case'prepcancel':{if(window.NFK&&NFK.aCancel)NFK.aCancel();break}
    case'apsync':{const d=+b.dataset.d;P.setSync(d===0?0:P.sync()+d);break}
    case'syncreset':LS.del('nfk.sync');toast('Audio-Synchronisation zurückgesetzt');break;
    case'ltog':{const c=b.dataset.c;const o=Object.assign({},PS('liveOpen')||{});const wasOpen=b.classList.contains('open');o[c]=wasOpen?0:1;setPS('liveOpen',o);renderApp(`[data-act="ltog"][data-c="${c}"]`);break}

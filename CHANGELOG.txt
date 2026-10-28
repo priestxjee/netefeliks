@@ -1,6 +1,4 @@
-Bild & Ton kombinieren: z. B. 4K-Bild mit persischem Ton
+Gespeicherter Ton: jetzt bis zu 3 Tonspuren (einstellbar 1/2/3) – die älteste wird automatisch gelöscht
+Einstellungen → Wiedergabe: alle gespeicherten Tonspuren mit Größe, einzeln oder alle löschen
+Bild & Ton kombinieren auch mit nur 1 Verbindung: Ton wird einmal vorbereitet und gespeichert
 Alle Tonspuren aus allen Fassungen, ohne Doppelte
-Live-TV: Länder aufklappen, Reihenfolge per ▲▼, Kategorien anheften, Meine Sender
-Bewertungen und Trailer ohne Schlüssel
-Playlist wird gespeichert – App startet sofort, Aktualisierung alle 30 Min. im Hintergrund
-Update-Hinweis zuverlässiger, eigener Bereich „Updates“ in den Einstellungen

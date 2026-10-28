@@ -16,6 +16,7 @@ import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.TrackSelectionParameters;
 import androidx.media3.common.Tracks;
 import androidx.media3.common.text.CueGroup;
+import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -112,7 +113,8 @@ class VideoEngine {
                 .setUserAgent("Netefeliks/3 (Linux; Android) ExoPlayer")
                 .setConnectTimeoutMs(15000)
                 .setReadTimeoutMs(20000);
-        sources = new DefaultMediaSourceFactory(http);
+        // DefaultDataSource: Streams vom Server (http) und vorbereitete Tonspuren vom Gerät (file://)
+        sources = new DefaultMediaSourceFactory(new DefaultDataSource.Factory(act, http));
         player = new ExoPlayer.Builder(act, renderers)
                 .setMediaSourceFactory(sources)
                 .build();

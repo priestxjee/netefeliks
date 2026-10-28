@@ -41,13 +41,14 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 4;
+    static final int NATIVE_VERSION = 6;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
 
     private WebView web;
     private VideoEngine video;
+    private AudioPrep prep;
     private String ua = "";
     private SharedPreferences prefs;
 
@@ -73,6 +74,11 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUserAgentString(s.getUserAgentString() + " Netefeliks/" + installedVersion());
         ua = s.getUserAgentString();
+        prep = new AudioPrep(this, ua, new AudioPrep.Events() {
+            @Override public void emit(String ev, String key, String arg) {
+                js("window.nfkA&&nfkA(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(key) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
+            }
+        });
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
             // Liefert die heruntergeladene neuere Oberfläche unter derselben Adresse aus,
@@ -174,6 +180,16 @@ public class MainActivity extends Activity {
         @JavascriptInterface public String vState() { return video.state(); }
         @JavascriptInterface public String vTracks() { return video.tracks(); }
         @JavascriptInterface public void vSelect(String type, int g, int t) { video.select(type, g, t); }
+
+        // ---------- Ton vorbereiten (für Abos mit nur einer Verbindung) ----------
+        @JavascriptInterface public void aPrep(String key, String url, String langs) { prep.start(key, url, langs); }
+        @JavascriptInterface public void aCancel() { prep.cancel(); }
+        @JavascriptInterface public boolean aBusy() { return prep.busy(); }
+        @JavascriptInterface public String aList() { return prep.list(); }
+        @JavascriptInterface public void aDelete(String path) { prep.delete(path); }
+        @JavascriptInterface public void aDeleteAll() { prep.deleteAll(); }
+        @JavascriptInterface public double aFree() { return (double) prep.free(); }
+        @JavascriptInterface public void aKeep(int n) { prep.setKeep(n); }
 
         /** Startet den nativen Vollbild-Player (ältere Variante). */
         @JavascriptInterface public void play(final String cfg) {
