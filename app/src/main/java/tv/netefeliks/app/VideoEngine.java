@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.view.View;
 
 import androidx.media3.common.C;
@@ -163,6 +166,7 @@ class VideoEngine {
         try {
             JSONObject c = new JSONObject(json);
             ensure();
+            if (frame != null) frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
             String[] langs = arr(c.optJSONArray("langs"));
             String[] subLangs = arr(c.optJSONArray("subs"));
             boolean subsOn = c.optBoolean("subsOn", false);
@@ -227,6 +231,28 @@ class VideoEngine {
             case 5: frame.setAspectRatio(21f / 9f); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT); break;
             default: frame.setAspectRatio(videoRatio); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
         }
+    }
+
+    /** Mini-Fenster (Live-TV läuft weiter, während man Sender aussucht): Rechteck in Pixeln, leer = Vollbild. */
+    void mini(final String json) {
+        ui.post(new Runnable() {
+            @Override public void run() {
+                if (frame == null) return;
+                try {
+                    if (json == null || json.length() == 0) {
+                        frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+                        subs.setVisibility(player != null ? View.VISIBLE : View.GONE);
+                    } else {
+                        JSONObject c = new JSONObject(json);
+                        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, c.getInt("w")), Math.max(1, c.getInt("h")), Gravity.TOP | Gravity.LEFT);
+                        lp.leftMargin = c.getInt("x");
+                        lp.topMargin = c.getInt("y");
+                        frame.setLayoutParams(lp);
+                        subs.setVisibility(View.GONE);
+                    }
+                } catch (Exception ignored) { }
+            }
+        });
     }
 
     void cmd(final String c, final double arg) {
@@ -305,6 +331,7 @@ class VideoEngine {
         surface.setVisibility(View.GONE);
         subs.setVisibility(View.GONE);
         state = "{}";
+        if (frame != null) frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
     }
 
     void pause() { ui.post(new Runnable() { @Override public void run() { if (player != null) player.pause(); } }); }

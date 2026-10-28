@@ -403,12 +403,39 @@ html.vidmode #app,html.vidmode .modal{visibility:hidden}
 .tgl.on i::after{transform:translateX(1.15rem)}
 .tgl:focus{box-shadow:0 0 0 3px var(--fg)}
 html.pz-s .card{flex-basis:7.6rem}
+/* Beim Durchblättern der Reihen: Vorschau oben kompakt, damit mindestens zwei Reihen sichtbar sind */
+.main.home.browse .spot{flex-basis:31%;min-height:9rem}
+.main.home.browse .spot .s-plot,.main.home.browse .spot .s-why,.main.home.browse .spot .acts,.main.home.browse .spot .htag{display:none}
+.main.home.browse .spot .s-title{font-size:2.1rem;-webkit-line-clamp:1}
+.main.home.browse .spot .info{gap:.4rem;bottom:.6rem}
+.main.home.browse .track{padding-top:.6rem;padding-bottom:.7rem}
+.main.home.browse .row{padding-top:.2rem}
+html.lite:not(.pz-l) .main.home.browse .card:not(.w){flex-basis:7.4rem}
+html.lite:not(.pz-l) .main.home.browse .card.w{flex-basis:13rem}
 html.pz-l .card{flex-basis:11.5rem}
 html.pz-s .card.w{flex-basis:13.5rem}
 html.pz-l .card.w{flex-basis:19rem}
 html.pz-s .grid{grid-template-columns:repeat(auto-fill,minmax(7.6rem,1fr))}
 html.pz-l .grid{grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr))}
 html.nomotion *,html.nomotion *::before,html.nomotion *::after{transition:none!important;animation:none!important}
+/* Trailer im Android-Player: Oberfläche an dieser Stelle durchsichtig */
+html.trl,html.trl body{background:transparent!important}
+.bd.trlon .bdimg,.bd.trlon>.art,.bd.trlon>img,.bd.trlon .pi{visibility:hidden}
+.bdfade{position:absolute;pointer-events:none;background:linear-gradient(90deg,var(--bg) 0,rgba(13,11,11,0) 35%);z-index:1}
+html.trlm #app{visibility:hidden}
+html.trlm .modal{background:transparent}
+html.trlm .sheet{background:linear-gradient(180deg,transparent 0,transparent var(--hh,0px),var(--bg2) var(--hh,0px))}
+/* Mini-Fenster (Live) */
+html.pip,html.pip body{background:transparent!important}
+.lleft{display:flex;flex-direction:column;gap:.7rem;position:sticky;top:1rem;min-width:0}
+.lleft .cats{position:static;max-height:calc(100vh - 8rem)}
+html.pip .lvh .live-w{grid-template-columns:27rem minmax(0,1fr)}
+html.pip .lleft .cats{max-height:calc(100vh - 25rem)}
+html.pip .lvh .chr{grid-template-columns:2.2rem 6rem minmax(0,1fr)}html.pip .lvh .chr .nx{display:none}
+.pipbox{position:relative;width:100%;aspect-ratio:16/9;padding:0;border:2px solid rgba(255,255,255,.22);border-radius:.45rem;background:transparent;cursor:pointer;overflow:hidden}
+.pipbox:focus{border-color:var(--fg);box-shadow:0 0 0 2px var(--fg)}
+.piplab{position:absolute;left:.35rem;bottom:.3rem;right:.35rem;text-align:left;font-size:.78rem;font-weight:600;color:#fff;background:rgba(0,0,0,.6);padding:.15rem .4rem;border-radius:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.piplab b{color:#fff;background:var(--red);border-radius:.15rem;padding:0 .25rem;margin-right:.25rem;font-size:.68rem}
 /* Intro */
 .intro{position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#2a0507 0%,#0b0606 55%,#000 100%);display:grid;place-items:center;overflow:hidden;cursor:pointer}
 .intro::before{content:"";position:absolute;left:50%;top:50%;width:70vmin;height:70vmin;margin:-35vmin 0 0 -35vmin;border-radius:50%;background:radial-gradient(circle,rgba(229,9,20,.55),transparent 65%);opacity:0;transform:scale(.4);animation:iglow 1.6s .55s ease-out both}
@@ -451,6 +478,13 @@ html.nonums .chr .no{visibility:hidden}
 .scan .pm{color:var(--mute);margin:0;min-height:1.4em}
 .scan .st b{font-variant-numeric:tabular-nums}
 .pplan{margin:.2rem 0 .9rem;padding:.7rem .9rem;border-radius:.45rem;background:rgba(255,255,255,.06);font-size:.92rem;line-height:1.5}.pplan>div{color:var(--mute);margin-top:.2rem}
+.vbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.3rem 0 .4rem}
+.ddb{display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.28);color:var(--mute);padding:.45rem .95rem;border-radius:.3rem;font-weight:600;font-size:.95rem;cursor:pointer;white-space:nowrap}
+.ddb b{color:var(--fg);font-weight:700}.ddb small{opacity:.7}.ddb.on{border-color:var(--fg);color:var(--fg)}.ddb.clr{border-color:transparent;background:none}
+.ddb:focus{background:var(--fg);color:#111;border-color:var(--fg)}.ddb:focus b{color:#111}
+.ddm{position:fixed;z-index:60;background:rgba(12,9,9,.97);border:1px solid var(--line);border-radius:.5rem;padding:.5rem;display:grid;grid-template-columns:repeat(var(--cols,1),minmax(11rem,auto));gap:.1rem .4rem;max-height:70vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.65);animation:fade .12s}
+.ddm button{display:flex;justify-content:space-between;align-items:center;gap:1rem;text-align:left;background:none;border:0;color:var(--mute);padding:.5rem .75rem;border-radius:.3rem;font-size:.95rem;cursor:pointer;white-space:nowrap}
+.ddm button.on{color:var(--fg);font-weight:700}.ddm button small{opacity:.55;font-variant-numeric:tabular-nums}.ddm button:focus{background:var(--fg);color:#111}
 .empty{color:var(--mute);padding:3rem 0;font-size:1.05rem;line-height:1.6;max-width:34rem}
 .more{margin-top:1.4rem}
 
@@ -801,7 +835,7 @@ const XT={
   base(c){return normServer(c.server)},
   async api(c,action,extra=''){const u=`${XT.base(c)}/player_api.php?username=${encodeURIComponent(c.user)}&password=${encodeURIComponent(c.pass)}${action?'&action='+action:''}${extra}`;const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()},
   url(c,action){return`${XT.base(c)}/player_api.php?username=${encodeURIComponent(c.user)}&password=${encodeURIComponent(c.pass)}&action=${action}`},
-  async vodInfo(c,id){const d=await XT.api(c,'get_vod_info','&vod_id='+id);const i=d.info||{};return{plot:i.plot||i.description||'',genre:i.genre||'',cast:i.cast||i.actors||'',director:i.director||'',rating:+i.rating||0,year:parseInt(i.releasedate||i.release_date)||null,dur:i.duration_secs?Math.round(i.duration_secs/60):null,backdrop:(i.backdrop_path||[])[0]||'',tmdb:i.tmdb_id||null,poster:i.movie_image||'',yt:i.youtube_trailer||''}},
+  async vodInfo(c,id){const d=await XT.api(c,'get_vod_info','&vod_id='+id);const i=d.info||{};return{plot:i.plot||i.description||'',genre:i.genre||'',cast:i.cast||i.actors||'',director:i.director||'',rating:+i.rating||0,year:parseInt(i.releasedate||i.release_date)||null,dur:i.duration_secs?Math.round(i.duration_secs/60):null,backdrop:(i.backdrop_path||[])[0]||'',tmdb:i.tmdb_id||null,poster:i.movie_image||'',yt:i.youtube_trailer||'',oname:i.o_name||i.original_name||i.originalTitle||''}},
   async seriesInfo(c,id){const d=await XT.api(c,'get_series_info','&series_id='+id);const B=XT.base(c),U=encodeURIComponent(c.user),P=encodeURIComponent(c.pass);const seasons={};
     for(const s in(d.episodes||{}))seasons[s]=(d.episodes[s]||[]).map((e,i)=>({id:'xe'+e.id,n:+e.episode_num||i+1,title:e.title||('Folge '+(i+1)),plot:(e.info&&e.info.plot)||'',dur:e.info&&e.info.duration_secs?Math.round(e.info.duration_secs/60):null,img:(e.info&&e.info.movie_image)||'',src:{url:`${B}/series/${U}/${P}/${e.id}.${e.container_extension||'mp4'}`}}));
     const i=d.info||{};return{seasons,plot:i.plot||'',cast:i.cast||'',director:i.director||'',genre:i.genre||'',backdrop:(i.backdrop_path||[])[0]||''}},
@@ -832,16 +866,17 @@ async function waitIdle(ms){for(let i=0;i<120;i++){if(Date.now()-(APP.lastKey||0
 async function bgRefresh(){if(_bgBusy||!APP.cfg||APP.cfg.mode==='demo')return;
   if(APP.noWorker&&(P.el||Date.now()-(APP.lastKey||0)<60000))return; // ohne Hintergrund-Worker nur, wenn die App ruht
   _bgBusy=true;
-  try{await waitIdle(4000);let res;try{res=await loadCatalog(null)}catch(e){return}
-    if(res.sig&&res.sig===APP.sig){CACHE.t=Date.now();return} // nichts Neues → nichts umbauen
+  try{await waitIdle(120000);if(P.el||document.hidden)return;let res;try{res=await loadCatalog(null,{bg:true})}catch(e){return}
+    if(res.same||(res.sig&&res.sig===APP.sig)){CACHE.t=Date.now();CACHE.touch&&CACHE.touch();return} // nichts Neues → nichts umbauen
     await waitIdle(6000);
     const before=new Set(APP.items.map(i=>i.id));applyCatalog(res);CACHE.save(res.json);
     const fresh=APP.items.filter(i=>!before.has(i.id)&&i.type!=='live');
     if(fresh.length){const m=fresh.filter(i=>i.type==='movie').length,se=fresh.length-m;toast(`Playlist aktualisiert · ${m?m+' neue Filme':''}${m&&se?' · ':''}${se?se+' neue Serien':''}`);
       if(APP.view==='home'&&!P.el&&!APP.modal&&document.activeElement&&document.activeElement.closest('.rail'))renderApp()}}
   finally{_bgBusy=false}}
-// Erste Aktualisierung erst, wenn der gespeicherte Stand älter als 30 Minuten ist – nicht direkt nach dem Start
-function startBg(){if(_bgT)return;const age=Date.now()-(CACHE.t||0);setTimeout(bgRefresh,Math.max(3*6e4,30*6e4-age));_bgT=setInterval(bgRefresh,30*6e4)}
+// Aktualisierung höchstens alle 6 Stunden, nur wenn die App ruht und nichts läuft (spart Arbeitsspeicher)
+const BG_EVERY=6*36e5;
+function startBg(){if(_bgT)return;const age=Date.now()-(CACHE.t||0);setTimeout(bgRefresh,Math.max(5*6e4,BG_EVERY-age));_bgT=setInterval(()=>{if(Date.now()-(CACHE.t||0)>=BG_EVERY-6e4)bgRefresh()},30*6e4)}
 // ---------- Playlist laden: Download hier, Auswertung im Hintergrund (Worker) – die Bedienung bleibt flüssig ----------
 const WK_MAIN=`
 let RAW=[];
@@ -865,7 +900,7 @@ async function fetchText(url,onChunk){const r=await fetch(url);if(!r.ok)throw ne
 function countOcc(s,k){let n=0,i=0;while((i=s.indexOf(k,i))>-1){n++;i+=k.length}return n}
 const fmtMB=b=>b>=1e9?(b/1e9).toFixed(1).replace('.',',')+' GB':b>=1e7?Math.round(b/1e6)+' MB':(b/1e6).toFixed(1).replace('.',',')+' MB';
 // ui(patch): Fortschritt melden (Schritt, Zähler, Prozent). Ohne ui läuft alles still im Hintergrund.
-async function loadCatalog(ui){
+async function loadCatalog(ui,opt={}){const lsig=LS.get('nfk.lsig',{})||{},nsig={};let changed=!opt.bg;const tsig=t=>t.length+':'+hstr(t.slice(0,3000)+t.slice(t.length>>1,(t.length>>1)+3000)+t.slice(-3000));
   const c=APP.cfg;const cnt={live:0,movie:0,series:0};const up=o=>{if(ui)ui(Object.assign({cnt},o))};
   let w=c.mode==='demo'?null:mkWorker();if(w&&!(await wReady(w))){try{w.terminate()}catch(e){}w=null}APP.noWorker=c.mode!=='demo'&&!w;
   const raws=[];
@@ -884,6 +919,7 @@ async function loadCatalog(ui){
     for(const[kind,action,key,step,a,b,msg]of plan){up({step,msg,p:a,detail:''});const t0=performance.now();
       const text=await fetchText(XT.url(c,action),(ch,bytes,total)=>{cnt[step]+=countOcc(ch,key);up({step,p:a+(b-a)*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+6e6))),detail:nf(cnt[step])+' gefunden · '+fmtMB(bytes)})});
       const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
+      nsig[kind]=tsig(text);if(nsig[kind]!==lsig[kind])changed=true;
       if(w){const d=await wcall(w,{op:'xt',kind,text,cats:cats[kind],B,U,P});cnt[step]=d.n}else cnt[step]=xtMap(kind,JSON.parse(text),cats[kind],B,U,P,raws);
       up({done:step,step,detail:nf(cnt[step]),p:b})}}
   else{
@@ -891,15 +927,17 @@ async function loadCatalog(ui){
     const text=await fetchText(c.m3u,(ch,bytes,total)=>{if(!n)up({done:'conn',step:'live',msg:'Lade Playlist…'});n+=countOcc(ch,'#EXTINF');up({step:'live',p:.05+.5*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+8e6))),detail:nf(n)+' Einträge · '+fmtMB(bytes)})});
     const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
     if(!/#EXTM3U|#EXTINF/i.test(text.slice(0,20000)))throw new Error('KEINM3U');
+    nsig.m3u=tsig(text);if(nsig.m3u!==lsig.m3u)changed=true;if(!changed)return{same:true};
     up({step:'live',msg:'Lese Playlist…',p:.56});
     if(w){const d=await wcall(w,{op:'m3u',text},t=>up({p:.56+.04*t.f}));Object.assign(cnt,d.c)}else{const out=M3Uparse(text);Object.assign(cnt,countTypes(out));for(const x of out)raws.push(x)}
     for(const k of['live','movie','series'])up({done:k,detail:''});up({step:'movie',detail:nf(cnt.movie)});up({step:'series',detail:nf(cnt.series)});up({step:'live',detail:nf(cnt.live),p:.6})}
+  LS.set('nfk.lsig',nsig);if(!changed)return{same:true};
   up({step:'ana',msg:'Sortiere nach Ländern, Genres & Qualität…',p:.62,detail:''});
   if(w){const d=await wcall(w,{op:'build'},t=>up({step:'ana',p:.62+.33*(t.i/Math.max(1,t.n)),detail:Math.round(100*t.i/Math.max(1,t.n))+' %'}));
     up({done:'ana',p:.96,detail:nf(d.n)+' Titel'});return{json:d.json,stats:d.stats,sig:d.sig,n:d.n}}
   await sleep(40);const r=catalogCore(raws,null);up({done:'ana',p:.96,detail:nf(r.items.length)+' Titel'});return{items:r.items,stats:r.stats,sig:r.sig,n:r.items.length}
   }finally{if(w)try{w.terminate()}catch(e){}}}
-function applyCatalog(res){restoreItems(res.items||JSON.parse(res.json));APP.sig=res.sig}
+function applyCatalog(res){if(!res.items){APP.items=[];APP.byId=new Map();APP._pool=null;APP._tc=null;APP.hero=[];META.mem.clear();TRL.mem.clear()}restoreItems(res.items||JSON.parse(res.json));APP.sig=res.sig}
 
 // ---------- Profile & Verlauf ----------
 const prof=()=>APP.profiles.find(p=>p.id===APP.pid);
@@ -926,8 +964,8 @@ function pool(type){
   return type==='vod'?[...APP._pool.movie,...APP._pool.series]:APP._pool[type];
 }
 // ---------- Profil-Einstellungen ----------
-const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'native',autonext:1,seek:10,subs:'off',subSize:'m',mix:'auto',mixMode:'stream',conns:'auto',akeep:2,aspect:0,audio:'pref',
-  hero:1,heroSec:10,trailer:1,trailerSound:0,poster:'m',motion:'auto',trailerDelay:2,teamAlert:1,liveNums:1,liveStart:'__all',liveOrder:[],livePins:[],liveFav:[],liveOpen:{},
+const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'native',autonext:1,seek:10,subs:'off',subSize:'m',plotLang:'DE',mix:'auto',mixMode:'stream',conns:'auto',akeep:2,aspect:0,audio:'pref',
+  hero:1,heroSec:10,trailer:1,trailerSound:0,poster:'m',motion:'auto',trailerDelay:1,teamAlert:1,liveNums:1,livePip:1,liveStart:'__all',liveOrder:[],livePins:[],liveFav:[],liveOpen:{},
   rows:{cont:1,top:1,because:1,top10:1,sport:1,recent:1,new:1,pop:1,genre:1,list:1}};
 const PS=k=>{const p=prof();const v=p&&p.set?p.set[k]:undefined;return v===undefined?SET_DEF[k]:v};
 const ROW=k=>{const r=PS('rows');return r[k]===undefined?1:r[k]};
@@ -1013,7 +1051,7 @@ const META={mem:new Map(),
     if(it.demo)return{imdb:it.rating,rt:it.rt,pop:it.pop,src:'demo'};
     if(META.mem.has(it.id))return META.mem.get(it.id);
     const pr=META.slot(async()=>{const m=Object.assign({},META.cache[it.id]||{});const c=APP.cfg;
-      try{if(!m.x&&c.mode==='xtream'&&it.type==='movie'){const v=it.versions[0].src;const d=await XT.vodInfo(c,v.id);Object.assign(m,{x:1,yt:m.yt||d.yt,plot:d.plot,cast:d.cast,director:d.director,genre:d.genre,dur:d.dur,backdrop:d.backdrop,tmdb:d.tmdb,srvRating:d.rating,year:d.year})}}catch(e){}
+      try{if(!m.x&&c.mode==='xtream'&&it.type==='movie'){const v=it.versions[0].src;const d=await XT.vodInfo(c,v.id);Object.assign(m,{x:1,oname:d.oname,yt:m.yt||d.yt,plot:d.plot,cast:d.cast,director:d.director,genre:d.genre,dur:d.dur,backdrop:d.backdrop,tmdb:d.tmdb,srvRating:d.rating,year:d.year})}}catch(e){}
       try{if(!m.t&&tmdbKey()&&(it.tmdb||m.tmdb||it.title)){const typ=it.type==='series'?'tv':'movie';let id=it.tmdb||m.tmdb;
         if(!id){const s=await(await fetch(`https://api.themoviedb.org/3/search/${typ}?api_key=${tmdbKey()}&language=de-DE&query=${encodeURIComponent(it.title)}${it.year?(typ==='tv'?'&first_air_date_year=':'&year=')+it.year:''}`)).json();id=s.results&&s.results[0]&&s.results[0].id}
         if(id){const d=await(await fetch(`https://api.themoviedb.org/3/${typ}/${id}?api_key=${tmdbKey()}&language=de-DE&append_to_response=external_ids,credits,videos&include_video_language=de,en,fa,null`)).json();
@@ -1223,7 +1261,7 @@ document.addEventListener('error',e=>{const el=e.target;if(!(el instanceof HTMLI
   const w=document.createElement('div');w.innerHTML=el.dataset.fb==='logo'?logoHTML({...it,logo:'',demo:1}):artHTML(it,el.dataset.fb==='w');el.closest('.logo')?el.closest('.logo').replaceWith(w.firstChild):el.replaceWith(w.firstChild)},true);
 
 // ---------- Seitenleiste ----------
-const NAV=[['search','Suche',I.search],['home','Startseite',I.home],['live','Live-TV',I.live],['sport','Sport',I.sport],['movies','Filme',I.movie],['series','Serien',I.series],['mylist','Favoriten',I.star],['settings','Einstellungen',I.gear]];
+const NAV=[['search','Suche',I.search],['home','Startseite',I.home],['live','Live-TV',I.live],['sport','Sport',I.sport],['movies','Filme',I.movie],['series','Serien',I.series],['settings','Einstellungen',I.gear]];
 function railHTML(){const p=prof();return`<nav class="rail"><div class="brand"><i>N</i><b>NETEFELIKS</b></div>${NAV.map(([k,l,ic])=>`<button class="nav f${APP.view===k?' on':''}${k==='settings'&&UPD.info?' upd':''}" data-act="nav" data-v="${k}"${k==='settings'&&UPD.info?' data-sec="update"':''}>${ic}<span>${l}${k==='settings'&&UPD.info?' · Update!':''}</span></button>`).join('')}
   <div class="who"><button class="nav f" data-act="profiles"><span class="av sm" style="background:${p.color}"><span>${esc(p.name[0]||'?')}</span></span><span>${esc(p.name)} · wechseln</span></button></div></nav>`}
 
@@ -1233,6 +1271,7 @@ function renderApp(focusSel){
   TR.stop();clearTimeout(heroT);applyLook();setTimeout(NOW.save,0);
   $('#app').innerHTML=railHTML()+`<main class="main${['home','movies','series'].includes(APP.view)||(APP.view==='mylist'&&getList().length)?' home':''}" id="main"></main>`;
   VIEWS[APP.view]($('#main'),APP.args);
+  if(APP.pip)requestAnimationFrame(pipSync);
   requestAnimationFrame(()=>{const t=focusSel&&$(focusSel)||$('#main [data-autofocus]')||$('#main .f');if(t){t.focus({preventScroll:true});if(t.closest('.cats,.chl,.spanel'))t.scrollIntoView({block:'nearest'})}});
 }
 
@@ -1246,12 +1285,12 @@ VIEWS.home=(el)=>{
   const minR=PS('minRating');const okR=i=>!minR||!i.rating||i.rating>=minR;
   if(cont.length&&ROW('cont'))html+=rowHTML('Weiterschauen für '+esc(p.name),cont,{wide:true,act:'resume',why:'cont'});
   const top=R.mmr(scored.filter(x=>!(pr[x.it.id]&&pr[x.it.id].done)&&okR(x.it)),24).map(x=>x.it);
+  const hot=hotFor(t);if(hot.length>=4)html+=rowHTML('Angesagt & neu – passend zu dir',hot.slice(0,24),{why:'top',sub:'aktuelle Charts und Neuerscheinungen, sortiert nach deinem Geschmack'});
+  for(const c of p.countries){if(c==='EN')continue;const lp=localProd(vod,c);if(lp.length>=4)html+=rowHTML(`${CBY[c].flag||''} ${ADJ[c]||'Aus '+esc(CBY[c].name)} Filme & Serien`,lp.sort((a,b)=>R.score(b,t)-R.score(a,t)).slice(0,24),{why:'top',sub:'Eigenproduktionen – nicht synchronisiert'})}
   if(ROW('top'))html+=rowHTML('Top-Empfehlungen für '+esc(p.name),top,{why:'top',sub:t._ev?'basiert auf '+t._ev+' Aktionen':'basiert auf deinen Lieblingsgenres'});
   const seen=[];for(const e of evs().slice().reverse()){if(!['finish','progress','like','play'].includes(e.k))continue;const it=APP.byId.get(e.id);if(it&&it.type!=='live'&&!seen.includes(it)&&getRating(it.id)>=0)seen.push(it);if(seen.length>=2)break}
   if(ROW('because'))for(const a of seen){const sim=vod.filter(x=>x!==a).map(x=>({x,s:R.sim(a,x)+.08*(x.rating||6)/10})).sort((p1,p2)=>p2.s-p1.s).slice(0,20).map(o=>o.x);html+=rowHTML(`Weil du „<span dir="auto">${esc(a.title)}</span>“ geschaut hast`,sim,{why:'b:'+a.id})}
   const sp=lv.filter(c=>c.sport).map(c=>({c,e:EPG.get(c)})).filter(o=>!o.e||/–|UFC|NBA|F1|:|لیگ/.test(o.e.cur&&o.e.cur.title||'')).map(o=>o.c);
-  if(ROW('sport'))html+=rowHTML('Live-Sport',sp,{why:'live'});
-  const rc=getRecentCh().map(id=>APP.byId.get(id)).filter(Boolean);if(ROW('recent'))html+=rowHTML('Zuletzt gesehene Sender',rc,{why:'live'});
   const top10=((TOP.top('movie')||{}).l||[]).concat((TOP.top('series')||{}).l||[]).filter((x,i)=>i<2)||[];const top10x=vod.slice().sort((a,b)=>((b.pop||0)/10+(b.rating||0)+(b.added>Date.now()-30*864e5?2:0))-((a.pop||0)/10+(a.rating||0)+(a.added>Date.now()-30*864e5?2:0))).slice(0,10);
   if(ROW('top10')){html+=top10Row('movie');html+=top10Row('series')}
   if(ROW('new')){const np=newPopular(vod);if(np.length>3)html+=rowHTML('Neu & beliebt',np,{why:'new'})}
@@ -1260,20 +1299,31 @@ VIEWS.home=(el)=>{
   const tg=ROW('genre')?R.topGenres(t,3):[];for(const[g]of tg){const gi=scored.filter(x=>x.it.genres.includes(g)&&okR(x.it)).slice(0,24).map(x=>x.it);html+=rowHTML(esc(g)+' – ausgewählt für dich',gi,{why:'g:'+g})}
   const ml=getList().map(id=>APP.byId.get(id)).filter(Boolean);if(ROW('list'))html+=rowHTML('★ Deine Favoriten',ml,{why:'list'});
   const tz=teamZoneHTML();el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><section class="row tz" id="teamzone">${tz}</section>${html||'<p class="empty pad">Für deine Länderauswahl wurden keine Inhalte gefunden. Ändere die Länder in den Einstellungen.</p>'}</div>`;
-  APP.hero=uniq([...top.slice(0,2),...vod.filter(i=>QR[i.q]>=4).sort((a,b)=>b.added-a.added).slice(0,2),...top10.slice(0,2),...top.slice(2,8)]).slice(0,6);
+  setTimeout(()=>trlPrefetch(APP.hero||[]),1500);APP.hero=hot.length>=3?hot.slice(0,6):uniq([...top.slice(0,2),...vod.filter(i=>QR[i.q]>=4).sort((a,b)=>b.added-a.added).slice(0,2),...top10.slice(0,2),...top.slice(2,8)]).slice(0,6);
   const lh=(APP.teamHits||[]).find(h=>h.live);if(lh)setSpot(lh.chans[0].id,'team');else if(APP.hero.length&&PS('hero')){showHero(0);const pb=$('#spot [data-hb="1"]');if(pb)pb.setAttribute('data-autofocus','')}else if(cont[0])setSpot(cont[0].id,'cont');else if(top[0])setSpot(top[0].id,'top');
 };
 // Trailer im Hintergrund (YouTube, stumm oder mit Ton laut Einstellung). Wird erst sichtbar, wenn er wirklich läuft.
+// Fire TV: Der Trailer läuft im echten Android-Player unter der Oberfläche – an dieser Stelle wird die Oberfläche durchsichtig
+function trlOn(box){const h=document.documentElement;h.classList.add('trl');box.classList.add('trlon');
+  if(box.closest('.modal')){h.classList.add('trlm');const hero=box.closest('.hero'),sh=box.closest('.sheet');if(hero&&sh)sh.style.setProperty('--hh',hero.offsetHeight+'px')}
+  else{const o=document.createElement('div');o.className='bdfade';o.style.cssText=`left:${box.offsetLeft}px;top:${box.offsetTop}px;width:${box.offsetWidth}px;height:${box.offsetHeight}px`;box.parentNode.insertBefore(o,box.nextSibling)}}
+function trlOff(){document.documentElement.classList.remove('trl','trlm');$$('.trlon').forEach(x=>x.classList.remove('trlon'));$$('.bdfade').forEach(x=>x.remove())}
+window.nfkT=ev=>{const f=TR.f;if(!f||!f.nat)return;if(ev==='first'){if(!f.box.isConnected){TR.stop();return}f.on=true;trlOn(f.box)}else if(ev==='error')TR.stop()};
+document.addEventListener('scroll',e=>{const f=TR.f;if(f&&f.nat&&e.target&&e.target.contains&&e.target.contains(f.box))TR.stop()},true);
+// Trailer der Highlights schon im Voraus suchen, damit sie sofort starten
+function trlPrefetch(list){if(!(window.NFK&&NFK.tOpen))return;(async()=>{for(const it of list.slice(0,6)){if(P.el)return;try{await TRL.find(it)}catch(e){}}})()}
 // Trailer-Suche: sofort und unabhängig von den Bewertungen. Bevorzugt der offizielle IMDb-Trailer als direkte Videodatei
 // (leicht, startet schnell); nur wenn es den nicht gibt, YouTube.
 const TRL={mem:new Map(),cache:LS.get('nfk.trl',{})||{},
   save(){clearTimeout(TRL._st);TRL._st=setTimeout(()=>{const k=Object.keys(TRL.cache);if(k.length>600)k.slice(0,k.length-600).forEach(x=>delete TRL.cache[x]);LS.set('nfk.trl',TRL.cache)},3000)},
   pickTitle(list,it){const tv=it.type==='series';list=list.filter(x=>/^tt/.test(x.id));
     return list.find(x=>(!it.year||!x.y||Math.abs(x.y-it.year)<=1)&&(tv?/tv/i.test(x.qid||x.q||''):!/tv/i.test(x.qid||x.q||'')))||list.find(x=>!it.year||!x.y||Math.abs(x.y-it.year)<=1)},
-  async vi(it){const m=META.cache[it.id]||{};for(const t of uniq([m.engTitle,it.title].filter(Boolean))){const q=normT(t).replace(/[^\p{L}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);if(!q)continue;
+  async vi(it){const m=META.cache[it.id]||{};let ts=uniq([m.engTitle,m.oname,it.title].filter(Boolean));
+    if(!m.oname&&APP.cfg&&APP.cfg.mode==='xtream'&&it.type==='movie'){try{const d=await XT.vodInfo(APP.cfg,it.versions[0].src.id);if(d.oname){ts=uniq([d.oname,...ts]);META.cache[it.id]=Object.assign(META.cache[it.id]||{},{oname:d.oname})}}catch(e){}}
+    for(const t of ts){const q=normT(t).replace(/[^\p{L}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);if(!q)continue;
       const f=(/[a-z0-9]/.exec(q)||['x'])[0];const g=await NET.grab(`https://v3.sg.media-imdb.com/suggestion/${f}/${encodeURIComponent(q)}.json?includeVideos=1`,{body:true,max:800000});
       const c=TRL.pickTitle((JSON.parse(g.body||'{}').d)||[],it);if(!c)continue;const vs=c.v||[];const v=vs.find(x=>/trailer/i.test(x.l||''))||vs.find(x=>/teaser/i.test(x.l||''))||vs[0];if(v&&v.id)return v.id}return null},
-  async mp4(vi){const g=await NET.grab(`https://www.imdb.com/video/${vi}/`,{rules:[{re:String.raw`"playbackURLs":(\[[\s\S]*?\])`,g:[1],cut:40000},{re:String.raw`"(https:[^"]*?\.mp4[^"]*)"`,max:4,g:[1]}]});
+  async mp4(vi){const g=await NET.grab(`https://www.imdb.com/video/${vi}/`,{max:9000000,rules:[{re:String.raw`"playbackURLs":(\[[\s\S]*?\])`,g:[1],cut:40000},{re:String.raw`"(https:[^"]*?\.mp4[^"]*)"`,max:4,g:[1]}]});
     let list=[];try{list=JSON.parse(gfirst(g,0)||'[]')}catch(e){}
     const mp=list.filter(x=>x&&x.url&&(/mp4/i.test(x.videoMimeType||x.mimeType||'')||/\.mp4/.test(x.url)));
     const rk=x=>{const n=parseInt(String((x.displayName&&x.displayName.value)||x.videoDefinition||'').replace(/\D/g,''))||0;return n===720?4:n===480?3:n===1080?2:1};mp.sort((a,b)=>rk(b)-rk(a));
@@ -1281,7 +1331,10 @@ const TRL={mem:new Map(),cache:LS.get('nfk.trl',{})||{},
   // Ergebnis: {mp4:url} oder {yt:id} oder null
   find(it){if(it.demo)return Promise.resolve(null);const mm=TRL.mem.get(it.id);if(mm&&Date.now()-mm.t<30*6e4)return mm.p;
     const p=(async()=>{const c=TRL.cache[it.id]||{};
-      try{let vi=c.vi;if(vi===undefined){vi=await TRL.vi(it);TRL.cache[it.id]=Object.assign(TRL.cache[it.id]||{},{vi:vi||null});TRL.save()}if(vi){const u=await TRL.mp4(vi);if(u)return{mp4:u}}}catch(e){}
+      if(c.mp4&&c.exp>Date.now()+3e5)return{mp4:c.mp4};
+      try{let vi=c.vi;if(vi===undefined){vi=await TRL.vi(it);TRL.cache[it.id]=Object.assign(TRL.cache[it.id]||{},{vi:vi||null});TRL.save()}
+        if(vi){const u=await TRL.mp4(vi);if(u){const ex=+((u.match(/[?&]Expires=(\d+)/)||[])[1]||0)*1000||Date.now()+6*36e5;Object.assign(TRL.cache[it.id],{mp4:u,exp:ex});TRL.save();return{mp4:u}}}}catch(e){}
+      if(window.NFK&&NFK.tOpen)return null; // YouTube zeigt auf dem Fire TV oft nur Ton – dann lieber kein Trailer
       let yt=c.yt||(META.cache[it.id]||{}).yt;
       if(!yt&&c.yt!==null){try{yt=await KL.yt(it,META.cache[it.id]||{})}catch(e){}TRL.cache[it.id]=Object.assign(TRL.cache[it.id]||{},{yt:yt||null});TRL.save()}
       return yt?{yt}:null})();
@@ -1290,13 +1343,15 @@ const TR={t:null,f:null,tok:0,
   settle(it,box){if(box&&APP.modal&&!APP.modal.el.contains(box))return;clearTimeout(TR.t);TR.stop();if(!it||it.type==='live'||!box||!PS('trailer'))return;const tok=++TR.tok;const t0=Date.now();const wait=(+PS('trailerDelay')||2)*1000;
     TRL.find(it).then(src=>{if(!src||tok!==TR.tok)return;const go=()=>{if(tok!==TR.tok||!box.isConnected||P.el)return;if(Date.now()-(APP.lastKey||0)<700){TR.t=setTimeout(go,700);return}TR.start(src,box)};TR.t=setTimeout(go,Math.max(0,wait-(Date.now()-t0)))}).catch(()=>{})},
   start(src,box){if(!box||!box.isConnected)return;const mute=!PS('trailerSound');
+    if(src.mp4&&window.NFK&&NFK.tOpen){const r=box.getBoundingClientRect();const d=window.devicePixelRatio||1;const f={nat:true,box,on:false};TR.f=f;
+      NFK.tOpen(JSON.stringify({url:src.mp4,x:Math.round(r.left*d),y:Math.round(r.top*d),w:Math.round(r.width*d),h:Math.round(r.height*d),mute}));return}
     if(src.mp4){const v=document.createElement('video');v.className='yt';v.muted=mute;v.autoplay=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';
       v.addEventListener('playing',()=>v.classList.add('on'));v.addEventListener('error',()=>{if(TR.f===v)TR.stop()});v.src=src.mp4;box.appendChild(v);TR.f=v;v.play().catch(()=>{if(!mute){v.muted=true;v.play().catch(()=>{})}});return}
     const id=src.yt;const f=document.createElement('iframe');f.className='yt';f.tabIndex=-1;f.setAttribute('allow','autoplay; encrypted-media');
     f.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&mute=${mute?1:0}&controls=0&loop=1&playlist=${encodeURIComponent(id)}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&disablekb=1&fs=0&enablejsapi=1`;
     f.onload=()=>{try{f.contentWindow.postMessage(JSON.stringify({event:'listening',id:1,channel:'widget'}),'*')}catch(e){}setTimeout(()=>{if(TR.f===f)f.classList.add('on')},3500)};box.appendChild(f);TR.f=f},
-  playing(){return!!(TR.f&&TR.f.classList.contains('on'))},
-  stop(){clearTimeout(TR.t);TR.tok++;if(TR.f){if(TR.f.tagName==='VIDEO'){try{TR.f.pause();TR.f.removeAttribute('src');TR.f.load()}catch(e){}}TR.f.remove();TR.f=null}}};
+  playing(){return!!(TR.f&&(TR.f.nat?TR.f.on:TR.f.classList.contains('on')))},
+  stop(){clearTimeout(TR.t);TR.tok++;if(TR.f&&TR.f.nat){try{NFK.tStop()}catch(e){}trlOff();TR.f=null;return}if(TR.f){if(TR.f.tagName==='VIDEO'){try{TR.f.pause();TR.f.removeAttribute('src');TR.f.load()}catch(e){}}TR.f.remove();TR.f=null}}};
 window.addEventListener('message',e=>{if(!TR.f||e.source!==TR.f.contentWindow)return;let d;try{d=typeof e.data==='string'?JSON.parse(e.data):e.data}catch(x){return}if(!d)return;if(d.event==='onError')return TR.stop();if(d.info&&d.info.playerState===1)TR.f.classList.add('on')});
 // Weltweit angesagte Titel (TMDB „Trending“, wöchentlich) – abgeglichen mit deinem Katalog, beste verfügbare Qualität
 const TREND={
@@ -1342,12 +1397,26 @@ function top10Row(ty){const t=TOP.top(ty);if(!t)return`<section class="row" data
   const sub=t.demo?'Beispiel im Demo-Katalog':`meistgesucht weltweit (IMDb${d.nfx&&d.nfx[ty]&&d.nfx[ty].length?' & Netflix-Wochencharts':''}) · bei dir verfügbar${st?' · Stand '+st:''}`;
   return`<section class="row" data-top10="${ty}"><h3 class="pad">Top 10 ${ty==='movie'?'Filme':'Serien'} diese Woche<small>${sub}</small></h3><div class="track pad">${t.l.map((it,i)=>`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(it,{why:'top'})}</div>`).join('')}</div></section>`}
 function top10HTML(ty,l){const tr=!!TREND.top(ty);return`<section class="row" data-top10="${ty}"><h3 class="pad">Top 10 ${ty==='movie'?'Filme':'Serien'} ${tr?'diese Woche':'auf Netefeliks'}<small>${tr?'weltweit angesagt · bei dir verfügbar · beste Qualität':'beliebt bei dir verfügbar'}</small></h3><div class="track pad">${l.map((it,i)=>`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(it,{why:'top'})}</div>`).join('')}</div></section>`}
+// Angesagt: aktuelle Charts (IMDb/Netflix) + Titel aus diesem/letztem Jahr – sortiert nach deinem Geschmack
+function hotFor(t){const yr=new Date().getFullYear();const tm=(TOP.top('movie')||{}).l||[],ts=(TOP.top('series')||{}).l||[];const rank=new Map();[...tm,...ts].forEach((it,i)=>rank.set(it,i%10));
+  const disl=getRatings();const pr=getProg();
+  const cand=uniq([...tm,...ts,...pool('vod').filter(i=>i.year>=yr-1)]).filter(i=>disl[i.id]!==-1&&!(pr[i.id]&&pr[i.id].done));
+  const sc=i=>R.score(i,t)*.55+(rank.has(i)?(1-rank.get(i)/12)*.35:0)+(i.year>=yr?.15:i.year===yr-1?.08:0)+((i.rating||6)-6)*.03+(QR[i.q]>=4?.03:0);
+  const a=cand.map(i=>({it:i,s:sc(i)})).sort((x,y)=>y.s-x.s);
+  // abwechselnd Filme und Serien
+  const mv=a.filter(x=>x.it.type==='movie'),se=a.filter(x=>x.it.type==='series');const out=[];let n=0;while(out.length<30&&(mv.length||se.length)){const useS=(n%3===2&&se.length>0)||!mv.length;out.push((useS?se:mv).shift().it);n++}return out}
+const LOCALKW={IR:/ایران|irani|iranian|persian ?(series|movies?|film)|فیلم ایرانی|سریال ایرانی|سینمای/i,DE:/deutsche (filme|serien|produktion)|german (movies|series)/i,TR:/yerli|türk (dizi|film)|turkish (series|movies)|dizi/i,AR:/عربي|مسلسل|arabic (series|movies)/i,IN:/bollywood|hindi|tamil/i,KU:/kurd|کورد/i,AF:/afghan|افغان/i};
+const DUBRE=/dub|dubbed|دوبله|doublage|synchro|زیرنویس/i;
+const ADJ={IR:'Iranische',DE:'Deutsche',TR:'Türkische',AR:'Arabische',IN:'Indische',KU:'Kurdische',AF:'Afghanische',FR:'Französische',ES:'Spanische',IT:'Italienische',RU:'Russische'};
+// Eigene Produktionen eines Landes (nicht synchronisiert): nur in dieser Sprache, nicht aus „Dubbed“-Kategorien, Kategorie- oder Schrift-Hinweis
+function localProd(list,c){const kw=LOCALKW[c];const rtl=c==='IR'||c==='AR'||c==='KU'||c==='AF';
+  return list.filter(it=>it.langs.length===1&&it.langs[0]===c&&!it.groups.some(g=>DUBRE.test(g))&&((kw&&it.groups.some(g=>kw.test(g)))||(rtl&&isRTL(it.title)&&!it.genres.includes('Animation'))))}
 function newPopular(list){const lim=Date.now()-60*864e5;return list.filter(i=>i.added>lim).sort((a,b)=>((b.rating||6)+(b.pop||50)/25)-((a.rating||6)+(a.pop||50)/25)).slice(0,24)}
 // Highlights oben auf der Startseite (wechseln automatisch)
 let heroT=null;
 function showHero(i,keep){const s=$('#spot');const H=APP.hero||[];if(!s||!H.length)return;i=(i+H.length)%H.length;APP.heroI=i;const it=H[i];const t=R.taste();
   const fa=s.contains(document.activeElement)&&document.activeElement.dataset.act;s.className='spot hero';s.dataset.cur='hero'+i;const rtl=isRTL(it.title);const fc=rtl?'':['ft-a','ft-b','ft-c'][(hstr(it.title)>>3)%3];
-  s.innerHTML=`<div class="bd kb"><div class="bdimg">${posterHTML(it,true)}</div></div><div class="info"><div class="htag"><span class="tag k">HIGHLIGHT</span> ${i+1} / ${H.length}</div><h1 class="s-title one ${fc}"${rtl?' dir="rtl" style="font-family:var(--f-fa);font-weight:800;text-align:left"':''}>${esc(it.title)}</h1>${metaHTML(it,t)}<div id="spot-r">${ratingsHTML(it,META.cache[it.id])}</div><p class="s-plot two" dir="auto" id="spot-p">${esc(it.plot||(META.cache[it.id]||{}).plot||'')}</p>
+  s.innerHTML=`<div class="bd kb"><div class="bdimg">${posterHTML(it,true)}</div></div><div class="info"><div class="htag"><span class="tag k">HIGHLIGHT</span> ${i+1} / ${H.length}</div><h1 class="s-title one ${fc}"${rtl?' dir="rtl" style="font-family:var(--f-fa);font-weight:800;text-align:left"':''}>${esc(it.title)}</h1>${metaHTML(it,t)}<div id="spot-r">${ratingsHTML(it,META.cache[it.id])}</div><p class="s-plot two" dir="auto" id="spot-p" data-tp="1">${esc(it.plot||(META.cache[it.id]||{}).plot||'')}</p>
    <div class="acts" style="margin:.2rem 0 0"><button class="btn pri f" data-act="${getProg()[it.id]&&!getProg()[it.id].done?'resume':'play'}" data-id="${it.id}" data-hb="1">${I.play}${getProg()[it.id]&&!getProg()[it.id].done?'Fortsetzen':'Abspielen'}</button><button class="btn f" data-act="open" data-id="${it.id}" data-hb="2">Mehr Infos</button>
    <span class="dots">${H.map((x,k)=>`<button class="dot f${k===i?' on':''}" data-act="hero" data-i="${k}" data-hb="d${k}" aria-label="Highlight ${k+1}"></button>`).join('')}</span></div></div>`;
   if(fa||keep){const b=keep?$(`[data-hb="${keep}"]`,s):$(`[data-act="${fa}"]`,s);(b||$('.f',s)).focus({preventScroll:true})}
@@ -1358,7 +1427,7 @@ function setSpot(id,why){const it=APP.byId.get(id);const s=$('#spot');if(!it||!s
   let reason='';if(why&&why.startsWith('b:')){const a=APP.byId.get(why.slice(2));if(a)reason=`Weil du <b dir="auto">${esc(a.title)}</b> geschaut hast`}else if(why==='cont'){const pr=getProg()[id];reason=pr?`Weiter bei ${fmtT(pr.p)}${pr.ep?' · Staffel '+pr.ep.s+', Folge '+pr.ep.n:''}`:''}else if(why==='new')reason='Neu hinzugefügt';else if(it.type!=='live')reason=R.explain(it,t);
   const rtl=isRTL(it.title);const fc=rtl?'fa':(['ft-a','ft-b','ft-c'][(hstr(it.title)>>3)%3]);
   if(it.type==='live'){TR.stop();const e=EPG.get(it);const th=why==='team'&&(APP.teamHits||[]).find(h=>h.chans.includes(it));s.innerHTML=`<div class="bd">${logoHTML(it)}</div><div class="info"><h1 class="s-title ft-b" dir="auto">${esc(th?th.title.split(':').slice(-1)[0].trim():it.title)}</h1>${metaHTML(it)}<p class="s-plot" dir="auto">${th&&!th.live?`<b>Anstoß:</b> ${hhmm(th.start)} auf ${esc(it.title)}`:e&&e.cur?`<b>Jetzt:</b> ${esc(e.cur.title)} · bis ${hhmm(e.cur.end)}${e.next?`<br><span style="color:var(--mute)">Danach: ${esc(e.next.title)}</span>`:''}`:'Live-Sender'}</p>${th?`<div class="s-why"><b>Dein Team ${esc(th.team.n)}</b> – beste Übertragung für dich: ${esc(langName(it.country))}${it.q?', '+it.q:''}${th.chans.length>1?` · ${th.chans.length-1} weitere Sender verfügbar`:''}</div>`:''}</div>`;return}
-  s.innerHTML=`<div class="bd kb"><div class="bdimg">${posterHTML(it,true)}</div></div><div class="info"><h1 class="s-title ${fc==='fa'?'':fc}"${rtl?' dir="rtl" style="font-family:var(--f-fa);font-weight:800;text-align:left"':''}>${esc(it.title)}</h1>${metaHTML(it,t)}<div id="spot-r">${ratingsHTML(it,META.cache[it.id])}</div><p class="s-plot" dir="auto" id="spot-p">${esc(it.plot||(META.cache[it.id]||{}).plot||'')}</p>${reason?`<div class="s-why">${reason}</div>`:''}</div>`;
+  s.innerHTML=`<div class="bd kb"><div class="bdimg">${posterHTML(it,true)}</div></div><div class="info"><h1 class="s-title ${fc==='fa'?'':fc}"${rtl?' dir="rtl" style="font-family:var(--f-fa);font-weight:800;text-align:left"':''}>${esc(it.title)}</h1>${metaHTML(it,t)}<div id="spot-r">${ratingsHTML(it,META.cache[it.id])}</div><p class="s-plot" dir="auto" id="spot-p" data-tp="1">${esc(it.plot||(META.cache[it.id]||{}).plot||'')}</p>${reason?`<div class="s-why">${reason}</div>`:''}</div>`;
   clearTimeout(spotT);if(!it.demo)spotT=setTimeout(()=>META.get(it).then(m=>{if(s.dataset.cur!==id)return;$('#spot-r')&&($('#spot-r').innerHTML=ratingsHTML(it,m));if(m.plot&&$('#spot-p'))$('#spot-p').textContent=m.plot;if(m.backdrop&&!it.backdrop){it.backdrop=m.backdrop;$('#spot .bdimg').innerHTML=posterHTML(it,true)}}).catch(()=>{}),650);
   TR.settle(it,$('.bd',s))}
 
@@ -1372,17 +1441,17 @@ VIEWS.live=(el,a)=>{
   const all=!!a.all,lv=livePool(all);const countries=liveCountries(lv);const p=prof();
   const favs=(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c));const rc=getRecentCh().map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c)).slice(0,30);
   const pins=(PS('livePins')||[]).filter(g=>lv.some(c=>c.groups.includes(g)));
-  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__fav'&&!favs.length)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');
+  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');
   const selC=sel.startsWith('__c:')?sel.slice(4).split('|')[0]:'';const selG=sel.startsWith('__c:')&&sel.includes('|')?sel.slice(sel.indexOf('|')+1):(!sel.startsWith('__')?sel:'');
   const gsz={};for(const c of lv)gsz[c.group]=(gsz[c.group]||0)+1;
   let list;if(sel==='__fav')list=favs;else if(sel==='__recent')list=rc;else if(selC){list=lv.filter(c=>c.country===selC&&(!selG||c.groups.includes(selG)));list.sort((x,y)=>(x.sport-y.sport)||(gsz[y.group]-gsz[x.group])||x.group.localeCompare(y.group))}else{list=lv.filter(c=>c.groups.includes(sel))}
   const lim=a.lim||120;const favSet=new Set(PS('liveFav')||[]);
   const item=(k,ic,l,n)=>`<button class="cat f${k===sel||(k.startsWith('__c:')&&selC&&k==='__c:'+selC)?' on':''}" data-act="lg" data-g="${esc(k)}"${(k===sel||(selC&&k==='__c:'+selC))?' data-autofocus':''}><span dir="auto">${ic}${l}</span><em>${n}</em></button>`;
   let cats='';
-  if(favs.length)cats+=item('__fav','★ ','Favoriten',favs.length);
+  cats+=item('__fav','★ ','Favoriten',favs.length);
   if(rc.length)cats+=item('__recent','↺ ','Zuletzt gesehen',rc.length);
   if(pins.length)cats+=pins.map(g=>item(g,'📌 ',esc(g),gsz[g]||lv.filter(c=>c.groups.includes(g)).length)).join('');
-  if(cats)cats+='<div class="csep"></div>';
+  cats+='<div class="csep"></div>';
   cats+=countries.map(c=>item('__c:'+c,(CBY[c]&&CBY[c].flag?CBY[c].flag+' ':''),esc(c==='XX'?'Ohne Land':(CBY[c]||{name:c}).name.split(' · ')[0]),lv.filter(x=>x.country===c).length)).join('');
   cats+=`<div class="csep"></div><button class="cat f sm2" data-act="lall" data-v="${all?0:1}"><span>${all?'Nur meine Länder':'Weitere Länder'}</span><em>${all?'':'+'}</em></button>`;
   // Kategorien des gewählten Landes als Leiste
@@ -1394,9 +1463,9 @@ VIEWS.live=(el,a)=>{
   const row=(c,i)=>{const e=EPG.get(c);const fv=favSet.has(c.id);const nq=uniq(c.versions.map(v=>v.q).filter(Boolean)).length;
     return`<div class="chw"><button class="chr f" data-id="${c.id}" data-act="play"><span class="no">${i+1}</span><span class="lg">${logoHTML(c)}</span><span class="tx"><b dir="auto">${esc(c.title)}${c.q?` <span class="tag${QR[c.q]>=4?' k':''}">${esc(c.q==='FHD'?'FHD':c.q)}</span>`:''}${nq>1?` <span class="qn">${nq} Qualitäten</span>`:''}</b><div data-epg="${c.id}">${e&&e.cur?`<span dir="auto">${esc(e.cur.title)}</span> · ${hhmm(e.cur.start)}–${hhmm(e.cur.end)}`:epgLine(c)}</div>${e&&e.cur?`<i class="epb"><i style="width:${Math.round(clamp((Date.now()-e.cur.start)/(e.cur.end-e.cur.start),0,1)*100)}%"></i></i>`:''}</span><span class="nx" dir="auto">${e&&e.next?'Danach: '+esc(e.next.title):''}</span></button>${sel==='__fav'?(i?`<button class="mini f" data-act="lfmove" data-id="${c.id}" data-d="-1" aria-label="Nach oben">▲</button>`:''):''}<button class="mini f${fv?' fv':''}" data-act="lfav" data-id="${c.id}" aria-label="${fv?'Aus Favoriten entfernen':'Zu Favoriten'}">${fv?'★':'☆'}</button></div>`};
   el.innerHTML=`<div class="pad vh lvh"><div class="lhead"><h2 class="vtitle">Live-TV</h2><p class="vsub">${nf(lv.length)} Sender aus ${all?'allen Ländern':'deinen Ländern'} · ☆ oder Menü-Taste ≡ = Favorit</p></div>
-  <div class="live-w"><div class="cats">${cats}</div>
+  <div class="live-w"><div class="lleft">${APP.pip&&!P.el?`<button class="pipbox f" id="pipbox" data-act="pipfull" aria-label="Vollbild"><span class="piplab"><b>LIVE</b> ${esc(APP.pip.it.title)}</span></button>`:''}<div class="cats">${cats}</div></div>
   <div class="lmain"><div class="lbar"><h3>${head} <small>${nf(list.length)} Sender</small></h3>${pinBtn}</div>${chipsH}
-  <div class="chl">${list.slice(0,lim).map(row).join('')||'<p class="empty">Keine Sender in dieser Auswahl.</p>'}
+  <div class="chl">${list.slice(0,lim).map(row).join('')||(sel==='__fav'?'<p class="empty">Noch keine Favoriten. Drück bei einem Sender auf ☆ oder die Menü-Taste ≡ der Fernbedienung.</p>':'<p class="empty">Keine Sender in dieser Auswahl.</p>')}
   ${list.length>lim?`<button class="btn more f" data-act="more" data-lim="${lim+120}">Weitere ${nf(Math.min(120,list.length-lim))} Sender laden</button>`:''}</div></div></div></div>`;
 };
 // ----- Sport -----
@@ -1421,24 +1490,32 @@ function vodView(type){return(el,a)=>{
   const t=R.taste(),items=pool(type),p=prof();const g=a.g||'Für dich',c=a.c||'',sort=a.s||'rec';
   const gc={};items.forEach(i=>i.genres.forEach(x=>gc[x]=(gc[x]||0)+1));const genres=Object.keys(gc).sort((x,y)=>gc[y]-gc[x]);
   const favs=items.filter(i=>inList(i.id));
-  let list=items.filter(i=>(g==='Für dich'||(g==='★ Favoriten'?inList(i.id):i.genres.includes(g)))&&(!c||i.langs.includes(c)));
+  const cat=a.cat||'';let list=items.filter(i=>(g==='Für dich'||(g==='★ Favoriten'?inList(i.id):i.genres.includes(g)))&&(!c||i.langs.includes(c))&&(!cat||(cat.startsWith('@')?localProd([i],cat.slice(1)).length:i.groups.includes(cat))));
   const sc=new Map(list.map(i=>[i,R.score(i,t)]));
   const srt={rec:(x,y)=>sc.get(y)-sc.get(x),new:(x,y)=>y.added-x.added,imdb:(x,y)=>(y.rating||0)-(x.rating||0),az:(x,y)=>x.title.localeCompare(y.title,'de')};list.sort(srt[sort]);
   const label=type==='movie'?'Filme':'Serien';const lim=a.lim||120;
   let body='';
-  if(g==='Für dich'&&!c&&sort==='rec'){
+  if(g==='Für dich'&&!c&&!cat&&sort==='rec'){
     if(favs.length)body+=rowHTML('★ Deine Favoriten',favs.slice(0,30),{why:'list',sub:favs.length+''});
+    for(const cc of p.countries){if(cc==='EN')continue;const lp=localProd(list,cc);if(lp.length>=3)body+=rowHTML(`${CBY[cc].flag||''} ${ADJ[cc]||'Aus '+esc(CBY[cc].name)} ${label}`,lp.sort((a,b)=>sc.get(b)-sc.get(a)).slice(0,30),{why:'top',sub:nf(lp.length)+' Titel · Eigenproduktionen'})}
     body+=top10Row(type);
     {const np=newPopular(list);if(np.length>3)body+=rowHTML('Neu & beliebt',np,{why:'new'})}
     body+=rowHTML('Für dich ausgewählt',R.mmr(list.map(i=>({it:i,s:sc.get(i)})),24).map(x=>x.it),{why:'top'});
     const order=uniq([...R.topGenres(t,20).map(x=>x[0]),...genres]).filter(x=>gc[x]>=3).slice(0,10);
+    // Kategorien deines Anbieters, nach Ländern (die größten pro Land)
+    for(const cc of p.countries){const gm=new Map();for(const i of list)if(i.langs.includes(cc))for(const gr of i.groups){if(detectCountry(gr,'')!==cc)continue;gm.set(gr,(gm.get(gr)||0)+1)}
+      [...gm.entries()].filter(([,n])=>n>=5).sort((a,b)=>b[1]-a[1]).slice(0,4).forEach(([gr,n])=>{body+=rowHTML(`${CBY[cc].flag||''} ${esc(gr)}`,list.filter(i=>i.groups.includes(gr)).sort((a,b)=>sc.get(b)-sc.get(a)).slice(0,24),{why:'top',sub:nf(n)+' Titel'})})}
     for(const x of order)body+=rowHTML(esc(x),list.filter(i=>i.genres.includes(x)).slice(0,24),{why:'g:'+x,sub:gc[x]+' Titel'});
     if(p.countries.length>1)for(const cc of p.countries){const cl=list.filter(i=>i.langs.includes(cc));if(cl.length>3)body+=rowHTML(esc(label)+' · '+esc(CBY[cc].name)+' '+(CBY[cc].flag||''),cl.slice(0,24),{why:'top'})}
   }else body=`<div class="pad"><div class="grid">${list.slice(0,lim).map(i=>cardHTML(i,{why:'top'})).join('')}</div>${list.length>lim?`<button class="btn more f" data-act="more" data-lim="${lim+120}">Mehr laden (${nf(list.length-lim)} weitere)</button>`:''}${!list.length?'<p class="empty">Keine Titel für diese Auswahl.</p>':''}</div>`;
   el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><div class="pad" style="padding-top:.4rem"><h2 class="vtitle sm">${label} <small>${nf(items.length)} Titel</small></h2>
-   <div class="chips" style="margin-bottom:.7rem">${['Für dich',...(favs.length?['★ Favoriten']:[]),...genres].map(x=>`<button class="chip f${x===g?' on':''}" data-act="vf" data-k="g" data-v="${esc(x)}"${x===g?' data-autofocus':''}>${esc(x)}</button>`).join('')}</div>
-   <div class="chips">${p.countries.length>1?['',...p.countries].map(x=>`<button class="chip f${x===c?' on':''}" data-act="vf" data-k="c" data-v="${x}">${x?(CBY[x].flag||'')+' '+esc(CBY[x].name):'Alle Länder'}</button>`).join(''):''}
-   ${[['rec','Empfohlen'],['new','Neu'],['imdb','Beste Bewertung'],['az','A–Z']].map(([k,l])=>`<button class="chip f${k===sort?' on':''}" data-act="vf" data-k="s" data-v="${k}">${l}</button>`).join('')}</div></div>${body}</div>`;
+   <div class="vbar"><button class="ddb f${g!=='Für dich'&&g!=='★ Favoriten'?' on':''}" data-act="dd" data-k="g" data-autofocus>Genre: <b>${esc(g==='★ Favoriten'?'Alle':g==='Für dich'?'Alle':g)}</b> ▾</button>
+    ${p.countries.length>1?`<button class="ddb f${c?' on':''}" data-act="dd" data-k="c">Sprache: <b>${c?(CBY[c].flag||'')+' '+esc(CBY[c].name.split(' · ')[0]):'Alle'}</b> ▾</button>`:''}
+    <button class="ddb f${cat?' on':''}" data-act="dd" data-k="cat">Kategorie: <b>${cat?esc(cat.startsWith('@')?(ADJ[cat.slice(1)]||cat.slice(1))+' '+label:cat):'Alle'}</b> ▾</button>
+    <button class="ddb f${sort!=='rec'?' on':''}" data-act="dd" data-k="s">Sortieren: <b>${({rec:'Empfohlen',new:'Neu',imdb:'Beste Bewertung',az:'A–Z'})[sort]}</b> ▾</button>
+    ${favs.length?`<button class="ddb f${g==='★ Favoriten'?' on':''}" data-act="vf" data-k="g" data-v="${g==='★ Favoriten'?'Für dich':'★ Favoriten'}">★ Favoriten <small>${favs.length}</small></button>`:''}
+    ${g!=='Für dich'||c||cat||sort!=='rec'?`<button class="ddb f clr" data-act="vclr">✕ Zurücksetzen</button>`:''}</div>
+   <script type="application/json" id="ddata">${JSON.stringify({g:genres.map(x=>[x,gc[x]]),c:p.countries,cat:(()=>{const out=[];for(const cc of p.countries){const lp=localProd(items,cc);if(cc!=='EN'&&lp.length)out.push(['@'+cc,(CBY[cc].flag||'')+' '+(ADJ[cc]||cc)+' '+label+' (Eigenproduktionen)',lp.length]);const gm=new Map();for(const i of items)for(const gr of i.groups)if(detectCountry(gr,'')===cc)gm.set(gr,(gm.get(gr)||0)+1);[...gm.entries()].sort((x,y)=>y[1]-x[1]).forEach(([gr,n])=>out.push([gr,(CBY[cc].flag||'')+' '+gr,n]))}return out})(),cur:{g,c,s:sort,cat}}).replace(/</g,'\\u003c')}<\/script></div>${body}</div>`;
   const f0=(g==='Für dich'&&!c&&sort==='rec')?R.mmr(list.map(i=>({it:i,s:sc.get(i)})),1).map(x=>x.it)[0]:list[0];if(f0)setSpot(f0.id,'top');
 }}
 VIEWS.movies=vodView('movie');VIEWS.series=vodView('series');
@@ -1473,6 +1550,7 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Kinderprofil','Blendet Horror, Thriller, Krimi und Erwachseneninhalte aus.',tgl('kids',PS('kids')))}
     ${optRow('Profile','',`<div class="bar-row"><button class="btn sm f" data-act="profiles">Profil wechseln</button><button class="btn sm f" data-act="padd">Neues Profil</button><button class="btn sm f" data-act="delprof">Dieses Profil löschen</button></div>`)}`;
   else if(sec==='sprache')body=`<h3>Sprache & Synchron</h3>
+    ${optRow('Sprache der Beschreibungen','Inhaltsangaben von Filmen und Serien werden automatisch in diese Sprache übersetzt.',chs('plotLang',PS('plotLang')||'DE',[['DE','🇩🇪 Deutsch'],['IR','🇮🇷 Persisch'],['EN','🇺🇸 Englisch'],['orig','Original lassen']]))}
     ${optRow('Wunschsprache','Gibt es einen Titel in mehreren Sprachen, startet er in Sprache 1. Tonspuren im Stream werden genauso gewählt.',`<div style="width:100%">${p.countries.map((k,i)=>`<div class="lrow"><b>${i+1}. ${CBY[k].flag||''} ${esc(langName(k))} <span style="color:var(--mute);font-weight:500">· ${esc(CBY[k].name)}</span></b>${i?`<button class="btn sm f" data-act="lup" data-k="${k}">Nach vorne</button>`:'<span class="tag k">Wunschsprache</span>'}</div>`).join('')}</div>`)}
     ${optRow('Tonspur','Bei Filmen mit mehreren Tonspuren in einer Datei.',chs('audio',PS('audio'),[['pref','Wunschsprache (Synchron)'],['orig','Originalton']]))}
     ${optRow('Untertitel','Werden automatisch eingeschaltet, wenn vorhanden.',chs('subs',PS('subs'),[['off','Aus'],['auto','In Wunschsprache'],['DE','Deutsch'],['EN','Englisch'],['IR','Persisch']]))}
@@ -1486,7 +1564,7 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Genres ausblenden','Diese Genres erscheinen nirgends mehr in diesem Profil.',`<div class="chips">${all.map(g=>`<button class="chip f${PS('hideGenres').includes(g)?' on':''}" data-act="hidegen" data-g="${esc(g)}">${PS('hideGenres').includes(g)?'✕ ':''}${esc(g)}</button>`).join('')}</div>`)}
     ${optRow('Mindestbewertung für Empfehlungen','Titel darunter werden nicht empfohlen (bleiben aber auffindbar).',chs('minRating',PS('minRating'),[[0,'Alle'],[6,'ab 6'],[7,'ab 7'],[8,'ab 8']]))}
     ${optRow('Lieblingsgenres','Startpunkt für deine Empfehlungen.',`<button class="btn sm f" data-act="editgen">${(p.genres||[]).length?esc(p.genres.join(', ')):'Auswählen'}</button>`)}`}
-  else if(sec==='darstellung'){const R0=PS('rows');const rl=[['cont','Weiterschauen'],['top','Top-Empfehlungen'],['because','„Weil du … geschaut hast“'],['top10','Top 10 diese Woche'],['sport','Live-Sport'],['recent','Zuletzt gesehene Sender'],['new','Neu auf Netefeliks'],['pop','Beliebt pro Land'],['genre','Genre-Reihen für dich'],['list','Favoriten']];
+  else if(sec==='darstellung'){const R0=PS('rows');const rl=[['cont','Weiterschauen'],['top','Top-Empfehlungen'],['because','„Weil du … geschaut hast“'],['top10','Top 10 diese Woche'],['new','Neu auf Netefeliks'],['pop','Beliebt pro Land'],['genre','Genre-Reihen für dich'],['list','Favoriten']];
     body=`<h3>Darstellung</h3>
     ${optRow('Highlight-Show auf der Startseite','Große, wechselnde Highlights oben.',tgl('hero',PS('hero')))}
     ${optRow('Wechsel der Highlights','',chs('heroSec',PS('heroSec'),[[6,'alle 6 s'],[10,'alle 10 s'],[15,'alle 15 s']]))}
@@ -1518,6 +1596,7 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Hinweis bei Anpfiff','Kleines Fenster, sobald dein Team live spielt.',tgl('teamAlert',PS('teamAlert')))}`;
   else if(sec==='live')body=`<h3>Live-TV</h3>
     ${optRow('Startkategorie','',chs('liveStart',PS('liveStart'),[['__all','Erstes Land'],['__fav','Favoriten'],['__recent','Zuletzt gesehen'],...p.countries.map(k=>['__c:'+k,esc(CBY[k].name)])]))}
+    ${optRow('Mini-Fenster','Beim Verlassen eines Senders läuft er klein in Live-TV weiter, bis du einen neuen wählst.',tgl('livePip',PS('livePip')))}
     ${optRow('Sendernummern anzeigen','',tgl('liveNums',PS('liveNums')))}
     ${optRow('Reihenfolge der Länder','Oben in der Liste = oben in Live-TV.',`<div class="plist">${liveCountries(livePool(false)).map((c,i,arr)=>`<div class="prow"><span style="min-width:11rem">${CBY[c]&&CBY[c].flag?CBY[c].flag+' ':''}${esc(c==='XX'?'Ohne Land':CBY[c].name)}</span>${i?`<button class="btn sm f" data-act="lmove" data-c="${c}" data-d="-1">▲</button>`:''}${i<arr.length-1?`<button class="btn sm f" data-act="lmove" data-c="${c}" data-d="1">▼</button>`:''}</div>`).join('')}</div>`)}
     ${optRow('Favoriten & angeheftete Kategorien','☆ neben einem Sender oder Menü-Taste ≡ = Favorit. Kategorien heftest du in Live-TV mit „📌 Links anheften“ an.',`<button class="btn sm f" data-act="livereset">Alles zurücksetzen</button>`)}`;
@@ -1532,9 +1611,10 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Jetzt prüfen','',`<button class="btn sm f" data-act="updcheck">Nach Updates suchen</button>`)}`}
   else if(sec==='konto')body=`<h3>Abo & App</h3>
     <div class="kv" style="margin-bottom:1rem"><span>Quelle</span><b>${mode}</b>${c.mode==='xtream'?`<span>Server</span><b>${esc(c.server)}</b><span>Benutzer</span><b>${esc(c.user)}</b>${c.exp?`<span>Läuft ab</span><b>${new Date(c.exp).toLocaleDateString('de-DE')}</b>`:''}${c.maxc?`<span>Verbindungen</span><b>${esc(c.maxc)}</b>`:''}`:c.mode==='m3u'?`<span>Playlist</span><b>${esc(c.m3u)}</b>`:''}<span>Einträge</span><b>${nf(APP.items.length)}</b><span>App-Version</span><b>${UPD.has()?UPD.ver():'Browser-Vorschau'}</b></div>
+    ${(()=>{const a=LS.get('nfk.appcrash',null);if(!a)return'';const lines=a.x.split('\n');return optRow('Letzter App-Absturz',`${new Date(+lines[0]||a.t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})} – mach ein Foto davon und schick es mir:<br><code style="font-size:.72rem;opacity:.8;white-space:pre-wrap;display:block;margin-top:.4rem">${esc(lines.slice(1,7).join('\n'))}</code>`,`<button class="btn sm f" data-act="acclr">Zurücksetzen</button>`)})()}
     ${(()=>{const l=LS.get('nfk.crashes',[])||[];if(!l.length)return'';const x=l[l.length-1];return optRow('Neustarts der Oberfläche',`${l.length}× in letzter Zeit · zuletzt ${new Date(x.t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})} (${x.why==='kill'?'von Android beendet – Arbeitsspeicher knapp':x.why==='crash'?'abgestürzt':'unbekannt'}${x.play?', während der Wiedergabe':x.v?', in „'+esc(x.v)+'“':''})`,`<button class="btn sm f" data-act="crclr">Zurücksetzen</button>`)})()}
     ${optRow('Updates','Die App meldet neue Versionen selbst.',`<button class="btn sm f" data-act="updcheck">Nach Updates suchen</button>`)}
-    ${optRow('Playlist',`Wird auf dem Gerät gespeichert und alle 30 Minuten im Hintergrund aktualisiert.${CACHE.t?' Zuletzt: '+new Date(CACHE.t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):''}`,`<button class="btn sm f" data-act="bgnow">Jetzt aktualisieren</button><button class="btn sm f" data-act="rescan">Komplett neu einlesen</button>`)}
+    ${optRow('Playlist',`Wird auf dem Gerät gespeichert und alle 6 Stunden im Hintergrund aktualisiert (nur wenn die App ruht).${CACHE.t?' Zuletzt: '+new Date(CACHE.t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):''}`,`<button class="btn sm f" data-act="bgnow">Jetzt aktualisieren</button><button class="btn sm f" data-act="rescan">Komplett neu einlesen</button>`)}
     ${optRow('Bewertungen & Trailer','Kostenlose Schlüssel von omdbapi.com (IMDb, Rotten Tomatoes) und themoviedb.org (deutsche Beschreibungen, Trailer).',`<div style="display:flex;flex-direction:column;gap:.6rem;width:100%;max-width:22rem"><input class="in f" id="omdb" value="${esc(c.omdb||'')}" placeholder="OMDb-Schlüssel"><input class="in f" id="tmdb" value="${esc(c.tmdb||'')}" placeholder="TMDB-Schlüssel (v3)"><div><button class="btn sm pri f" data-act="savekeys">Speichern</button></div></div>`)}
     ${optRow('Abmelden','Entfernt die Zugangsdaten von diesem Gerät.',`<button class="btn sm f" data-act="logout">Abmelden</button>`)}
     <p class="hint" style="margin-top:1.2rem">Filmdaten, Bilder und Trailer-Verweise: Dieses Produkt nutzt die TMDB-API, ist aber nicht von TMDB unterstützt oder zertifiziert.</p>`;
@@ -1556,7 +1636,7 @@ async function openDetails(id){
       <button class="btn ic f${rt<0?' on':''}" data-act="rate" data-v="-1" data-id="${it.id}" title="Nichts für mich" aria-label="Nichts für mich">${I.down}</button>
       </div><div id="d-lang" style="margin:-.3rem 0 1rem">${langChips(it)}</div>
      <div id="d-r" style="margin-bottom:1.1rem">${ratingsHTML(it,META.cache[it.id])}</div>
-     <p class="plot" dir="auto" id="d-p">${esc(it.plot||(META.cache[it.id]||{}).plot||'Beschreibung wird geladen …')}</p>
+     <p class="plot" dir="auto" id="d-p" data-tp="1">${esc(it.plot||(META.cache[it.id]||{}).plot||'Beschreibung wird geladen …')}</p>
      ${!it.demo&&!APP.cfg.omdb?'<p class="hint" style="margin-top:.8rem">Für IMDb- und Rotten-Tomatoes-Werte einen OMDb-Schlüssel unter Einstellungen eintragen.</p>':''}</div>
     <div class="side" id="d-s">${sideHTML(it)}</div></div>
    ${it.type==='series'?'<div class="dsec" id="eps"><h4>Folgen</h4><div class="spin"></div></div>':''}
@@ -1622,6 +1702,7 @@ function closeModal(){if(!APP.modal)return;TR.stop();const b=APP.modal.back;APP.
 // ---------- Player ----------
 const P={
   open(it,o={}){
+    const fromPip=!!(o.fromPip&&APP.pip&&APP.pip.it===it);if(APP.pip&&!fromPip)pipStop(true);
     // Bild aus anderer Fassung + Ton, der erst noch geladen werden muss (Abo mit 1 Verbindung): vorher fragen
     if(it.type==='movie'&&!o.ep&&!o.noAsk&&!it.demo&&PS('player')!=='web'&&window.NFK&&NFK.vOpen){const pl=playPlan(it);if(pl.aud&&!mixDirect()&&!prepared(it,pl.l)){askMix(it,pl);return}}
     P.close(true);P.it=it;P.o=o;P.start=Date.now();const pr=getProg()[it.id];
@@ -1654,7 +1735,7 @@ const P={
       <div class="pbtns">${it.type==='live'?`<button class="btn ic f" data-act="ch" data-d="-1" aria-label="Vorheriger Sender">${I.chUp}</button><button class="btn ic f" data-act="ch" data-d="1" aria-label="Nächster Sender">${I.chDn}</button><span class="live">LIVE</span>${o.alts&&o.alts.length>1?`<button class="btn sm f" data-act="alt">Andere Übertragung (${o.alts.length-1})</button>`:''}`:`<button class="btn ic f" data-act="seek" data-d="-10" aria-label="10 Sekunden zurück">${I.back10}</button><button class="btn ic f" data-act="pp" id="ppb" data-autofocus aria-label="Pause">${I.pause}</button><button class="btn ic f" data-act="seek" data-d="30" aria-label="30 Sekunden vor">${I.fwd10}</button>`}
        <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}${!ep&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Sprache & Audio</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
     document.body.appendChild(el);P.el=el;P.playing=true;
-    {const s0=ep?ep.src:P.vers[P.ver].src;if(!P.demo)P.load(s0.url,s0.alt)}
+    {const s0=ep?ep.src:P.vers[P.ver].src;if(fromPip&&P.engine==='nat'){P.cur={url:s0.url,alt:s0.alt||''};APP.pip=null;document.documentElement.classList.remove('pip');NFK.vMini('')}else if(!P.demo)P.load(s0.url,s0.alt)}
     P.tick=setInterval(()=>{if(P.engine==='nat'){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos!=null){P.pos=st.pos/1000;if(st.dur>0)P.dur=st.dur/1000;P.playing=!!st.playing;P.el.classList.toggle('buf',!!st.buf||(!st.playing&&!st.dur));if(st.bw>0)P.bwMax=Math.max(P.bwMax||0,st.bw);P.rebuf(!!st.buf)}}
       if(P.demo&&P.playing&&P.dur){P.pos=Math.min(P.dur,P.pos+.25*60);if(P.pos>=P.dur){P.ended();return}}P.ui();if(Date.now()-P.last>4500&&!$('#player:focus-within .scrub:focus')&&!$('.ap'))P.el.classList.add('idle')},250);
     P.saveT=setInterval(()=>{P.save();NOW.save()},5000);setTimeout(NOW.save,0);P.last=Date.now();P.ui();
@@ -1737,10 +1818,10 @@ const P={
   ended(){P.save();const nx=PS('autonext')?P.nextEp():null;if(nx){toast('Nächste Folge startet');P.open(P.it,{ep:nx})}else P.close()},
   logEnd(){const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}},
   after(it){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?`#main [data-id="${it.id}"]`:null)},
-  close(silent){if(!P.el)return;P.save();if(P.bwMax>2e6&&Date.now()-P.start>30000)BW.note(P.bwMax/1e6,'Wiedergabe');P.bwMax=0;P._bt=[];clearInterval(P.tick);clearInterval(P.saveT);if(P.engine==='nat'){NFK.vCmd('stop',0);document.documentElement.classList.remove('vidmode')}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
+  close(silent){if(!P.el)return;P.save();if(P.bwMax>2e6&&Date.now()-P.start>30000)BW.note(P.bwMax/1e6,'Wiedergabe');P.bwMax=0;P._bt=[];clearInterval(P.tick);clearInterval(P.saveT);const pip=!silent&&P.engine==='nat'&&P.it&&P.it.type==='live'&&APP.view==='live'&&!APP.modal&&PS('livePip')!==0&&!!(window.NFK&&NFK.vMini);if(P.engine==='nat'){if(pip)APP.pip={it:P.it};else NFK.vCmd('stop',0);document.documentElement.classList.remove('vidmode')}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
     const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}
     P.el.remove();P.el=null;P.v=null;P.triedAlt=0;if(UPD.info&&!UPD.shownAfter){UPD.shownAfter=1;setTimeout(()=>UPD.show(),800)}
-    if(!silent){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?`#main [data-id="${it.id}"]`:null)}},
+    if(!silent){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?(APP.pip?'#pipbox':`#main [data-id="${it.id}"]`):null)}},
   chan(d){const it=P.it;const list=chanList(it);const i=list.indexOf(it);const n=list[(i+d+list.length)%list.length];if(n&&n!==it){P.open(n);toast(n.title)}},
 };
 
@@ -1769,6 +1850,26 @@ const ASP=[[0,'Original'],[1,'Füllen (zoomen)'],[2,'Strecken'],[3,'16:9'],[4,'4
 const aspOf=it=>{const m=LS.get('nfk.asp',{})||{};return it&&m[it.id]!=null?m[it.id]:(+PS('aspect')||0)};
 function setAsp(it,v){const m=LS.get('nfk.asp',{})||{};m[it.id]=v;const k=Object.keys(m);if(k.length>500)delete m[k[0]];LS.set('nfk.asp',m)}
 function webAsp(v,m){if(!v)return;v.style.objectFit=m===1?'cover':m===2?'fill':'contain';v.style.aspectRatio='';v.style.width=v.style.height='';if(m>=3){const r=[0,0,0,16/9,4/3,21/9][m];v.style.objectFit='fill';v.style.width='min(100vw,'+(100*r)+'vh)';v.style.height='min(100vh,'+(100/r)+'vw)';v.style.margin='auto';v.style.inset='0'}}
+// ---------- Beschreibungen in deiner Sprache (automatische Übersetzung, ohne Schlüssel) ----------
+const TL={cache:LS.get('nfk.tl',{})||{},busy:new Set(),
+  target(){const v=PS('plotLang')||'DE';return v==='orig'?null:({DE:'de',EN:'en',IR:'fa',TR:'tr',AR:'ar',FR:'fr',ES:'es',IT:'it',RU:'ru',KU:'ckb'})[v]||'de'},
+  // grobe Erkennung, ob der Text schon in der Zielsprache ist
+  need(t,tl){if(!t||t.length<15)return false;const fa=/[\u0600-\u06FF]/.test(t);if(tl==='fa'||tl==='ar'||tl==='ckb')return!fa;if(fa)return true;
+    const w=' '+t.toLowerCase().replace(/[^a-zäöüß ]/g,' ')+' ';const hit=re=>(w.match(re)||[]).length;
+    const de=hit(/ (der|die|das|und|ist|nicht|eine|einem|einen|sich|mit|auf|wird) /g),en=hit(/ (the|and|is|with|his|her|their|of|to|a|an|who) /g);
+    if(tl==='de')return en>=de;if(tl==='en')return de>en;return true},
+  save(){clearTimeout(TL._st);TL._st=setTimeout(()=>{const k=Object.keys(TL.cache);if(k.length>700)k.slice(0,k.length-700).forEach(x=>delete TL.cache[x]);LS.set('nfk.tl',TL.cache)},3000)},
+  async get(t,tl){const k=tl+':'+hstr(t);if(TL.cache[k])return TL.cache[k];
+    const g=await NET.grab('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='+tl+'&dt=t&q='+encodeURIComponent(t.slice(0,1800)),{body:true,max:300000});
+    const d=JSON.parse(g.body||'[]');const out=((d&&d[0])||[]).map(x=>x&&x[0]||'').join('').trim();if(out){TL.cache[k]=out;TL.save()}return out||t},
+  fix(){const tl=TL.target();if(!tl)return;for(const el of $$('[data-tp]')){const t=el.textContent.trim();if(!t||el._tdone===t||TL.busy.has(el))continue;
+      if(!TL.need(t,tl)){el._tdone=t;continue}const k=tl+':'+hstr(t);if(TL.cache[k]){el.textContent=TL.cache[k];el._tdone=TL.cache[k];continue}
+      TL.busy.add(el);TL.get(t,tl).then(o=>{if(el.isConnected&&el.textContent.trim()===t){el.textContent=o;el._tdone=o}}).catch(()=>{el._tdone=t}).finally(()=>TL.busy.delete(el))}}};
+new MutationObserver(()=>{clearTimeout(TL._mt);TL._mt=setTimeout(TL.fix,180)}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+// ---------- Live als Mini-Fenster weiterlaufen lassen ----------
+function pipStop(keepNative){if(!APP.pip)return;try{NFK.vMini('');if(!keepNative)NFK.vCmd('stop',0)}catch(e){}APP.pip=null;document.documentElement.classList.remove('pip')}
+function pipSync(){if(!APP.pip||P.el)return;const b=APP.view==='live'&&$('#pipbox');if(!b){pipStop();return}document.documentElement.classList.add('pip');const r=b.getBoundingClientRect(),d=window.devicePixelRatio||1;
+  NFK.vMini(JSON.stringify({x:Math.round(r.left*d)+2,y:Math.round(r.top*d)+2,w:Math.round(r.width*d)-4,h:Math.round(r.height*d)-4}))}
 // ---------- Weitermachen nach einem Neustart der Oberfläche ----------
 const NOW={save(){try{LS.set('nfk.now',{t:Date.now(),pid:APP.pid,v:APP.view,a:APP.args,play:P.el&&P.it&&!P.demo?{id:P.it.id,ep:P.ep?P.ep.id:null}:null})}catch(e){}}};
 window.nfkTrim=lvl=>{META.mem.clear();TRL.mem.clear();APP._tc=null;APP._pool=null;for(const it of APP.items){if(it._f){it._f=null;it._fn=null}}if(lvl>=10&&P.el)TR.stop()};
@@ -1950,7 +2051,15 @@ document.addEventListener('click',e=>{
    case'close':closeModal();break;
    case'lg':APP.args={g:b.dataset.g,all:APP.args.all};renderApp(`.cat[data-g="${CSS.escape(b.dataset.g)}"]`);break;
    case'sf':APP.args={f:b.dataset.f};renderApp(`.chip[data-f="${CSS.escape(b.dataset.f)}"]`);break;
-   case'vf':{const k=b.dataset.k;APP.args={...APP.args,[k]:b.dataset.v,lim:0};renderApp(`.chip[data-k="${k}"][data-v="${CSS.escape(b.dataset.v)}"]`);break}
+   case'dd':{const k=b.dataset.k;let d={};try{d=JSON.parse($('#ddata').textContent)}catch(e){}$$('.ddm').forEach(x=>x.remove());
+     let opts;if(k==='g')opts=[['Für dich','Alle Genres',''],...d.g.map(([x,n])=>[x,x,n])];else if(k==='cat')opts=[['','Alle Kategorien',''],...d.cat];else if(k==='c')opts=[['','Alle Sprachen',''],...d.c.map(x=>[x,(CBY[x].flag||'')+' '+CBY[x].name.split(' · ')[0],''])];else opts=[['rec','Empfohlen für dich',''],['new','Neu hinzugefügt',''],['imdb','Beste Bewertung',''],['az','A–Z','']];
+     const cur=k==='g'?(d.cur.g==='★ Favoriten'?'Für dich':d.cur.g):k==='c'?d.cur.c:k==='cat'?(d.cur.cat||''):d.cur.s;const cols=k==='g'||k==='cat'?Math.min(k==='cat'?2:4,Math.ceil(opts.length/8)):1;
+     const m=document.createElement('div');m.className='ddm';m.style.setProperty('--cols',cols);m._btn=b;
+     m.innerHTML=opts.map(([v,l,n])=>`<button class="f${v===cur?' on':''}" data-act="vf" data-k="${k}" data-v="${esc(v)}"><span>${esc(l)}</span>${n?`<small>${nf(n)}</small>`:''}</button>`).join('');
+     document.body.appendChild(m);const r=b.getBoundingClientRect();m.style.left=Math.max(8,Math.min(r.left,innerWidth-m.offsetWidth-12))+'px';{const below=innerHeight-r.bottom-14,above=r.top-14;if(below<Math.min(m.offsetHeight,240)&&above>below){m.style.top='';m.style.bottom=(innerHeight-r.top+6)+'px';m.style.maxHeight=above+'px'}else{m.style.top=(r.bottom+6)+'px';m.style.maxHeight=below+'px'}}
+     ($('.on',m)||$('.f',m)).focus({preventScroll:true});break}
+   case'vclr':APP.args={};renderApp('[data-act="dd"][data-k="g"]');break;
+   case'vf':{$$('.ddm').forEach(x=>x.remove());const k=b.dataset.k;APP.args={...APP.args,[k]:b.dataset.v,lim:0};renderApp(`[data-act="dd"][data-k="${k}"],[data-act="vf"][data-k="${k}"]`);break}
    case'more':{const sy=$('#main').scrollTop;APP.args={...APP.args,lim:+b.dataset.lim};renderApp();$('#main').scrollTop=sy;break}
    case'pp':P.pp();break;case'seek':P.seek(+b.dataset.d);break;case'pclose':P.close();break;case'ch':P.chan(+b.dataset.d);break;
    case'nextep':{const nx=P.nextEp();if(nx){P.save();P.open(P.it,{ep:nx,from:0})}else toast('Das war die letzte Folge');break}
@@ -1990,8 +2099,10 @@ document.addEventListener('click',e=>{
    case'pcolor':{const p=prof();p.color=b.dataset.c;saveProfiles();renderApp(`[data-act="pcolor"][data-c="${b.dataset.c}"]`);break}
    case'apanel':P.panel();break;
    case'qpanel':P.panel(false,'q');break;
+   case'pipfull':if(APP.pip)P.open(APP.pip.it,{fromPip:1});break;
    case'iset':{const k=b.dataset.k;INTRO.set(k,INTRO.cfg()[k]?0:1);renderApp(`[data-act="iset"][data-k="${k}"]`);toast('Gespeichert');break}
    case'iplay':INTRO.play(true);break;
+   case'acclr':LS.del('nfk.appcrash');renderApp('[data-act="updcheck"]');break;
    case'crclr':LS.del('nfk.crashes');renderApp('[data-act="updcheck"]');break;
    case'rescan':startScan().then(()=>startBg());break;
    case'bwtest':{const l=$('#bwl');if(l)l.textContent='Messe …';BW.test().then(m=>{toast('Internet-Tempo: '+String(m).replace('.',',')+' Mbit/s');const e=$('#bwl');if(e)e.textContent=BW.label()}).catch(e=>{toast(e.message);const x=$('#bwl');if(x)x.textContent=BW.label()});break}
@@ -2060,7 +2171,7 @@ document.addEventListener('click',e=>{
 });
 
 // ---------- Fernbedienung / Tastatur (räumliche Navigation) ----------
-function layer(){return $('.talert')||$('.uplert')||$('.ap')||$('#player')||(APP.modal&&APP.modal.el)||$('#app')}
+function layer(){return $('.ddm')||$('.talert')||$('.uplert')||$('.ap')||$('#player')||(APP.modal&&APP.modal.el)||$('#app')}
 function focusables(){return $$('.f',layer()).filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&!el.disabled})}
 // Schnelle Wege (ohne alle Elemente der Seite zu vermessen): Nachbar in der Reihe, Nachbar-Reihe, Spalten
 function fastMove(cur,dir){const H=dir==='left'||dir==='right';const tr=cur.closest('.track');
@@ -2102,10 +2213,11 @@ function ensureVisible(el){
   if(rows&&row){rows.scrollTo({top:row.offsetTop-6});return}
   const sc=el.closest('.rows,.main,.modal,.scr,.cats');if(sc){const r=el.getBoundingClientRect(),s=sc.getBoundingClientRect();if(r.top<s.top+60)sc.scrollBy({top:r.top-s.top-80});else if(r.bottom>s.bottom-40)sc.scrollBy({top:r.bottom-s.bottom+80})}
 }
-document.addEventListener('focusin',e=>{const el=e.target;if(el.classList.contains('dot')&&el.closest('#spot')&&+el.dataset.i!==APP.heroI){showHero(+el.dataset.i,'d'+el.dataset.i);return}if($('#spot')&&el.closest('#rows')&&el.dataset.id){clearTimeout(APP._sp);APP._sp=setTimeout(()=>setSpot(el.dataset.id,el.dataset.why),document.documentElement.classList.contains('lite')?170:110)}});
+document.addEventListener('focusin',e=>{const el=e.target;{const mn=$('#main.home');if(mn){const inRows=!!el.closest('#rows')&&!!el.closest('.row');if(mn.classList.contains('browse')!==inRows)mn.classList.toggle('browse',inRows)}}if(el.classList.contains('dot')&&el.closest('#spot')&&+el.dataset.i!==APP.heroI){showHero(+el.dataset.i,'d'+el.dataset.i);return}if($('#spot')&&el.closest('#rows')&&el.dataset.id){clearTimeout(APP._sp);APP._sp=setTimeout(()=>setSpot(el.dataset.id,el.dataset.why),document.documentElement.classList.contains('lite')?170:110)}});
 document.addEventListener('mouseover',e=>{const el=e.target.closest('.f');if(!el||el===document.activeElement||el.tagName==='INPUT')return;if(APP._mm){el.focus({preventScroll:true})}});
 document.addEventListener('mousemove',()=>{APP._mm=true;APP.lastKey=Date.now();APP.kbd=false;if(P.el)P.wake()},{passive:true});
 function goBack(){
+  {const a=$('.ddm');if(a){const bt=a._btn;a.remove();bt&&bt.isConnected&&bt.focus({preventScroll:true});return true}}
   {const a=$('.talert')||$('.uplert');if(a){popClose(a);return true}}
   {const a=$('.ap');if(a){a.remove();const b2=$('#apb');b2&&b2.focus();return true}}
   if(P.el){P.close();return true}if(APP.modal){closeModal();return true}
@@ -2169,6 +2281,7 @@ const INTRO={el:null,
 function vCrash(){screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.4rem">NETEFELIKS</h1><p style="max-width:34rem;margin:1rem auto;line-height:1.6">Beim Einlesen deiner Playlist ist dem Fire TV kurz der Arbeitsspeicher ausgegangen – die App wurde neu gestartet.<br>Schließe am besten andere Apps (Fire-TV-Taste gedrückt halten → Apps) und versuche es noch einmal.</p><button class="btn pri f" data-act="rescan" data-autofocus>Erneut einlesen</button></div>`)}
 // ---------- Start ----------
 (async function boot(){
+  try{const cr=window.NFK&&NFK.lastCrash&&NFK.lastCrash();if(cr){LS.set('nfk.appcrash',{t:Date.now(),x:String(cr).slice(0,1500)});NFK.clearCrash();setTimeout(()=>toast('Die App war abgestürzt – Details unter Einstellungen → Abo & App'),5000)}}catch(e){}
   const intro=INTRO.play();const crashed=/recovered/.test(location.hash);const scanCrash=crashed&&LS.get('nfk.scanning',0);LS.del('nfk.scanning');
   if(!APP.cfg){await intro;vLogin();return}
   // Gespeicherte Playlist sofort nutzen (lädt während des Intros), frische Daten kommen im Hintergrund

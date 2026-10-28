@@ -44,7 +44,7 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 8;
+    static final int NATIVE_VERSION = 10;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
     private VideoEngine video;
     private AudioPrep prep;
     private Net net;
+    private TrailerView trailer;
     private FrameLayout root;
     private String ua = "";
     private SharedPreferences prefs;
@@ -61,6 +62,20 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = getSharedPreferences("netefeliks", MODE_PRIVATE);
+        // Abstürze aufzeichnen, damit die App beim nächsten Start zeigen kann, was passiert ist
+        final Thread.UncaughtExceptionHandler prev = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override public void uncaughtException(Thread t, Throwable e) {
+                try {
+                    java.io.StringWriter sw = new java.io.StringWriter();
+                    e.printStackTrace(new java.io.PrintWriter(sw));
+                    FileOutputStream o = new FileOutputStream(new File(getFilesDir(), "crash.txt"));
+                    o.write((System.currentTimeMillis() + "\n" + t.getName() + "\n" + sw.toString()).getBytes("UTF-8"));
+                    o.close();
+                } catch (Exception ignored) { }
+                if (prev != null) prev.uncaughtException(t, e);
+            }
+        });
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         web = createWeb();
         ua = web.getSettings().getUserAgentString();
@@ -88,6 +103,9 @@ public class MainActivity extends Activity {
         root.addView(subs, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        trailer = new TrailerView(this, root, new TrailerView.Events() {
+            @Override public void emit(String ev) { js("window.nfkT&&nfkT(" + org.json.JSONObject.quote(ev) + ")"); }
+        });
         video = new VideoEngine(this, frame, surface, subs, new VideoEngine.Events() {
             @Override public void emit(String ev, String arg) {
                 js("window.nfkV&&nfkV(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
@@ -165,6 +183,7 @@ public class MainActivity extends Activity {
             @Override public void run() {
                 try {
                     if (video != null) video.cmd("stop", 0);
+                    if (trailer != null) trailer.stop();
                     root.removeView(web);
                     web.destroy();
                 } catch (Exception ignored) { }
@@ -224,6 +243,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface public String vState() { return video.state(); }
         @JavascriptInterface public String vTracks() { return video.tracks(); }
         @JavascriptInterface public void vSelect(String type, int g, int t) { video.select(type, g, t); }
+        @JavascriptInterface public void vMini(String json) { video.mini(json); }
 
         // ---------- Ton vorbereiten (für Abos mit nur einer Verbindung) ----------
         @JavascriptInterface public void aPrep(String key, String url, String langs) { prep.start(key, url, langs); }
@@ -240,6 +260,20 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void speed(String id, String url, int seconds) { net.speed(id, url, seconds); }
         @JavascriptInterface public double imgSize() { return (double) net.imgSize(); }
         @JavascriptInterface public void subDl(String id, String url, String enc) { net.sub(id, url, enc); }
+        @JavascriptInterface public void tOpen(String json) { trailer.open(json); }
+        @JavascriptInterface public String lastCrash() {
+            File f = new File(getFilesDir(), "crash.txt");
+            if (!f.exists()) return "";
+            try {
+                FileInputStream in = new FileInputStream(f);
+                byte[] b = new byte[(int) Math.min(f.length(), 8000)];
+                int n = in.read(b);
+                in.close();
+                return n > 0 ? new String(b, 0, n, "UTF-8") : "";
+            } catch (Exception e) { return ""; }
+        }
+        @JavascriptInterface public void clearCrash() { new File(getFilesDir(), "crash.txt").delete(); }
+        @JavascriptInterface public void tStop() { trailer.stop(); }
         @JavascriptInterface public void imgClear() { net.clearImages(); }
 
         /** Startet den nativen Vollbild-Player (ältere Variante). */
@@ -359,7 +393,7 @@ public class MainActivity extends Activity {
         if (web != null) js("window.nfkTrim&&nfkTrim(" + level + ")");
     }
 
-    @Override protected void onPause() { super.onPause(); web.onPause(); if (video != null) video.pause(); }
+    @Override protected void onPause() { super.onPause(); web.onPause(); if (video != null) video.pause(); if (trailer != null) trailer.stop(); }
     @Override protected void onResume() { super.onResume(); web.onResume(); }
     @Override protected void onDestroy() { if (video != null) video.release(); web.destroy(); super.onDestroy(); }
 }

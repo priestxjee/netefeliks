@@ -1,3 +1,7 @@
-Sprache wechseln ändert nur noch den Ton – die Bildqualität (z. B. 4K) bleibt
-Ton einer anderen Fassung wird direkt mitgestreamt, nichts wird gespeichert
-Im Player: „Bildqualität“ und „Sprache (Ton)“ getrennt wählbar
+Trailer mit Bild: laufen jetzt im echten Fire-TV-Player, starten nach 1 Sekunde
+Live-TV: großes Mini-Fenster – der Sender läuft weiter, bis du einen neuen wählst; Favoriten ganz oben
+Filme & Serien: aufgeräumte Leiste (Genre, Sprache, Kategorie, Sortieren), eigene Reihen für iranische Filme & Serien und die Kategorien deines Anbieters
+Startseite: angesagte aktuelle Filme & Serien passend zu deinem Geschmack, keine Live-Sender mehr
+Beim Durchblättern sind mindestens zwei Reihen sichtbar
+Beschreibungen automatisch in deiner Sprache
+Weniger Abstürze: Playlist-Aktualisierung nur alle 6 Stunden und viel sparsamer; Absturz-Aufzeichnung in den Einstellungen
