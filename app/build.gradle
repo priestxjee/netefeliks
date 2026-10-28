@@ -1,0 +1,24 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'tv.netefeliks.app'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'tv.netefeliks.app'
+        minSdk 22
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        release {
+            storeFile file('netefeliks.keystore')
+            storePassword 'netefeliks'
+            keyAlias 'netefeliks'
+            keyPassword 'netefeliks'
+        }
+    }
+    buildTypes {
+        release { minifyEnabled false; signingConfig signingConfigs.release }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+}
