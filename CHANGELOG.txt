@@ -1,7 +1,5 @@
-Trailer mit Bild: laufen jetzt im echten Fire-TV-Player, starten nach 1 Sekunde
-Live-TV: großes Mini-Fenster – der Sender läuft weiter, bis du einen neuen wählst; Favoriten ganz oben
-Filme & Serien: aufgeräumte Leiste (Genre, Sprache, Kategorie, Sortieren), eigene Reihen für iranische Filme & Serien und die Kategorien deines Anbieters
-Startseite: angesagte aktuelle Filme & Serien passend zu deinem Geschmack, keine Live-Sender mehr
-Beim Durchblättern sind mindestens zwei Reihen sichtbar
-Beschreibungen automatisch in deiner Sprache
-Weniger Abstürze: Playlist-Aktualisierung nur alle 6 Stunden und viel sparsamer; Absturz-Aufzeichnung in den Einstellungen
+Zurück-Taste im Film blendet zuerst die Steuerleiste aus – erst beim zweiten Drücken verlässt du den Film
+Player: reines Schwarz statt grauer Ränder; neuer Knopf „Bildformat“ (Original, Füllen, Strecken, 16:9, 4:3, 21:9) – auch mit der Menü-Taste ≡
+Trailer: zusätzliche Wege zu den offiziellen IMDb-Trailern; „Trailer testen“ unter Einstellungen → Darstellung
+Beim Durchblättern: größere Vorschau mit Beschreibung und Trailer, eine Reihe plus Anschnitt der nächsten
+Fire-TV-Banner auch direkt an der App hinterlegt

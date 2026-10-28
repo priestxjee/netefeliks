@@ -13,6 +13,8 @@
         android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         <activity
             android:name=".MainActivity"
+            android:banner="@drawable/banner"
+            android:icon="@drawable/ic_launcher"
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"

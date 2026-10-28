@@ -68,7 +68,9 @@ class Net {
         });
     }
 
-    private HttpURLConnection open(String url, JSONObject headers, int timeout) throws Exception {
+    private HttpURLConnection open(String url, JSONObject headers, int timeout) throws Exception { return open(url, headers, timeout, null); }
+
+    private HttpURLConnection open(String url, JSONObject headers, int timeout, String post) throws Exception {
         URL u = new URL(url);
         HttpURLConnection c = null;
         for (int i = 0; i < 6; i++) {
@@ -82,8 +84,16 @@ class Net {
                 Iterator<String> k = headers.keys();
                 while (k.hasNext()) { String n = k.next(); c.setRequestProperty(n, headers.optString(n)); }
             }
+            if (post != null) {
+                c.setRequestMethod("POST");
+                c.setDoOutput(true);
+                if (headers == null || !headers.has("Content-Type")) c.setRequestProperty("Content-Type", "application/json");
+                java.io.OutputStream os = c.getOutputStream();
+                os.write(post.getBytes("UTF-8"));
+                os.close();
+            }
             int code = c.getResponseCode();
-            if (code >= 300 && code < 400 && c.getHeaderField("Location") != null) {
+            if (post == null && code >= 300 && code < 400 && c.getHeaderField("Location") != null) {
                 u = new URL(u, c.getHeaderField("Location"));
                 c.disconnect();
                 continue;
@@ -96,7 +106,7 @@ class Net {
     private JSONObject doGrab(String url, JSONObject o) throws Exception {
         int max = o.optInt("max", 4 * 1024 * 1024);
         int head = o.optInt("head", 0);
-        HttpURLConnection c = open(url, o.optJSONObject("h"), 12000);
+        HttpURLConnection c = open(url, o.optJSONObject("h"), 12000, o.has("post") ? o.getString("post") : null);
         JSONObject r = new JSONObject();
         int code = c.getResponseCode();
         r.put("status", code);

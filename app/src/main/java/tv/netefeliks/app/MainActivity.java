@@ -44,7 +44,7 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 10;
+    static final int NATIVE_VERSION = 11;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
@@ -195,6 +195,12 @@ public class MainActivity extends Activity {
         });
     }
 
+    void setBack(final boolean black) {
+        runOnUiThread(new Runnable() {
+            @Override public void run() { if (root != null) root.setBackgroundColor(black ? Color.BLACK : Color.rgb(13, 11, 11)); }
+        });
+    }
+
     File webFile() { return new File(getFilesDir(), "web-index.html"); }
 
     int installedVersion() {
@@ -238,8 +244,9 @@ public class MainActivity extends Activity {
         }
 
         // ---------- Eingebetteter Player (unter der App-Oberfläche) ----------
-        @JavascriptInterface public void vOpen(String cfg) { video.open(cfg); }
-        @JavascriptInterface public void vCmd(String c, double arg) { video.cmd(c, arg); }
+        // Während ein Film läuft: reines Schwarz hinter dem Bild (keine grauen Ränder)
+        @JavascriptInterface public void vOpen(String cfg) { setBack(true); video.open(cfg); }
+        @JavascriptInterface public void vCmd(String c, double arg) { if ("stop".equals(c)) setBack(false); video.cmd(c, arg); }
         @JavascriptInterface public String vState() { return video.state(); }
         @JavascriptInterface public String vTracks() { return video.tracks(); }
         @JavascriptInterface public void vSelect(String type, int g, int t) { video.select(type, g, t); }

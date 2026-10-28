@@ -76,15 +76,17 @@ class TrailerView {
                         if (v.width > 0 && v.height > 0) ar.setAspectRatio(v.width * v.pixelWidthHeightRatio / v.height);
                     }
                     @Override public void onRenderedFirstFrame() { events.emit("first"); }
-                    @Override public void onPlayerError(PlaybackException e) { events.emit("error"); stopMain(); }
+                    @Override public void onPlayerError(PlaybackException e) { events.emit("error:" + e.getErrorCodeName() + " " + e.getMessage()); stopMain(); }
+                    @Override public void onPlaybackStateChanged(int st) { if (st == Player.STATE_READY) events.emit("ready"); }
                 });
             }
             player.setVolume(c.optBoolean("mute", true) ? 0f : 1f);
             player.setMediaItem(MediaItem.fromUri(c.getString("url")));
             player.prepare();
             player.play();
+            events.emit("start");
         } catch (Exception e) {
-            events.emit("error");
+            events.emit("error:" + e);
         }
     }
 
