@@ -1,4 +1,7 @@
-Gespeicherter Ton: jetzt bis zu 3 Tonspuren (einstellbar 1/2/3) – die älteste wird automatisch gelöscht
-Einstellungen → Wiedergabe: alle gespeicherten Tonspuren mit Größe, einzeln oder alle löschen
-Bild & Ton kombinieren auch mit nur 1 Verbindung: Ton wird einmal vorbereitet und gespeichert
-Alle Tonspuren aus allen Fassungen, ohne Doppelte
+Viel flüssiger: Playlist wird im Hintergrund ausgewertet, schnellere Fernbedienungs-Navigation, weniger Effekte auf dem Fire TV
+Beim ersten Einlesen: Live-Fortschritt mit Schritten und Zählern (Sender, Filme, Serien)
+Gleiche Sender aus 4K/VIP/Gold-Kategorien zusammengeführt – Qualität im Player wählbar
+Qualität selbst wählen (8K bis SD) oder automatisch nach Internet-Tempo, bei Ruckeln eine Stufe runter
+Echte Top 10 der Woche (IMDb + Netflix-Charts) statt Empfehlungen
+Neues Intro mit eigenem Sound (abschaltbar)
+Poster werden verkleinert und gespeichert, App startet nach einem Absturz selbst neu

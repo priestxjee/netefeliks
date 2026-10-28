@@ -29,6 +29,7 @@ import androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.MergingMediaSource;
+import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
 import androidx.media3.ui.SubtitleView;
 
 import org.json.JSONArray;
@@ -81,6 +82,8 @@ class VideoEngine {
                 s.put("playing", player.isPlaying());
                 s.put("buf", player.getPlaybackState() == Player.STATE_BUFFERING);
                 s.put("delay", delayMs);
+                s.put("bw", DefaultBandwidthMeter.getSingletonInstance(act).getBitrateEstimate());
+                s.put("vh", player.getVideoFormat() != null ? player.getVideoFormat().height : 0);
                 state = s.toString();
             } catch (Exception ignored) { }
             ui.postDelayed(this, 250);

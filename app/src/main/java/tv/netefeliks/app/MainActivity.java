@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -41,7 +42,7 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 6;
+    static final int NATIVE_VERSION = 7;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
@@ -49,6 +50,8 @@ public class MainActivity extends Activity {
     private WebView web;
     private VideoEngine video;
     private AudioPrep prep;
+    private Net net;
+    private FrameLayout root;
     private String ua = "";
     private SharedPreferences prefs;
 
@@ -57,7 +60,40 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         prefs = getSharedPreferences("netefeliks", MODE_PRIVATE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        web = new WebView(this);
+        web = createWeb();
+        ua = web.getSettings().getUserAgentString();
+        prep = new AudioPrep(this, ua, new AudioPrep.Events() {
+            @Override public void emit(String ev, String key, String arg) {
+                js("window.nfkA&&nfkA(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(key) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
+            }
+        });
+        net = new Net(this, ua, new Net.Events() {
+            @Override public void emit(String fn, String id, String json) {
+                js("window." + fn + "&&" + fn + "(" + org.json.JSONObject.quote(id) + "," + org.json.JSONObject.quote(json) + ")");
+            }
+        });
+        root = new FrameLayout(this);
+        root.setBackgroundColor(Color.rgb(13, 11, 11));
+        SurfaceView surface = new SurfaceView(this);
+        surface.setVisibility(View.GONE);
+        SubtitleView subs = new SubtitleView(this);
+        subs.setVisibility(View.GONE);
+        ViewGroup.LayoutParams full = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        root.addView(surface, full);
+        root.addView(subs, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(root);
+        video = new VideoEngine(this, surface, subs, new VideoEngine.Events() {
+            @Override public void emit(String ev, String arg) {
+                js("window.nfkV&&nfkV(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
+            }
+        });
+        web.requestFocus();
+        web.loadUrl(APP_URL);
+    }
+
+    WebView createWeb() {
+        final WebView web = new WebView(this);
         // Durchsichtig, damit das Video des echten Players darunter sichtbar ist (die App malt ihren Hintergrund selbst)
         web.setBackgroundColor(Color.TRANSPARENT);
         WebSettings s = web.getSettings();
@@ -73,12 +109,6 @@ public class MainActivity extends Activity {
         s.setUseWideViewPort(true);
         s.setLoadWithOverviewMode(true);
         s.setUserAgentString(s.getUserAgentString() + " Netefeliks/" + installedVersion());
-        ua = s.getUserAgentString();
-        prep = new AudioPrep(this, ua, new AudioPrep.Events() {
-            @Override public void emit(String ev, String key, String arg) {
-                js("window.nfkA&&nfkA(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(key) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
-            }
-        });
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
             // Liefert die heruntergeladene neuere Oberfläche unter derselben Adresse aus,
@@ -107,29 +137,36 @@ public class MainActivity extends Activity {
                         if (c.getResponseCode() == 200) return new WebResourceResponse("text/html", "utf-8", c.getInputStream());
                     } catch (Exception e) { /* normal laden */ }
                 }
+                // Poster & Logos: verkleinert und zwischengespeichert (schneller, weniger Speicher)
+                if (u.startsWith("https://" + Net.IMG_HOST + "/") && net != null) return net.image(u);
                 return null;
             }
-        });
-        web.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        web.addJavascriptInterface(new Bridge(), "NFK");
-        FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.rgb(13, 11, 11));
-        SurfaceView surface = new SurfaceView(this);
-        surface.setVisibility(View.GONE);
-        SubtitleView subs = new SubtitleView(this);
-        subs.setVisibility(View.GONE);
-        ViewGroup.LayoutParams full = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        root.addView(surface, full);
-        root.addView(subs, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        setContentView(root);
-        video = new VideoEngine(this, surface, subs, new VideoEngine.Events() {
-            @Override public void emit(String ev, String arg) {
-                js("window.nfkV&&nfkV(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
+
+            // Absturz der Oberfläche (z. B. zu wenig Arbeitsspeicher): neu starten statt die App zu schließen
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                recreateWeb();
+                return true;
             }
         });
-        web.requestFocus();
-        web.loadUrl(APP_URL);
+        web.addJavascriptInterface(new Bridge(), "NFK");
+        return web;
+    }
+
+    void recreateWeb() {
+        runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    if (video != null) video.cmd("stop", 0);
+                    root.removeView(web);
+                    web.destroy();
+                } catch (Exception ignored) { }
+                web = createWeb();
+                root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                web.requestFocus();
+                web.loadUrl(APP_URL + "#recovered");
+            }
+        });
     }
 
     File webFile() { return new File(getFilesDir(), "web-index.html"); }
@@ -190,6 +227,12 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void aDeleteAll() { prep.deleteAll(); }
         @JavascriptInterface public double aFree() { return (double) prep.free(); }
         @JavascriptInterface public void aKeep(int n) { prep.setKeep(n); }
+
+        // ---------- Netz im Hintergrund (Bewertungen, Trailer, Top 10, Tempo) ----------
+        @JavascriptInterface public void grab(String id, String url, String opts) { net.grab(id, url, opts); }
+        @JavascriptInterface public void speed(String id, String url, int seconds) { net.speed(id, url, seconds); }
+        @JavascriptInterface public double imgSize() { return (double) net.imgSize(); }
+        @JavascriptInterface public void imgClear() { net.clearImages(); }
 
         /** Startet den nativen Vollbild-Player (ältere Variante). */
         @JavascriptInterface public void play(final String cfg) {

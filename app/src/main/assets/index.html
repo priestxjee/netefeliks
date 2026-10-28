@@ -398,11 +398,47 @@ html.pz-l .card.w{flex-basis:19rem}
 html.pz-s .grid{grid-template-columns:repeat(auto-fill,minmax(7.6rem,1fr))}
 html.pz-l .grid{grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr))}
 html.nomotion *,html.nomotion *::before,html.nomotion *::after{transition:none!important;animation:none!important}
+/* Intro */
+.intro{position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#2a0507 0%,#0b0606 55%,#000 100%);display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.intro::before{content:"";position:absolute;left:50%;top:50%;width:70vmin;height:70vmin;margin:-35vmin 0 0 -35vmin;border-radius:50%;background:radial-gradient(circle,rgba(229,9,20,.55),transparent 65%);opacity:0;transform:scale(.4);animation:iglow 1.6s .55s ease-out both}
+.intro .stage{display:flex;flex-direction:column;align-items:center;gap:1.6rem;animation:izoom .55s 2.55s cubic-bezier(.5,0,.75,0) both}
+.intro .ilogo{position:relative;width:8.5rem;height:8.5rem;border-radius:50%;overflow:hidden}
+.intro .ilogo i{position:absolute;display:block}
+.intro .r1{inset:0;border-radius:50%;border:.55rem solid #e50914;box-shadow:inset 0 0 1.2rem rgba(229,9,20,.6);transform:scale(0);animation:iring .5s .18s cubic-bezier(.2,.9,.3,1.25) both}
+.intro .r2{inset:1.15rem;border-radius:50%;border:.22rem solid rgba(255,120,120,.55);transform:scale(0);animation:iring .45s .34s cubic-bezier(.2,.9,.3,1.25) both}
+.intro .pl{left:3.1rem;top:2.45rem;width:3.1rem;height:3.6rem;background:linear-gradient(135deg,#fff 10%,#ffc2c2 60%,#ff6b6b);clip-path:polygon(0 0,100% 50%,0 100%);transform:scale(0) rotate(-120deg);animation:iplay .42s .5s cubic-bezier(.2,.9,.3,1.3) both}
+.intro .ilogo .sh{position:absolute;top:-10%;bottom:-10%;width:45%;left:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);transform:translateX(-170%) skewX(-18deg);animation:ishine .6s 1.05s ease-in-out both}
+.intro .iw{font:400 2.6rem/1 var(--f-brand);letter-spacing:.32em;color:#f3eded;padding-left:.32em;display:flex}
+.intro .iw span{display:inline-block;opacity:0;transform:translateY(.5em);animation:ilt .4s cubic-bezier(.2,.8,.2,1) both}
+.intro.out{opacity:0;transition:opacity .35s}
+@keyframes iring{to{transform:scale(1)}}
+@keyframes iplay{to{transform:none}}
+@keyframes ishine{to{transform:translateX(330%) skewX(-18deg)}}
+@keyframes ilt{to{opacity:1;transform:none}}
+@keyframes iglow{0%{opacity:0;transform:scale(.4)}35%{opacity:1}100%{opacity:.35;transform:scale(1.25)}}
+@keyframes izoom{to{transform:scale(1.35);opacity:0}}
+/* Flüssig-Modus (Fire TV): keine teuren Effekte, sofortiges Scrollen */
+html.lite .main,html.lite .rows,html.lite .track,html.lite .cats,html.lite .chl,html.lite .scr,html.lite .modal{scroll-behavior:auto!important}
+html.lite .bd.kb .bdimg,html.lite .hero .bd.kb>.art,html.lite .hero .bd.kb>img{animation:none!important}
+html.lite .spot{transition:none!important}
+html.lite .m4::before{filter:none;opacity:.55}
+html.lite .card{transition:transform .1s ease}
+html.lite .card:focus{box-shadow:0 0 0 3px var(--fg)}
+html.lite .ev,html.lite .cc,html.lite .chr,html.lite .btn{transition:none}
+html.nomotion .intro .iw span{opacity:1;transform:none}
 html.nonums .chr .no{visibility:hidden}
 @media (max-width:760px){.setw{grid-template-columns:1fr}.orow{grid-template-columns:1fr;gap:.6rem}}
 .toast{position:fixed;left:50%;bottom:max(2rem,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:99;background:var(--fg);color:#111;font-weight:700;padding:.75rem 1.3rem;border-radius:.4rem;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:fade .2s}
 .spin{width:3rem;height:3rem;border-radius:50%;border:.3rem solid var(--line);border-top-color:var(--red);animation:rot 1s linear infinite;margin:0 auto}
 @keyframes rot{to{transform:rotate(360deg)}}
+.stp{list-style:none;margin:1.6rem auto 0;padding:0;display:grid;gap:.5rem;max-width:34rem;text-align:left}
+.stp li{display:grid;grid-template-columns:1.4rem minmax(0,1fr) auto;gap:.7rem;align-items:center;color:var(--mute);font-size:1rem}
+.stp li i{width:.85rem;height:.85rem;border-radius:50%;border:2px solid var(--line);justify-self:center}
+.stp li em{font-style:normal;font-size:.9rem;font-variant-numeric:tabular-nums}
+.stp li.on{color:var(--fg)}.stp li.on i{border-color:var(--red);border-top-color:transparent;animation:rot .8s linear infinite}
+.stp li.ok{color:var(--fg)}.stp li.ok i{border:0;width:1rem;height:1rem;background:var(--red);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/contain no-repeat}
+.scan .pm{color:var(--mute);margin:0;min-height:1.4em}
+.scan .st b{font-variant-numeric:tabular-nums}
 .empty{color:var(--mute);padding:3rem 0;font-size:1.05rem;line-height:1.6;max-width:34rem}
 .more{margin-top:1.4rem}
 
@@ -433,7 +469,7 @@ html.nonums .chr .no{visibility:hidden}
 </head><body>
 <div id="app"></div>
 
-<script>
+<script id="nfk-core">
 'use strict';
 /* =========================================================
    Netefeliks – IPTV-App für Fire TV (M3U / Xtream Codes)
@@ -509,22 +545,98 @@ function detectGenres(...ss){const t=tok(ss.join(' ')),sp=' '+t.join(' ')+' ',ra
   for(const[g,kws]of GEN)if(kws.some(k=>k.length<=4?sp.includes(' '+k+' '):raw.includes(k)))out.push(g);return out}
 const SPORT_KW=['DAZN','BEIN','ESPN','EUROSPORT','ELEVEN','LALIGA','PREMIER','BUNDESLIGA','UFC','VARZESH','SUPERSPORT','NBA','NFL','F1','MOTORVISION','GOLF','TENNIS','MOVISTAR','RMC','ARENA','FOOTBALL','FUSSBALL','SPOR','DEPORTES','DEPORTE'];
 function isSportStr(s){const t=tok(s);return t.some(x=>x.includes('SPORT')||SPORT_KW.includes(x))||/ورزش/.test(s)}
-function detectQ(s){const u=String(s||'').toUpperCase();if(/(^|[^A-Z0-9])(4K|UHD|2160P?)([^A-Z0-9]|$)|ᵁᴴᴰ|⁴ᴷ/.test(u))return'4K';if(/FHD|1080|ᶠᴴᴰ/.test(u))return'FHD';if(/(^|[^A-Z0-9])HD([^A-Z0-9]|$)|720|ᴴᴰ/.test(u))return'HD';if(/(^|[^A-Z0-9])SD([^A-Z0-9]|$)/.test(u))return'SD';return''}
-const QR={'4K':4,FHD:3,HD:2,SD:1,'':0};
+function detectQ(s){const u=String(s||'').toUpperCase();if(/(^|[^A-Z0-9])(8K|4320P?)([^A-Z0-9]|$)/.test(u))return'8K';if(/(^|[^A-Z0-9])(4K|UHD|2160P?)([^A-Z0-9]|$)|ᵁᴴᴰ|⁴ᴷ/.test(u))return'4K';if(/FHD|1080|ᶠᴴᴰ/.test(u))return'FHD';if(/(^|[^A-Z0-9])HD([^A-Z0-9]|$)|720|ᴴᴰ/.test(u))return'HD';if(/(^|[^A-Z0-9])SD([^A-Z0-9]|$)/.test(u))return'SD';return''}
+const QR={'8K':5,'4K':4,FHD:3,HD:2,SD:1,'':0};
 const LANG={DE:['Deutsch','de','deu','ger'],AT:['Deutsch','de','deu'],CH:['Deutsch','de','deu'],IR:['Persisch','fa','fas','per'],AF:['Dari','fa','prs','per'],EN:['Englisch','en','eng'],TR:['Türkisch','tr','tur'],KU:['Kurdisch','ku','kur','ckb','kmr'],AR:['Arabisch','ar','ara'],FR:['Französisch','fr','fra','fre'],ES:['Spanisch','es','spa'],IT:['Italienisch','it','ita'],NL:['Niederländisch','nl','nld','dut'],PL:['Polnisch','pl','pol'],RU:['Russisch','ru','rus'],PT:['Portugiesisch','pt','por'],IN:['Hindi','hi','hin'],BA:['Balkan','sr','hr','bs'],AL:['Albanisch','sq','alb'],GR:['Griechisch','el','ell','gre'],RO:['Rumänisch','ro','ron','rum'],SE:['Skandinavisch','sv','swe','no','da'],XX:['Original']};
 const langName=c=>(LANG[c]||[c])[0];
 function cleanTitle(n){
   let s=String(n||'').trim();const pre=/^\s*[\[\(|★#]?\s*([A-Za-z0-9]{2,4})\s*(?:[\]\)|:]|\s[-–|])\s*/;let m,g=0;
-  while(g++<4&&(m=s.match(pre))&&(CMAP[m[1].toUpperCase()]||/^(VOD|4K|UHD|FHD|HD|TOP|NEW|NEU|MULTI)$/i.test(m[1])))s=s.slice(m[0].length);
+  while(g++<4&&(m=s.match(pre))&&(CMAP[m[1].toUpperCase()]||/^(VOD|4K|8K|UHD|FHD|HD|TOP|NEW|NEU|MULTI|VIP|GOLD)$/i.test(m[1])))s=s.slice(m[0].length);
   let year=null;const y=s.match(/[\(\[]((?:19|20)\d{2})[\)\]]/)||s.match(/[\s\-–]((?:19|20)\d{2})\s*$/);if(y){year=+y[1];s=s.replace(y[0],' ')}
-  s=s.replace(/[ᵁᴴᴰᶠ⁴ᴷ]+/g,'').replace(/\s*[\[\(](4K|UHD|FHD|HD|SD|HEVC|H\.?265|MULTI[^\]\)]*|DUAL[^\]\)]*|OMU|SUB[^\]\)]*)[\]\)]/gi,'');
-  for(let i=0;i<3;i++)s=s.replace(/[\s|\-–]+(4K|UHD|FHD|HD|SD|HEVC|H\.?265|1080P|720P|2160P|RAW|MULTI|BACKUP)\s*$/i,'');
+  s=s.replace(/[ᵁᴴᴰᶠ⁴ᴷ⁸]+/g,'').replace(/\s*[\[\(](4K|8K|UHD|FHD|HD|SD|HEVC|H\.?265|MULTI[^\]\)]*|DUAL[^\]\)]*|OMU|SUB[^\]\)]*|VIP|GOLD|PREMIUM|BACKUP|RAW|\d{2}\s?FPS|DE|GER|DEU|EN|ENG|FA|IR|TR|AR|DUBBED|DUB)[\]\)]/gi,'');
+  for(let i=0;i<4;i++)s=s.replace(/[\s|\-–]+(4K|8K|UHD|FHD|HD|SD|HEVC|H\.?265|1080P|720P|2160P|4320P|RAW|MULTI|BACKUP|VIP|GOLD|PREMIUM|\d{2}\s?FPS)\s*$/i,'').replace(/\s*[|\-–]\s*(DE|GER|DEU|EN|ENG|FA|PERSIAN|DUBBED|DUB)\s*$/i,'');
   s=s.replace(/\s{2,}/g,' ').replace(/^[\s\-–|:•]+|[\s\-–|:•]+$/g,'');
   return{title:s||String(n||'').trim(),year};
 }
 
+// ---------- Katalog-Kern: läuft im Hintergrund (Worker), damit die Bedienung flüssig bleibt ----------
+const mkey=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/ß/g,'ss').replace(/&/g,' and ').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+// Gleicher Sender in „4K“, „VIP“, „Gold“ … = ein Sender mit mehreren Qualitäten
+const LIVEJUNK=/(^| )(vip|gold|premium|backup|raw|uhd|fhd|hd|sd|4k|8k|hevc|h265|h264|hq|lq|\d{2,3} ?fps|fps|multi)(?= |$)/g;
+const liveKey=t=>{const k=mkey(t);let o=k;for(let i=0;i<3;i++)o=o.replace(LIVEJUNK,' ');o=o.replace(/\s+/g,' ').trim();return o||k};
+function normalize(r){
+  const{title,year}=cleanTitle(r.name);
+  const country=detectCountry(r.group,r.name);
+  const q=detectQ(r.name+' '+(r.group||''));
+  const cast=Array.isArray(r.cast)?r.cast:String(r.cast||'').split(/\s*,\s*/).filter(Boolean);
+  return{type:r.type,title,year:r.year||year,country,genres:r.type==='live'?[]:uniq(detectGenres(r.genre||'',r.group||'')),sport:r.type==='live'&&isSportStr((r.group||'')+' '+r.name),
+    q,group:r.group||'',groups:[r.group||''],logo:r.logo||'',backdrop:r.backdrop||'',plot:r.plot||'',cast,director:r.director||'',rating:+r.rating||0,rt:r.rt??null,pop:r.pop??null,dur:r.dur||null,
+    added:r.added||0,demo:!!r.demo,seasons:r.seasons||null,seasonsData:r.seasonsData||null,tmdb:r.tmdb||null,epgId:r.epg||'',versions:[{q,src:r.src,name:r.name,lang:country,sd:r.seasonsData||null}]};
+}
+// Xtream-Listen (Sender, Filme, Serien) in einheitliche Einträge umwandeln
+function xtMap(kind,arr,cats,B,U,P,out){let n=0;cats=cats||{};
+  if(kind==='live')for(const x of arr||[]){n++;out.push({type:'live',name:x.name,group:cats[x.category_id]||'',logo:x.stream_icon,sid:'l'+x.stream_id,epg:x.epg_channel_id,added:+x.added*1000||0,src:{kind:'live',id:x.stream_id,url:`${B}/live/${U}/${P}/${x.stream_id}.m3u8`,alt:`${B}/live/${U}/${P}/${x.stream_id}.ts`}})}
+  else if(kind==='vod')for(const x of arr||[]){n++;out.push({type:'movie',name:x.name,group:cats[x.category_id]||'',logo:x.stream_icon,sid:'v'+x.stream_id,rating:+x.rating||0,added:+x.added*1000||0,year:+x.year||null,genre:x.genre||'',plot:x.plot||'',tmdb:x.tmdb||x.tmdb_id||null,src:{kind:'vod',id:x.stream_id,url:`${B}/movie/${U}/${P}/${x.stream_id}.${x.container_extension||'mp4'}`}})}
+  else for(const x of arr||[]){n++;out.push({type:'series',name:x.name,group:cats[x.category_id]||'',logo:x.cover,sid:'s'+x.series_id,rating:+x.rating||0,added:(+x.last_modified||0)*1000,year:parseInt(x.releaseDate||x.release_date)||null,genre:x.genre||'',plot:x.plot||'',cast:x.cast||'',director:x.director||'',backdrop:(x.backdrop_path||[])[0]||'',tmdb:x.tmdb||null,src:{kind:'series',id:x.series_id}})}
+  return n}
+// M3U zeilenweise lesen (ohne die ganze Datei in Zeilen zu zerlegen – spart viel Arbeitsspeicher)
+function M3Uparse(txt,onP){
+  const raw=[];let cur=null,pos=0,cnt=0;const L=txt.length;
+  while(pos<L){let e=txt.indexOf('\n',pos);if(e<0)e=L;const l=txt.slice(pos,e).trim();pos=e+1;if(!l)continue;
+    if(l.startsWith('#EXTINF')){const a={};l.replace(/([\w-]+)="([^"]*)"/g,(_,k,v)=>{a[k.toLowerCase()]=v});const ci=l.lastIndexOf('",');const name=(ci>-1?l.slice(ci+2):l.slice(l.lastIndexOf(',')+1)).trim();cur={name:a['tvg-name']&&!name?a['tvg-name']:name,group:a['group-title']||'',logo:a['tvg-logo']||'',epg:a['tvg-id']||''}}
+    else if(l.startsWith('#EXTGRP:')&&cur){cur.group=cur.group||l.slice(8)}
+    else if(!l.startsWith('#')&&cur){cur.url=l;raw.push(cur);cur=null;if(++cnt%20000===0&&onP)onP(pos/L)}}
+  const out=[],series=new Map();
+  for(let i=0;i<raw.length;i++){const x=raw[i];raw[i]=null;const u=x.url.toLowerCase(),g=(x.group||'').toUpperCase();
+    let type='live';if(u.includes('/movie/')||/(^|\W)(VOD|FILM|FILME|MOVIE|MOVIES|CINEMA|KINO|فیلم)(\W|$)/.test(g)&&!/24\/7/.test(g))type='movie';
+    if(u.includes('/series/')||/(SERIE|SERIEN|SERIES|سریال|DIZI)/.test(g))type='series';
+    if(/\.(mp4|mkv|avi|mov)(\?|$)/.test(u)&&type==='live')type='movie';
+    const sm=x.name.match(/^(.*?)[\s._\-]*S(\d{1,2})\s*[._\-]?\s*E(\d{1,3})/i);
+    if(type==='series'||sm){if(!sm){out.push({type:'movie',name:x.name,group:x.group,logo:x.logo,sid:'m'+hstr(x.url),src:{url:x.url}});continue}
+      const key=(sm[1]||x.name).trim()+'|'+x.group;let s=series.get(key);
+      if(!s){s={type:'series',name:(sm[1]||x.name).trim(),group:x.group,logo:x.logo,sid:'s'+hstr(key),seasonsData:{},src:{kind:'m3u-series'}};series.set(key,s);out.push(s)}
+      const sn=+sm[2],en=+sm[3];(s.seasonsData[sn]=s.seasonsData[sn]||[]).push({id:'me'+hstr(x.url),n:en,title:'Folge '+en,src:{url:x.url}});continue}
+    out.push({type,name:x.name,group:x.group,logo:x.logo,epg:x.epg,sid:(type==='live'?'l':'m')+hstr(x.url),src:{url:x.url}})}
+  for(const s of series.values())for(const k in s.seasonsData)s.seasonsData[k].sort((a,b)=>a.n-b.n);
+  return out}
+function countTypes(a){const c={live:0,movie:0,series:0};for(const x of a)c[x.type]=(c[x.type]||0)+1;return c}
+function mergeInto(ex,it){ex.versions.push(...it.versions);if(QR[it.q]>QR[ex.q])ex.q=it.q;ex.genres=uniq([...ex.genres,...it.genres]);ex.sport=ex.sport||it.sport;for(const g of it.groups)if(!ex.groups.includes(g))ex.groups.push(g);
+  for(const k of['logo','plot','director','backdrop','tmdb','epgId'])if(!ex[k]&&it[k])ex[k]=it[k];if(!ex.cast.length)ex.cast=it.cast;if(!ex.rating)ex.rating=it.rating;if(!ex.added||it.added>ex.added)ex.added=it.added||ex.added}
+// Katalog bauen: Sprach- und Qualitätsfassungen zusammenführen, Länder zuordnen
+function catalogCore(raws,tick){
+  const map=new Map(),tm=new Map();const N=raws.length;
+  for(let i=0;i<N;i++){const r=raws[i];raws[i]=null;if(!r||!r.name)continue;const it=normalize(r);
+    const old=it.title.toLowerCase().replace(/\s+/g,' ');// alte Schlüssel-Form → gleiche IDs wie bisher (Verlauf, Listen bleiben)
+    const tk=it.type==='live'?liveKey(it.title):mkey(it.title)||old;
+    const key=it.type==='live'?'live|'+it.country+'|'+tk:it.type+'|'+tk+'|'+(it.year||'');
+    const tkey=it.type!=='live'&&it.tmdb?it.type+'|tmdb'+it.tmdb:null;
+    const ex=map.get(key)||(tkey&&tm.get(tkey));
+    if(ex){if(!map.has(key))map.set(key,ex);if(tkey&&!tm.has(tkey))tm.set(tkey,ex);mergeInto(ex,it)}
+    else{it.id=it.type[0]+hstr(it.type==='live'?'live|'+it.country+'|'+old:it.type+'|'+old+'|'+(it.year||'')).toString(36);map.set(key,it);if(tkey)tm.set(tkey,it)}
+    if(tick&&i%5000===0)tick(i,N)}
+  let items=uniq([...map.values()]);
+  // Gleicher Titel ohne Jahresangabe → zur Fassung mit Jahr (wenn eindeutig)
+  const byT=new Map();for(const it of items){if(it.type==='live')continue;const k=it.type+'|'+mkey(it.title);let a=byT.get(k);if(!a)byT.set(k,a=[]);a.push(it)}
+  for(const a of byT.values()){if(a.length<2)continue;const yrs=uniq(a.filter(x=>x.year).map(x=>x.year));if(yrs.length!==1)continue;const tgt=a.find(x=>x.year);for(const x of a)if(x!==tgt&&!x.year){mergeInto(tgt,x);x._gone=1}}
+  items=items.filter(x=>!x._gone);
+  // Live-Sender ohne Länderkennung: über bekannte Sendernamen zuordnen (ganze Kategorie per Mehrheit)
+  const KN={DE:/\b(das erste|ard|zdf\w*|rtl ?(zwei|2|up|nitro)?|sat\.? ?1|pro ?sieben\w*|vox\w*|kabel ?(eins|1)\w*|n-?tv|welt|phoenix|tagesschau24|3sat|arte|kika|wdr|ndr|br|swr|mdr|hr|rbb|sr|servus ?tv|tele ?5|sixx|super ?rtl|dmax|sport ?1|sky (sport|cinema|atlantic|one|krimi|comedy|showcase)\w*|dazn ?\d*|magenta ?sport|eurosport ?\d?|toggo|one)\b/i,
+    IR:/(irib|manoto|\bgem\b|iran ?international|bbc persian|persiana|varzesh|tapesh|ifilm|ایران|شبکه|فارسی)/i,TR:/\b(trt|atv|show tv|star tv|kanal d|tv8|fox tr)\b/i,EN:/\b(bbc (one|two|three|four|news)|itv\d?|channel [45]|sky news|cnn|cbs|nbc|abc|fox news|espn)\b/i};
+  const gv={},gn={};for(const it of items){gn[it.group]=(gn[it.group]||0)+1;if(it.type==='live'&&it.country==='XX'){for(const k in KN)if(KN[k].test(it.title)){it._kc=k;(gv[it.group]=gv[it.group]||{})[k]=((gv[it.group]||{})[k]||0)+1;break}}}
+  for(const it of items)if(it.type==='live'&&it.country==='XX'){const v=gv[it.group]||{};const best=Object.keys(v).sort((a,b)=>v[b]-v[a])[0];const c=it._kc||(best&&v[best]>=Math.max(2,(gn[it.group]||0)*.4)?best:null);if(c){it.country=c;it.versions.forEach(x=>x.lang=c)}delete it._kc}
+  let sig=0;const st={};
+  for(const it of items){it.versions.sort((a,b)=>QR[b.q]-QR[a.q]);it.langs=uniq(it.versions.map(v=>v.lang));sig=(Math.imul(sig,31)+hstr(it.id+':'+it.versions.length))|0;
+    for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}}
+  if(tick)tick(N,N);
+  return{items,stats:st,sig:String(sig>>>0)+':'+items.length}}
+const CAT_SKIP=new Set(['_f','_fn','_seasons','_sk','_kc','_vsel','_mixA','_mixV','_gone']);
+const catJSON=items=>JSON.stringify(items,(k,v)=>CAT_SKIP.has(k)?undefined:v);
+</script>
+<script>
+'use strict';
 // ---------- Icons ----------
 const I={
+ hd:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M7 9.5v5M7 12h3.2M10.2 9.5v5M13.5 9.5v5h1.6a2.5 2.5 0 0 0 0-5z"/></svg>',
  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 11l8-6.5 8 6.5V20h-5.5v-5.5h-5V20H4z"/></svg>',
  live:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="6.5" width="18" height="12.5" rx="2"/><path d="M8.5 2.5L12 6l3.5-3.5" stroke-linecap="round"/></svg>',
@@ -675,23 +787,7 @@ function normServer(s){s=String(s||'').trim().replace(/\/+$/,'').replace(/\/play
 const XT={
   base(c){return normServer(c.server)},
   async api(c,action,extra=''){const u=`${XT.base(c)}/player_api.php?username=${encodeURIComponent(c.user)}&password=${encodeURIComponent(c.pass)}${action?'&action='+action:''}${extra}`;const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()},
-  async load(c,onP){
-    onP('Verbinde mit Server…',.04);
-    const auth=await XT.api(c,'');if(!auth||!auth.user_info||String(auth.user_info.auth)==='0')throw new Error('AUTH');
-    c.exp=auth.user_info.exp_date?+auth.user_info.exp_date*1000:null;c.maxc=auth.user_info.max_connections;
-    const B=XT.base(c),U=encodeURIComponent(c.user),P=encodeURIComponent(c.pass);
-    onP('Lade Kategorien…',.1);
-    const[lc,vc,sc]=await Promise.all([XT.api(c,'get_live_categories'),XT.api(c,'get_vod_categories'),XT.api(c,'get_series_categories')]);
-    const cm=a=>Object.fromEntries((a||[]).map(x=>[String(x.category_id),x.category_name]));const L=cm(lc),V=cm(vc),S=cm(sc);
-    onP('Lade Live-Sender…',.2);const ls=await XT.api(c,'get_live_streams');
-    onP('Lade Filme…',.45);const vs=await XT.api(c,'get_vod_streams');
-    onP('Lade Serien…',.7);const ss=await XT.api(c,'get_series');
-    const out=[];
-    for(const x of ls||[])out.push({type:'live',name:x.name,group:L[x.category_id]||'',logo:x.stream_icon,sid:'l'+x.stream_id,epg:x.epg_channel_id,added:+x.added*1000||0,src:{kind:'live',id:x.stream_id,url:`${B}/live/${U}/${P}/${x.stream_id}.m3u8`,alt:`${B}/live/${U}/${P}/${x.stream_id}.ts`}});
-    for(const x of vs||[])out.push({type:'movie',name:x.name,group:V[x.category_id]||'',logo:x.stream_icon,sid:'v'+x.stream_id,rating:+x.rating||0,added:+x.added*1000||0,year:+x.year||null,genre:x.genre||'',plot:x.plot||'',tmdb:x.tmdb||x.tmdb_id||null,src:{kind:'vod',id:x.stream_id,url:`${B}/movie/${U}/${P}/${x.stream_id}.${x.container_extension||'mp4'}`}});
-    for(const x of ss||[])out.push({type:'series',name:x.name,group:S[x.category_id]||'',logo:x.cover,sid:'s'+x.series_id,rating:+x.rating||0,added:(+x.last_modified||0)*1000,year:parseInt(x.releaseDate||x.release_date)||null,genre:x.genre||'',plot:x.plot||'',cast:x.cast||'',director:x.director||'',backdrop:(x.backdrop_path||[])[0]||'',tmdb:x.tmdb||null,src:{kind:'series',id:x.series_id}});
-    return out;
-  },
+  url(c,action){return`${XT.base(c)}/player_api.php?username=${encodeURIComponent(c.user)}&password=${encodeURIComponent(c.pass)}&action=${action}`},
   async vodInfo(c,id){const d=await XT.api(c,'get_vod_info','&vod_id='+id);const i=d.info||{};return{plot:i.plot||i.description||'',genre:i.genre||'',cast:i.cast||i.actors||'',director:i.director||'',rating:+i.rating||0,year:parseInt(i.releasedate||i.release_date)||null,dur:i.duration_secs?Math.round(i.duration_secs/60):null,backdrop:(i.backdrop_path||[])[0]||'',tmdb:i.tmdb_id||null,poster:i.movie_image||'',yt:i.youtube_trailer||''}},
   async seriesInfo(c,id){const d=await XT.api(c,'get_series_info','&series_id='+id);const B=XT.base(c),U=encodeURIComponent(c.user),P=encodeURIComponent(c.pass);const seasons={};
     for(const s in(d.episodes||{}))seasons[s]=(d.episodes[s]||[]).map((e,i)=>({id:'xe'+e.id,n:+e.episode_num||i+1,title:e.title||('Folge '+(i+1)),plot:(e.info&&e.info.plot)||'',dur:e.info&&e.info.duration_secs?Math.round(e.info.duration_secs/60):null,img:(e.info&&e.info.movie_image)||'',src:{url:`${B}/series/${U}/${P}/${e.id}.${e.container_extension||'mp4'}`}}));
@@ -701,93 +797,96 @@ const XT={
 };
 
 // ---------- M3U ----------
-const M3U={
-  async load(url,onP){onP('Lade Playlist…',.08);const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);onP('Lese Playlist…',.4);const txt=await r.text();if(!/#EXTM3U|#EXTINF/i.test(txt))throw new Error('KEINM3U');return M3U.parse(txt,onP)},
-  parse(txt,onP){
-    const lines=txt.split(/\r?\n/);const raw=[];let cur=null;
-    for(const ln of lines){const l=ln.trim();if(!l)continue;
-      if(l.startsWith('#EXTINF')){const a={};l.replace(/([\w-]+)="([^"]*)"/g,(_,k,v)=>{a[k.toLowerCase()]=v});const ci=l.lastIndexOf('",');const name=(ci>-1?l.slice(ci+2):l.slice(l.lastIndexOf(',')+1)).trim();cur={name:a['tvg-name']&&!name?a['tvg-name']:name,group:a['group-title']||'',logo:a['tvg-logo']||'',epg:a['tvg-id']||''}}
-      else if(l.startsWith('#EXTGRP:')&&cur){cur.group=cur.group||l.slice(8)}
-      else if(!l.startsWith('#')&&cur){cur.url=l;raw.push(cur);cur=null}}
-    const out=[],series=new Map();
-    raw.forEach((x,i)=>{const u=x.url.toLowerCase(),g=(x.group||'').toUpperCase();
-      let type='live';if(u.includes('/movie/')||/(^|\W)(VOD|FILM|FILME|MOVIE|MOVIES|CINEMA|KINO|فیلم)(\W|$)/.test(g)&&!/24\/7/.test(g))type='movie';
-      if(u.includes('/series/')||/(SERIE|SERIEN|SERIES|سریال|DIZI)/.test(g))type='series';
-      if(/\.(mp4|mkv|avi|mov)(\?|$)/.test(u)&&type==='live')type='movie';
-      const sm=x.name.match(/^(.*?)[\s._\-]*S(\d{1,2})\s*[._\-]?\s*E(\d{1,3})/i);
-      if(type==='series'||sm){if(!sm){out.push({type:'movie',name:x.name,group:x.group,logo:x.logo,sid:'m'+hstr(x.url),src:{url:x.url}});return}
-        const key=(sm[1]||x.name).trim()+'|'+x.group;let s=series.get(key);
-        if(!s){s={type:'series',name:(sm[1]||x.name).trim(),group:x.group,logo:x.logo,sid:'s'+hstr(key),seasonsData:{},src:{kind:'m3u-series'}};series.set(key,s);out.push(s)}
-        const sn=+sm[2],en=+sm[3];(s.seasonsData[sn]=s.seasonsData[sn]||[]).push({id:'me'+hstr(x.url),n:en,title:'Folge '+en,src:{url:x.url}});return}
-      out.push({type,name:x.name,group:x.group,logo:x.logo,epg:x.epg,sid:(type==='live'?'l':'m')+hstr(x.url),src:{url:x.url}});
-      if(i%5000===0)onP&&onP('Lese Playlist… '+nf(i)+' Einträge',.4+.4*i/raw.length)});
-    for(const s of series.values())for(const k in s.seasonsData)s.seasonsData[k].sort((a,b)=>a.n-b.n);
-    return out;
-  }
-};
+const M3U={parse:(t,onP)=>M3Uparse(t,onP)};
 
 // ---------- Katalog ----------
 const APP={cfg:LS.get('nfk.cfg',null),profiles:LS.get('nfk.profiles',[]),pid:LS.get('nfk.pid',null),items:[],byId:new Map(),stats:null,view:'home',args:{},hist:[],kbd:false,ver:0,catVer:0,modal:null};
-function normalize(r){
-  const{title,year}=cleanTitle(r.name);
-  const country=detectCountry(r.group,r.name);
-  const q=detectQ(r.name+' '+(r.group||''));
-  const cast=Array.isArray(r.cast)?r.cast:String(r.cast||'').split(/\s*,\s*/).filter(Boolean);
-  return{type:r.type,title,year:r.year||year,country,genres:r.type==='live'?[]:uniq(detectGenres(r.genre||'',r.group||'')),sport:r.type==='live'&&isSportStr((r.group||'')+' '+r.name),
-    q,group:r.group||'',groups:[r.group||''],logo:r.logo||'',backdrop:r.backdrop||'',plot:r.plot||'',cast,director:r.director||'',rating:+r.rating||0,rt:r.rt??null,pop:r.pop??null,dur:r.dur||null,
-    added:r.added||0,demo:!!r.demo,seasons:r.seasons||null,seasonsData:r.seasonsData||null,tmdb:r.tmdb||null,epgId:r.epg||'',versions:[{q,src:r.src,name:r.name,lang:country,sd:r.seasonsData||null}]};
-}
-function buildCatalog(raws){
-  const map=new Map(),tm=new Map();
-  for(const r of raws){if(!r||!r.name)continue;const it=normalize(r);const tk=it.title.toLowerCase().replace(/\s+/g,' ');
-    // Live-Sender pro Land; Filme/Serien länderübergreifend zusammenführen (gleicher Titel+Jahr oder gleiche TMDB-ID) = Sprachversionen
-    const key=it.type==='live'?'live|'+it.country+'|'+tk:it.type+'|'+tk+'|'+(it.year||'');
-    const tkey=it.type!=='live'&&it.tmdb?it.type+'|tmdb'+it.tmdb:null;
-    const ex=map.get(key)||(tkey&&tm.get(tkey));
-    if(ex){if(!map.has(key))map.set(key,ex);if(tkey&&!tm.has(tkey))tm.set(tkey,ex)}
-    if(ex){ex.versions.push(...it.versions);if(QR[it.q]>QR[ex.q])ex.q=it.q;ex.genres=uniq([...ex.genres,...it.genres]);ex.sport=ex.sport||it.sport;if(!ex.groups.includes(it.group))ex.groups.push(it.group);for(const k of['logo','plot','director','backdrop','tmdb','epgId'])if(!ex[k]&&it[k])ex[k]=it[k];if(!ex.cast.length)ex.cast=it.cast;if(!ex.rating)ex.rating=it.rating;}
-    else{it.id=it.type[0]+hstr(key).toString(36);map.set(key,it);if(tkey)tm.set(tkey,it)}}
-  const items=uniq([...map.values()]);
-  // Live-Sender ohne Länderkennung: über bekannte Sendernamen zuordnen (ganze Kategorie per Mehrheit)
-  const KN={DE:/\b(das erste|ard|zdf\w*|rtl ?(zwei|2|up|nitro)?|sat\.? ?1|pro ?sieben\w*|vox\w*|kabel ?(eins|1)\w*|n-?tv|welt|phoenix|tagesschau24|3sat|arte|kika|wdr|ndr|br|swr|mdr|hr|rbb|sr|servus ?tv|tele ?5|sixx|super ?rtl|dmax|sport ?1|sky (sport|cinema|atlantic|one|krimi|comedy|showcase)\w*|dazn ?\d*|magenta ?sport|eurosport ?\d?|toggo|one)\b/i,
-    IR:/(irib|manoto|\bgem\b|iran ?international|bbc persian|persiana|varzesh|tapesh|ifilm|ایران|شبکه|فارسی)/i,TR:/\b(trt|atv|show tv|star tv|kanal d|tv8|fox tr)\b/i,EN:/\b(bbc (one|two|three|four|news)|itv\d?|channel [45]|sky news|cnn|cbs|nbc|abc|fox news|espn)\b/i};
-  const gv={};for(const it of items)if(it.type==='live'&&it.country==='XX'){for(const k in KN)if(KN[k].test(it.title)){it._kc=k;(gv[it.group]=gv[it.group]||{})[k]=((gv[it.group]||{})[k]||0)+1;break}}
-  for(const it of items)if(it.type==='live'&&it.country==='XX'){const v=gv[it.group]||{};const best=Object.keys(v).sort((a,b)=>v[b]-v[a])[0];const tot=items.filter(x=>x.group===it.group).length;const c=it._kc||(best&&v[best]>=Math.max(2,tot*.4)?best:null);if(c){it.country=c;it.versions.forEach(x=>x.lang=c)}}
-  items.forEach(it=>{it.versions.sort((a,b)=>QR[b.q]-QR[a.q]);it.langs=uniq(it.versions.map(v=>v.lang))});
-  APP.items=items;APP.byId=new Map(items.map(i=>[i.id,i]));APP.catVer++;
-  const st={};for(const it of items)for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}
-  APP.stats=st;APP._pool=null;
-}
+function buildCatalog(raws){const r=catalogCore(raws);restoreItems(r.items);APP.sig=r.sig}
 // ---------- Playlist-Speicher: Katalog auf dem Gerät ablegen (IndexedDB), damit die App sofort startet ----------
 const CACHE={
   db(){return new Promise((res,rej)=>{try{const r=indexedDB.open('netefeliks',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})},
   sig(){const c=APP.cfg||{};return[c.mode,c.server||'',c.user||'',c.m3u||''].join('|')},
-  async save(){CACHE.t=Date.now();try{const skip=new Set(['_f','_fn','_seasons','_sk','_kc','_vsel','_mixA','_mixV']);
-    const items=JSON.stringify(APP.items,(k,v)=>skip.has(k)?undefined:v);const d=await CACHE.db();
-    await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put({sig:CACHE.sig(),t:Date.now(),items},'catalog');t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}},
+  async save(json){CACHE.t=Date.now();try{const items=json||catJSON(APP.items);const d=await CACHE.db();
+    await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put({sig:CACHE.sig(),t:Date.now(),items,csig:APP.sig||''},'catalog');t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}},
   async load(){try{const d=await CACHE.db();const v=await new Promise((res,rej)=>{const r=d.transaction('kv').objectStore('kv').get('catalog');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-    if(!v||v.sig!==CACHE.sig())return false;const items=JSON.parse(v.items);if(!items.length)return false;restoreItems(items);CACHE.t=v.t;return true}catch(e){return false}}};
+    if(!v||v.sig!==CACHE.sig())return false;const items=JSON.parse(v.items);if(!items.length)return false;restoreItems(items);CACHE.t=v.t;APP.sig=v.csig||'';return true}catch(e){return false}}};
 function restoreItems(items){APP.items=items;APP.byId=new Map(items.map(i=>[i.id,i]));APP.catVer++;
   const st={};for(const it of items)for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}APP.stats=st;APP._pool=null}
 // Hintergrund-Aktualisierung: holt die Playlist neu, ohne die Bedienung zu stören
 let _bgT=null,_bgBusy=false;
-async function bgRefresh(){if(_bgBusy||!APP.cfg||APP.cfg.mode==='demo')return;_bgBusy=true;
-  try{const before=new Set(APP.items.map(i=>i.id));const old={items:APP.items,byId:APP.byId,stats:APP.stats};
-    try{await loadCatalog(()=>{})}catch(e){Object.assign(APP,old);_bgBusy=false;return}
-    const fresh=APP.items.filter(i=>!before.has(i.id)&&i.type!=='live');CACHE.save();
+// Erst arbeiten, wenn niemand gerade bedient (sonst ruckelt es)
+async function waitIdle(ms){for(let i=0;i<120;i++){if(Date.now()-(APP.lastKey||0)>ms&&!APP.modal)return;await sleep(1500)}}
+async function bgRefresh(){if(_bgBusy||!APP.cfg||APP.cfg.mode==='demo')return;
+  if(APP.noWorker&&(P.el||Date.now()-(APP.lastKey||0)<60000))return; // ohne Hintergrund-Worker nur, wenn die App ruht
+  _bgBusy=true;
+  try{await waitIdle(4000);let res;try{res=await loadCatalog(null)}catch(e){return}
+    if(res.sig&&res.sig===APP.sig){CACHE.t=Date.now();return} // nichts Neues → nichts umbauen
+    await waitIdle(6000);
+    const before=new Set(APP.items.map(i=>i.id));applyCatalog(res);CACHE.save(res.json);
+    const fresh=APP.items.filter(i=>!before.has(i.id)&&i.type!=='live');
     if(fresh.length){const m=fresh.filter(i=>i.type==='movie').length,se=fresh.length-m;toast(`Playlist aktualisiert · ${m?m+' neue Filme':''}${m&&se?' · ':''}${se?se+' neue Serien':''}`);
       if(APP.view==='home'&&!P.el&&!APP.modal&&document.activeElement&&document.activeElement.closest('.rail'))renderApp()}}
   finally{_bgBusy=false}}
-function startBg(){if(_bgT)return;setTimeout(bgRefresh,15000);_bgT=setInterval(bgRefresh,30*6e4)}
-async function loadCatalog(onP){
-  const c=APP.cfg;let raw;
-  if(c.mode==='demo'){onP('Lade Demo-Server…',.2);await sleep(350);raw=buildDemo();onP('Analysiere Einträge…',.6);await sleep(450)}
-  else if(c.mode==='xtream')raw=await XT.load(c,onP);
-  else raw=await M3U.load(c.m3u,onP);
-  onP('Erkenne Länder, Genres & Qualität…',.85);await sleep(30);
-  buildCatalog(raw);onP('Fertig',1);
-  return raw.length;
-}
+// Erste Aktualisierung erst, wenn der gespeicherte Stand älter als 30 Minuten ist – nicht direkt nach dem Start
+function startBg(){if(_bgT)return;const age=Date.now()-(CACHE.t||0);setTimeout(bgRefresh,Math.max(3*6e4,30*6e4-age));_bgT=setInterval(bgRefresh,30*6e4)}
+// ---------- Playlist laden: Download hier, Auswertung im Hintergrund (Worker) – die Bedienung bleibt flüssig ----------
+const WK_MAIN=`
+let RAW=[];
+self.onmessage=function(e){const m=e.data;try{
+  if(m.op==='ping'){postMessage({op:'pong'});return}
+  if(m.op==='xt'){let arr=JSON.parse(m.text);m.text=null;const n=xtMap(m.kind,arr,m.cats,m.B,m.U,m.P,RAW);arr=null;postMessage({op:'ok',n:n});return}
+  if(m.op==='m3u'){const out=M3Uparse(m.text,function(f){postMessage({op:'tick',f:f})});m.text=null;for(const x of out)RAW.push(x);postMessage({op:'ok',n:out.length,c:countTypes(out)});return}
+  if(m.op==='build'){const r=catalogCore(RAW,function(i,n){postMessage({op:'tick',i:i,n:n})});RAW=[];const json=catJSON(r.items);postMessage({op:'done',json:json,stats:r.stats,sig:r.sig,n:r.items.length});return}
+}catch(err){postMessage({op:'err',msg:String(err&&err.message||err)})}};`;
+function mkWorker(){try{if(!window.Worker||!window.Blob||!window.URL)return null;const core=document.getElementById('nfk-core');if(!core)return null;
+  return new Worker(URL.createObjectURL(new Blob([core.textContent+WK_MAIN],{type:'text/javascript'})))}catch(e){return null}}
+function wcall(w,msg,onTick){return new Promise((res,rej)=>{w.onmessage=e=>{const d=e.data;if(d.op==='tick'){onTick&&onTick(d);return}if(d.op==='err')rej(new Error(d.msg));else res(d)};
+  w.onerror=e=>{try{e.preventDefault()}catch(x){}rej(new Error('worker'))};w.postMessage(msg)})}
+async function wReady(w){try{await Promise.race([wcall(w,{op:'ping'}),sleep(3000).then(()=>{throw new Error('timeout')})]);return true}catch(e){return false}}
+// Datei laden und dabei mitzählen (damit man live sieht, was gefunden wird)
+async function fetchText(url,onChunk){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
+  const total=+(r.headers.get('content-length')||0);if(!r.body||!r.body.getReader||!window.TextDecoder){const t=await r.text();onChunk&&onChunk(t,t.length,total);return t}
+  const rd=r.body.getReader(),dec=new TextDecoder();const parts=[];let bytes=0;
+  for(;;){const{done,value}=await rd.read();if(done)break;bytes+=value.length;const s=dec.decode(value,{stream:true});parts.push(s);onChunk&&onChunk(s,bytes,total)}
+  parts.push(dec.decode());return parts.join('')}
+function countOcc(s,k){let n=0,i=0;while((i=s.indexOf(k,i))>-1){n++;i+=k.length}return n}
+const fmtMB=b=>b>=1e9?(b/1e9).toFixed(1).replace('.',',')+' GB':b>=1e7?Math.round(b/1e6)+' MB':(b/1e6).toFixed(1).replace('.',',')+' MB';
+// ui(patch): Fortschritt melden (Schritt, Zähler, Prozent). Ohne ui läuft alles still im Hintergrund.
+async function loadCatalog(ui){
+  const c=APP.cfg;const cnt={live:0,movie:0,series:0};const up=o=>{if(ui)ui(Object.assign({cnt},o))};
+  let w=c.mode==='demo'?null:mkWorker();if(w&&!(await wReady(w))){try{w.terminate()}catch(e){}w=null}APP.noWorker=c.mode!=='demo'&&!w;
+  const raws=[];
+  try{
+  if(c.mode==='demo'){up({step:'conn',msg:'Lade Demo-Server…',p:.05});await sleep(350);up({done:'conn',step:'live',p:.25});const r=buildDemo();for(const x of r){cnt[x.type]++;raws.push(x)}
+    for(const k of['live','movie','series']){up({step:k,detail:nf(cnt[k]),p:.3});await sleep(160);up({done:k})}}
+  else if(c.mode==='xtream'){
+    up({step:'conn',msg:'Verbinde mit deinem Server…',p:.02});
+    const auth=await XT.api(c,'');if(!auth||!auth.user_info||String(auth.user_info.auth)==='0')throw new Error('AUTH');
+    c.exp=auth.user_info.exp_date?+auth.user_info.exp_date*1000:null;c.maxc=auth.user_info.max_connections;
+    const[lc,vc,sc]=await Promise.all([XT.api(c,'get_live_categories'),XT.api(c,'get_vod_categories'),XT.api(c,'get_series_categories')]);
+    const cm=a=>Object.fromEntries((a||[]).map(x=>[String(x.category_id),x.category_name]));const cats={live:cm(lc),vod:cm(vc),series:cm(sc)};
+    up({done:'conn',detail:(c.exp?'Abo bis '+new Date(c.exp).toLocaleDateString('de-DE'):'Abo aktiv')+(c.maxc?' · '+c.maxc+(+c.maxc===1?' Verbindung':' Verbindungen'):''),p:.05});
+    const B=XT.base(c),U=encodeURIComponent(c.user),P=encodeURIComponent(c.pass);
+    const plan=[['live','get_live_streams','"stream_id"','live',.05,.2,'Lade Live-Sender…'],['vod','get_vod_streams','"stream_id"','movie',.2,.45,'Lade Filme…'],['series','get_series','"series_id"','series',.45,.6,'Lade Serien…']];
+    for(const[kind,action,key,step,a,b,msg]of plan){up({step,msg,p:a,detail:''});const t0=performance.now();
+      const text=await fetchText(XT.url(c,action),(ch,bytes,total)=>{cnt[step]+=countOcc(ch,key);up({step,p:a+(b-a)*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+6e6))),detail:nf(cnt[step])+' gefunden · '+fmtMB(bytes)})});
+      const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
+      if(w){const d=await wcall(w,{op:'xt',kind,text,cats:cats[kind],B,U,P});cnt[step]=d.n}else cnt[step]=xtMap(kind,JSON.parse(text),cats[kind],B,U,P,raws);
+      up({done:step,step,detail:nf(cnt[step]),p:b})}}
+  else{
+    up({step:'conn',msg:'Verbinde mit deinem Server…',p:.02});let n=0;const t0=performance.now();
+    const text=await fetchText(c.m3u,(ch,bytes,total)=>{if(!n)up({done:'conn',step:'live',msg:'Lade Playlist…'});n+=countOcc(ch,'#EXTINF');up({step:'live',p:.05+.5*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+8e6))),detail:nf(n)+' Einträge · '+fmtMB(bytes)})});
+    const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
+    if(!/#EXTM3U|#EXTINF/i.test(text.slice(0,20000)))throw new Error('KEINM3U');
+    up({step:'live',msg:'Lese Playlist…',p:.56});
+    if(w){const d=await wcall(w,{op:'m3u',text},t=>up({p:.56+.04*t.f}));Object.assign(cnt,d.c)}else{const out=M3Uparse(text);Object.assign(cnt,countTypes(out));for(const x of out)raws.push(x)}
+    for(const k of['live','movie','series'])up({done:k,detail:''});up({step:'movie',detail:nf(cnt.movie)});up({step:'series',detail:nf(cnt.series)});up({step:'live',detail:nf(cnt.live),p:.6})}
+  up({step:'ana',msg:'Sortiere nach Ländern, Genres & Qualität…',p:.62,detail:''});
+  if(w){const d=await wcall(w,{op:'build'},t=>up({step:'ana',p:.62+.33*(t.i/Math.max(1,t.n)),detail:Math.round(100*t.i/Math.max(1,t.n))+' %'}));
+    up({done:'ana',p:.96,detail:nf(d.n)+' Titel'});return{json:d.json,stats:d.stats,sig:d.sig,n:d.n}}
+  await sleep(40);const r=catalogCore(raws,null);up({done:'ana',p:.96,detail:nf(r.items.length)+' Titel'});return{items:r.items,stats:r.stats,sig:r.sig,n:r.items.length}
+  }finally{if(w)try{w.terminate()}catch(e){}}}
+function applyCatalog(res){restoreItems(res.items||JSON.parse(res.json));APP.sig=res.sig}
 
 // ---------- Profile & Verlauf ----------
 const prof=()=>APP.profiles.find(p=>p.id===APP.pid);
@@ -813,22 +912,44 @@ function pool(type){
 }
 // ---------- Profil-Einstellungen ----------
 const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'native',autonext:1,seek:10,subs:'off',subSize:'m',mix:'ask',conns:'auto',akeep:2,audio:'pref',
-  hero:1,heroSec:10,trailer:1,trailerSound:0,poster:'m',motion:1,teamAlert:1,liveNums:1,liveStart:'__all',liveOrder:[],livePins:[],liveFav:[],liveOpen:{},
+  hero:1,heroSec:10,trailer:1,trailerSound:0,poster:'m',motion:'auto',trailerDelay:3,teamAlert:1,liveNums:1,liveStart:'__all',liveOrder:[],livePins:[],liveFav:[],liveOpen:{},
   rows:{cont:1,top:1,because:1,top10:1,sport:1,recent:1,new:1,pop:1,genre:1,list:1}};
 const PS=k=>{const p=prof();const v=p&&p.set?p.set[k]:undefined;return v===undefined?SET_DEF[k]:v};
 const ROW=k=>{const r=PS('rows');return r[k]===undefined?1:r[k]};
 function setPS(k,v){const p=prof();if(!p)return;p.set=Object.assign({},p.set||{});p.set[k]=v;saveProfiles();APP._pool=null;APP.ver++;applyLook()}
-function applyLook(){const h=document.documentElement;h.classList.toggle('pz-s',PS('poster')==='s');h.classList.toggle('pz-l',PS('poster')==='l');h.classList.toggle('nomotion',!PS('motion'));h.classList.toggle('nonums',!PS('liveNums'))}
+function applyLook(){const h=document.documentElement;h.classList.toggle('pz-s',PS('poster')==='s');h.classList.toggle('pz-l',PS('poster')==='l');{const mo=PS('motion');const m=mo===1?'auto':mo===0?'off':mo;h.classList.toggle('nomotion',m==='off');h.classList.toggle('lite',m==='lite'||m==='off'||(m==='auto'&&!!window.NFK))}h.classList.toggle('nonums',!PS('liveNums'))}
 const ADULT=/(^|[^a-z])(xxx|adult|adults|18\+|\+18|porn|erotik|erotic|for adults|hot club)([^a-z]|$)/i;
 const KIDS_HIDE=new Set(['Horror','Thriller','Krimi']);
 function allowed(it){if(!PS('adult')&&ADULT.test(it.group+' '+it.title))return false;
   if(PS('kids')){if(ADULT.test(it.group+' '+it.title))return false;if(it.type!=='live'&&it.genres.some(g=>KIDS_HIDE.has(g)))return false}
   const hg=PS('hideGenres');if(hg.length&&it.type!=='live'&&it.genres.some(g=>hg.includes(g)))return false;return true}
-function qRank(q){const m=PS('quality');if(m==='fhd')return{FHD:4,HD:3,'4K':2,SD:1,'':0}[q];if(m==='hd')return{HD:4,SD:3,FHD:2,'4K':1,'':0}[q];return QR[q]}
+// ---------- Internet-Tempo → automatische Qualität ----------
+const BW={
+  get(){const b=LS.get('nfk.bw',null);return b&&b.mbps>0?b:null},
+  // weak = grobe Schätzung (z. B. Playlist-Download); ersetzt keine echte Messung
+  note(mbps,src,weak){if(!(mbps>0))return;const o=BW.get();if(weak&&o&&!o.weak)return;const fresh=o&&!o.weak&&!weak&&Date.now()-o.t<5*864e5;
+    const v=fresh?o.mbps*.4+mbps*.6:mbps;LS.set('nfk.bw',{mbps:Math.round(v*10)/10,t:Date.now(),src,weak:!!weak})},
+  cap(){const b=BW.get();if(!b)return 4;const m=b.mbps*.8;return m>=70?5:m>=20?4:m>=8?3:m>=3.5?2:1},
+  label(){const b=BW.get();return b?String(b.mbps).replace('.',',')+' Mbit/s':'noch nicht gemessen'},
+  // Messung: lädt ein paar Sekunden eines Films vom Server (nur in der Fire-TV-App)
+  test(){return new Promise((res,rej)=>{if(!(window.NFK&&NFK.speed))return rej(new Error('Nur in der Fire-TV-App'));if(P.el&&!P.demo)return rej(new Error('Bitte erst die Wiedergabe beenden'));
+    const mv=APP.items.filter(i=>i.type==='movie'&&!i.demo).sort((a,b)=>QR[b.q]-QR[a.q]).slice(0,40);const v=mv.length?mv[Math.floor(Math.random()*Math.min(10,mv.length))].versions[0]:null;
+    if(!v||!v.src||!v.src.url)return rej(new Error('Kein Film zum Messen gefunden'));const id='s'+Date.now();
+    BW._cb=(i,json)=>{if(i!==id)return;BW._cb=null;let d={};try{d=JSON.parse(json)}catch(e){}if(d.mbps>0){BW.note(d.mbps,'Messung');res(d.mbps)}else rej(new Error(d.err||'Messung fehlgeschlagen'))};
+    NFK.speed(id,v.src.url,6)})},
+  auto(){const b=BW.get();if(b&&!b.weak&&Date.now()-b.t<3*864e5)return;setTimeout(async()=>{if(P.el||Date.now()-(APP.lastKey||0)<20000)return;try{await BW.test()}catch(e){}},90000)}};
+window.nfkS=(id,json)=>{BW._cb&&BW._cb(id,json)};
+const QNAME={'8K':'8K','4K':'4K UHD',FHD:'Full HD',HD:'HD',SD:'SD','':'Standard'};const qName=q=>QNAME[q||'']||q;
+// Rang einer Qualität: innerhalb der Grenze (Einstellung bzw. Internet-Tempo) die beste, darüber nur als Notlösung
+function qRank(q){const m=PS('quality');const r=QR[q||'']||0;const cap=m==='best'?9:m==='fhd'?3:m==='hd'?2:BW.cap();return r<=cap?10+r:10-(r-cap)}
 // Sprachversionen: Reihenfolge der Länder im Profil = Wunschsprache, danach beste Qualität
 function prefIdx(l){const p=prof();const i=p?p.countries.indexOf(l):-1;return i<0?99:i}
 function sortedVersions(it){return it.versions.slice().sort((a,b)=>prefIdx(a.lang)-prefIdx(b.lang)||qRank(b.q)-qRank(a.q))}
-function curVer(it){return it._vsel&&it.versions.includes(it._vsel)?it._vsel:sortedVersions(it)[0]}
+function curVer(it){if(it._vsel&&it.versions.includes(it._vsel))return it._vsel;const c=(LS.get('nfk.vs.'+APP.pid,{})||{})[it.id];
+  if(c){const v=sortedVersions(it).find(x=>x.lang===c.l&&(!c.q||x.q===c.q))||sortedVersions(it).find(x=>x.lang===c.l);if(v)return v}return sortedVersions(it)[0]}
+// Eigene Wahl (Sprache/Qualität) pro Titel merken; autoQ = Qualität automatisch
+function setVsel(it,v,autoQ){const m=LS.get('nfk.vs.'+APP.pid,{})||{};if(v){m[it.id]={l:v.lang,q:autoQ?'':v.q};it._vsel=autoQ?null:v}else{delete m[it.id];it._vsel=null}
+  const k=Object.keys(m);if(k.length>400)delete m[k[0]];LS.set('nfk.vs.'+APP.pid,m)}
 function langsOf(it){return uniq(sortedVersions(it).map(v=>v.lang))}
 function bestQ(it,l){const v=sortedVersions(it).find(x=>x.lang===l);return v&&v.q||''}
 
@@ -869,11 +990,14 @@ const R={
 // ---------- Metadaten & Bewertungen (echte Server) ----------
 const META={mem:new Map(),
   cache:LS.get('nfk.meta',{}),
-  save(){const k=Object.keys(META.cache);if(k.length>900)k.slice(0,k.length-900).forEach(x=>delete META.cache[x]);LS.set('nfk.meta',META.cache)},
+  save(){clearTimeout(META._st);META._st=setTimeout(()=>{const k=Object.keys(META.cache);if(k.length>900)k.slice(0,k.length-900).forEach(x=>delete META.cache[x]);LS.set('nfk.meta',META.cache)},4000)},
+  run:0,q:[],
+  slot(fn){return new Promise((res,rej)=>{META.q.push({fn,res,rej});META.next()})},
+  next(){while(META.run<2&&META.q.length){const j=META.q.pop();META.run++;j.fn().then(j.res,j.rej).finally(()=>{META.run--;META.next()})}},
   async get(it){
     if(it.demo)return{imdb:it.rating,rt:it.rt,pop:it.pop,src:'demo'};
     if(META.mem.has(it.id))return META.mem.get(it.id);
-    const pr=(async()=>{const m=Object.assign({},META.cache[it.id]||{});const c=APP.cfg;
+    const pr=META.slot(async()=>{const m=Object.assign({},META.cache[it.id]||{});const c=APP.cfg;
       try{if(!m.x&&c.mode==='xtream'&&it.type==='movie'){const v=it.versions[0].src;const d=await XT.vodInfo(c,v.id);Object.assign(m,{x:1,yt:m.yt||d.yt,plot:d.plot,cast:d.cast,director:d.director,genre:d.genre,dur:d.dur,backdrop:d.backdrop,tmdb:d.tmdb,srvRating:d.rating,year:d.year})}}catch(e){}
       try{if(!m.t&&tmdbKey()&&(it.tmdb||m.tmdb||it.title)){const typ=it.type==='series'?'tv':'movie';let id=it.tmdb||m.tmdb;
         if(!id){const s=await(await fetch(`https://api.themoviedb.org/3/search/${typ}?api_key=${tmdbKey()}&language=de-DE&query=${encodeURIComponent(it.title)}${it.year?(typ==='tv'?'&first_air_date_year=':'&year=')+it.year:''}`)).json();id=s.results&&s.results[0]&&s.results[0].id}
@@ -893,30 +1017,42 @@ const META={mem:new Map(),
       if(m.cast&&!it.cast.length){it.cast=m.cast.split(/\s*,\s*/).filter(Boolean);it._f=null}
       if(m.director&&!it.director){it.director=m.director;it._f=null}
       if(m.dur&&!it.dur)it.dur=m.dur;
-      return m})();
-    META.mem.set(it.id,pr);return pr},
+      return m});
+    META.mem.set(it.id,pr);pr.catch(()=>META.mem.delete(it.id));return pr},
 };
 
 // ---------- Bewertungen & Trailer ohne Schlüssel: öffentliche Seiten von IMDb, Rotten Tomatoes und YouTube ----------
+// Webseiten im Hintergrund holen: in der Fire-TV-App lädt und durchsucht Android die Seite (blockiert die Bedienung nicht)
+const NET={seq:0,cb:new Map(),
+  native:()=>!!(window.NFK&&NFK.grab),
+  grab(url,o={}){if(NET.native())return new Promise((res,rej)=>{const id='g'+(++NET.seq);const t=setTimeout(()=>{NET.cb.delete(id);rej(new Error('timeout'))},30000);
+      NET.cb.set(id,d=>{clearTimeout(t);d.err?rej(new Error(d.err)):res(d)});NFK.grab(id,url,JSON.stringify(o))});
+    return fetch(url,{headers:o.h||{}}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(t=>NET.apply(t,o))},
+  apply(body,o){const r={status:200};if(o.head)r.body=body.split('\n').slice(0,o.head).join('\n');else if(o.body)r.body=body.slice(0,o.max||4e6);
+    if(o.rules)r.r=o.rules.map(ru=>{const re=new RegExp(ru.re,'g');const out=[];let m;while(out.length<(ru.max||1)&&(m=re.exec(body))){out.push(ru.g?ru.g.map(i=>(m[i]||'').slice(0,ru.cut||2e5)):[m[0]]);if(!m[0])re.lastIndex++}return out});return r}};
+window.nfkG=(id,json)=>{const f=NET.cb.get(id);if(!f)return;NET.cb.delete(id);let d;try{d=JSON.parse(json)}catch(e){d={err:'parse'}}f(d)};
+const gfirst=(r,i=0)=>r&&r.r&&r.r[i]&&r.r[i][0]?r.r[i][0][0]:null;
 const KL={
   async imdb(it,m){const t=(m.engTitle||it.title).trim();const q=normT(t).replace(/[^\p{L}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim().slice(0,60);if(!q)return null;
-    const f=(/[a-z0-9]/.exec(q)||['x'])[0];const d=await(await fetch(`https://v3.sg.media-imdb.com/suggestion/${f}/${encodeURIComponent(q)}.json`)).json();
+    const f=(/[a-z0-9]/.exec(q)||['x'])[0];const g=await NET.grab(`https://v3.sg.media-imdb.com/suggestion/${f}/${encodeURIComponent(q)}.json`,{body:true,max:400000});const d=JSON.parse(g.body||'{}');
     const list=(d.d||[]).filter(x=>/^tt/.test(x.id));const tv=it.type==='series';
     const c=list.find(x=>(!it.year||!x.y||Math.abs(x.y-it.year)<=1)&&(tv?/tv/i.test(x.qid||x.q||''):!/tv/i.test(x.qid||x.q||'')))||list.find(x=>!it.year||!x.y||Math.abs(x.y-it.year)<=1);
     if(!c)return null;const r={id:c.id,title:c.l};
-    try{const h=await(await fetch(`https://www.imdb.com/title/${c.id}/`)).text();const mm=h.match(/"aggregateRating":\{[^}]*?"ratingValue":\s*"?([\d.]+)/);if(mm)r.rating=+mm[1]}catch(e){}
+    try{const h=await NET.grab(`https://www.imdb.com/title/${c.id}/`,{rules:[{re:String.raw`"aggregateRating":\{[^}]*?"ratingValue":\s*"?([\d.]+)`,g:[1]}]});const v=gfirst(h);if(v)r.rating=+v}catch(e){}
     return r},
-  async rt(it,m){const t=m.engTitle||it.title;const h=await(await fetch(`https://www.rottentomatoes.com/search?search=${encodeURIComponent(t)}`)).text();
-    let best=null;for(const r of h.matchAll(/<search-page-media-row([^>]*)>([\s\S]*?)<\/search-page-media-row>/g)){const at=r[1];const y=+((at.match(/(?:release|start)-year="(\d{4})"/)||[])[1]||0);
-      const href=(r[2].match(/href="(https:\/\/www\.rottentomatoes\.com\/(?:m|tv)\/[^"]+)"/)||[])[1];if(!href||(it.type==='series')!==/\/tv\//.test(href))continue;if(it.year&&y&&Math.abs(y-it.year)>1)continue;
+  async rt(it,m){const t=m.engTitle||it.title;
+    const g=await NET.grab(`https://www.rottentomatoes.com/search?search=${encodeURIComponent(t)}`,{rules:[{re:String.raw`<search-page-media-row([^>]*)>([\s\S]*?)</search-page-media-row>`,max:12,g:[1,2],cut:4000}]});
+    let best=null;for(const[at,inner]of(g.r&&g.r[0])||[]){const y=+((at.match(/(?:release|start)-year="(\d{4})"/)||[])[1]||0);
+      const href=(inner.match(/href="(https:\/\/www\.rottentomatoes\.com\/(?:m|tv)\/[^"]+)"/)||[])[1];if(!href||(it.type==='series')!==/\/tv\//.test(href))continue;if(it.year&&y&&Math.abs(y-it.year)>1)continue;
       best={href,rt:(at.match(/tomatometer-score="(\d+)"/)||[])[1]};break}
     if(!best)return null;let crit=best.rt?+best.rt:null,aud=null;
-    try{const pg=await(await fetch(best.href)).text();const c=pg.match(/"criticsScore":\{[^}]*?"score":"?(\d{1,3})/);const a=pg.match(/"audienceScore":\{[^}]*?"score":"?(\d{1,3})/)||pg.match(/popcornmeter[^0-9]{0,60}(\d{1,3})%/i);if(c)crit=+c[1];if(a)aud=+a[1]}catch(e){}
+    try{const pg=await NET.grab(best.href,{rules:[{re:String.raw`"criticsScore":\{[^}]*?"score":"?(\d{1,3})`,g:[1]},{re:String.raw`"audienceScore":\{[^}]*?"score":"?(\d{1,3})`,g:[1]},{re:String.raw`popcornmeter[^0-9]{0,60}(\d{1,3})%`,g:[1]}]});
+      const c=gfirst(pg,0),a=gfirst(pg,1)||gfirst(pg,2);if(c)crit=+c;if(a)aud=+a}catch(e){}
     return{rt:crit,pop:aud}},
   async yt(it,m){const lang=((prof()||{}).countries||[])[0];const name=lang==='DE'||!m.engTitle?it.title:m.engTitle;
     const q=name+(it.year?' '+it.year:'')+(it.type==='series'?' serie':'')+(lang==='DE'?' trailer deutsch':' official trailer');
-    const h=await(await fetch('https://www.youtube.com/results?hl=de&gl=DE&search_query='+encodeURIComponent(q))).text();
-    const mm=h.match(/"videoRenderer":\{"videoId":"([\w-]{11})"/)||h.match(/"videoId":"([\w-]{11})"/);return mm?mm[1]:null}};
+    const g=await NET.grab('https://www.youtube.com/results?hl=de&gl=DE&search_query='+encodeURIComponent(q),{rules:[{re:String.raw`"videoRenderer":\{"videoId":"([\w-]{11})"`,g:[1]},{re:String.raw`"videoId":"([\w-]{11})"`,g:[1]}]});
+    return gfirst(g,0)||gfirst(g,1)}};
 // ---------- EPG ----------
 // ---------- Lieblingsteams ----------
 const NATS=new Set();
@@ -942,10 +1078,12 @@ const FOOTY=/(fu(ss|ß)ball|football|soccer|liga|league|ligue|serie a|eredivisie
 function isMatchy(s,ch){s=String(s||'');if(/\s(vs\.?|v\.?|gegen)\s|\d+\s*:\s*\d+\b/i.test(s)&&(FOOTY.test(s)||(ch&&ch.sport)||/\s(vs\.?|gegen)\s/i.test(s)))return true;return/\s[–—-]\s/.test(s)&&(FOOTY.test(s)||!!(ch&&ch.sport))}
 // Findet alle Spiele der Lieblingsteams (laufend oder in den nächsten 24 h) über EPG und Sendernamen und sortiert die Sender:
 // Wunschsprache des Profils > beste Qualität > Sportsender
+// Sender, auf denen Spiele laufen können: Sportsender und Sender mit Spielnamen (für jede Pool-Version einmal berechnet)
+function teamCands(){const pl=pool('live');if(APP._tc&&APP._tc.p===pl)return APP._tc.v;const v=pl.filter(ch=>ch.sport||isMatchy(ch.title)).sort((a,b)=>prefIdx(a.country)-prefIdx(b.country)||QR[b.q]-QR[a.q]);APP._tc={p:pl,v,ids:new Set(pl.map(c=>c.id))};return v}
 function findTeamGames(){
   const p=prof();if(!p||!(p.teams||[]).length||!APP.items.length)return[];
-  const now=Date.now(),hits=new Map();
-  for(const ch of pool('live')){
+  const now=Date.now(),hits=new Map();const set=new Set(teamCands());for(const id of EPG.mem.keys()){const c=APP.byId.get(id);if(c&&APP._tc.ids.has(id))set.add(c)}
+  for(const ch of set){
     const cands=EPG.entries(ch).map(e=>({e,txt:e.title}));
     if(isMatchy(ch.title,ch)){const d0=new Date();d0.setHours(0,0,0,0);cands.push({e:{title:ch.title,start:d0.getTime(),end:now+3*36e5,byName:1},txt:ch.title})}
     for(const{e,txt}of cands){if(!e||e.end<now||e.start>now+864e5||!isMatchy(txt,ch))continue;
@@ -963,7 +1101,7 @@ function teamCard(h,i){const ch=h.chans[0];const parts=h.title.split(':');const 
 function teamZoneHTML(){const hits=findTeamGames();APP.teamHits=hits;if(!hits.length)return'';const p=prof();
   return`<h3 class="pad">Dein Team<small>${esc(p.teams.map(t=>t.n).join(', '))} · bester Stream automatisch gewählt</small></h3><div class="track pad">${hits.map(teamCard).join('')}</div>`}
 let _tzT=null;
-function refreshTeamZones(){clearTimeout(_tzT);_tzT=setTimeout(()=>{$$('#teamzone').forEach(z=>{if(z.contains(document.activeElement))return;z.innerHTML=teamZoneHTML()});checkTeamAlert()},800)}
+function refreshTeamZones(){if(!((prof()||{}).teams||[]).length)return;clearTimeout(_tzT);_tzT=setTimeout(()=>{$$('#teamzone').forEach(z=>{if(z.contains(document.activeElement))return;z.innerHTML=teamZoneHTML()});checkTeamAlert()},2500)}
 function checkTeamAlert(){if(!prof()||!PS('teamAlert')||$('.uplert'))return;APP.alerted=APP.alerted||new Set(LS.get('nfk.al.'+APP.pid,[]));if($('.talert'))return;const day=new Date().toDateString();const h=findTeamGames().find(x=>x.live&&!APP.alerted.has(x.team.n+'|'+day));if(!h)return;
   APP.alerted.add(h.team.n+'|'+day);LS.set('nfk.al.'+APP.pid,[...APP.alerted].slice(-60));if(P.el&&h.chans.includes(P.it))return;showAlert(h)}
 function showAlert(h){$$('.talert').forEach(x=>x.remove());APP.alertHit=h;const ch=h.chans[0];const d=document.createElement('div');d.className='talert';
@@ -973,7 +1111,7 @@ function showAlert(h){$$('.talert').forEach(x=>x.remove());APP.alertHit=h;const 
 function popOpen(d,act){d._back=document.activeElement;document.body.appendChild(d);const b=$(`[data-act="${act}"]`,d);b.focus({preventScroll:true});setTimeout(()=>{if(d.isConnected&&!d.contains(document.activeElement))b.focus({preventScroll:true})},80)}
 function popClose(d){const back=d._back;d.remove();if(back&&back.isConnected)back.focus({preventScroll:true});else(focusables()[0]||document.body).focus()}
 let _tw=null;
-function startTeamWatch(){EPG.prefetch();TREND.load();setTimeout(checkTeamAlert,6000);setTimeout(()=>UPD.check(),2500);if(_tw)return;_tw=setInterval(()=>{EPG.prefetch();refreshTeamZones()},60000);setInterval(()=>UPD.check(),30*6e4);
+function startTeamWatch(){EPG.prefetch();TREND.load();setTimeout(()=>TOP.load(),20000);setTimeout(checkTeamAlert,6000);setTimeout(()=>UPD.check(),2500);if(_tw)return;_tw=setInterval(()=>{EPG.prefetch();refreshTeamZones()},60000);setInterval(()=>{UPD.check();TOP.load()},30*6e4);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-(UPD.last||0)>2*6e4)UPD.check()})}
 // ---------- Updates (nur in der Fire-TV-App) ----------
 const manual0=()=>false; // während eines Films kein Fenster – der Hinweis kommt danach
@@ -1015,12 +1153,12 @@ function demoFix(){const p=prof();const key=p?p.id+'|'+(p.teams||[]).map(t=>t.n)
   return fix}
 const EPG={mem:new Map(),q:[],busy:0,
   entries(ch){if(ch.demo){const e=EPG.demo(ch);return[e.cur,e.next,e.later].filter(Boolean)}const m=EPG.mem.get(ch.id);return m&&m.list?m.list:[]},
-  prefetch(){if(!APP.cfg||APP.cfg.mode!=='xtream'||!prof())return;const now=Date.now();for(const ch of pool('live')){if(!(ch.sport||isMatchy(ch.title)))continue;const m=EPG.mem.get(ch.id);if(m&&(!m.t||now-m.t<30*6e4))continue;EPG.mem.set(ch.id,Object.assign(m||{},{t:0}));EPG.q.push(ch)}EPG.pump()},
+  prefetch(){if(!APP.cfg||APP.cfg.mode!=='xtream'||!prof()||!(prof().teams||[]).length)return;const now=Date.now();for(const ch of teamCands().slice(0,150)){const m=EPG.mem.get(ch.id);if(m&&(!m.t||now-m.t<30*6e4))continue;EPG.mem.set(ch.id,Object.assign(m||{},{t:0}));EPG.q.push(ch)}EPG.pump()},
   get(ch){
     if(ch.demo)return EPG.demo(ch);
     const m=EPG.mem.get(ch.id);if(m&&m.list){const now=Date.now();const i=m.list.findIndex(e=>e.start<=now&&e.end>now);return i<0?null:{cur:m.list[i],next:m.list[i+1]}}
     if(!m&&APP.cfg.mode==='xtream'){EPG.mem.set(ch.id,{});EPG.q.push(ch);EPG.pump()}return null},
-  async pump(){while(EPG.busy<4&&EPG.q.length){const ch=EPG.q.shift();EPG.busy++;XT.epg(APP.cfg,ch.versions[0].src.id).then(l=>{EPG.mem.set(ch.id,{list:l,t:Date.now()});$$(`[data-epg="${ch.id}"]`).forEach(el=>el.innerHTML=epgLine(ch));if((prof()||{}).teams&&prof().teams.length)refreshTeamZones()}).catch(()=>{}).finally(()=>{EPG.busy--;EPG.pump()})}},
+  async pump(){if(Date.now()-(APP.lastKey||0)<1500){clearTimeout(EPG._pt);EPG._pt=setTimeout(EPG.pump,1600);return}while(EPG.busy<2&&EPG.q.length){const ch=EPG.q.shift();EPG.busy++;XT.epg(APP.cfg,ch.versions[0].src.id).then(l=>{EPG.mem.set(ch.id,{list:l,t:Date.now()});$$(`[data-epg="${ch.id}"]`).forEach(el=>el.innerHTML=epgLine(ch));if((prof()||{}).teams&&prof().teams.length)refreshTeamZones()}).catch(()=>{}).finally(()=>{EPG.busy--;EPG.pump()})}},
   demo(ch){
     const seed=hstr(ch.id);const slot=(ch.sport?105:50+seed%40)*6e4;const d0=new Date();d0.setHours(0,0,0,0);const off=(seed%5)*9e5;const now=Date.now();
     const i=Math.floor((now-d0-off)/slot);const st=d0.getTime()+off+i*slot;
@@ -1044,9 +1182,12 @@ function artHTML(it,wide){
   return`<div class="art m${motif}${wide?' wd':''}" style="--a:hsl(${h1} ${sat}% ${lum}%);--b:hsl(${h2} 70% 14%);--c:hsl(${(h1+28)%360} 85% 72%);--c2:hsl(${(h1+28)%360} 85% 72% / .22)"><span class="art-t ${ft}"${rtl?' dir="rtl"':''}>${esc(it.title)}</span>${it.year?`<span class="art-y">${it.year}</span>`:''}</div>`;
 }
 function logoHTML(ch){const h=hstr(ch.title);const rtl=isRTL(ch.title);
-  if(ch.logo&&!ch.demo)return`<div class="logo" style="--a:hsl(${h%360} 30% 22%);--b:#141010"><img src="${esc(ch.logo)}" alt="" loading="lazy" data-fb="logo"></div>`;
+  if(ch.logo&&!ch.demo)return`<div class="logo" style="--a:hsl(${h%360} 30% 22%);--b:#141010"><img src="${esc(imgU(ch.logo,240))}" alt="" loading="lazy" decoding="async" data-fb="logo"></div>`;
   return`<div class="logo" style="--a:hsl(${h%360} 55% 32%);--b:hsl(${(h>>8)%360} 50% 10%)"><span${rtl?' dir="rtl"':''}>${esc(ch.title.replace(/\s+(UHD|4K)$/i,''))}</span></div>`}
-function posterHTML(it,wide){const img=wide?(it.backdrop||''):(it.logo||'');if(img&&!it.demo)return`<img class="pi" src="${esc(img)}" alt="" loading="lazy" data-fb="${wide?'w':'p'}">`+'';return artHTML(it,wide)}
+// Bilder: in der Fire-TV-App verkleinert und auf dem Gerät zwischengespeichert (schneller, weniger Arbeitsspeicher)
+let _imgN=null;const imgN=()=>_imgN==null?(_imgN=!!(window.NFK&&NFK.nativeVersion&&NFK.nativeVersion()>=7)):_imgN;
+function imgU(u,w){if(!u||!/^https?:/i.test(u)||!imgN())return u;return'https://nfk.img/?w='+w+'&u='+encodeURIComponent(u)}
+function posterHTML(it,wide){const img=wide?(it.backdrop||''):(it.logo||'');if(img&&!it.demo)return`<img class="pi" src="${esc(imgU(img,wide?960:320))}" alt="" loading="lazy" decoding="async" data-fb="${wide?'w':'p'}">`;return artHTML(it,wide)}
 function cardHTML(it,o={}){
   if(it.type==='live')return`<button class="card w ch f" data-id="${it.id}" data-act="play" data-why="${o.why||''}">${logoHTML(it)}${it.q==='4K'?'<span class="bdg k">4K</span>':''}<div class="cap"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" dir="auto">${esc(it.title)}</b><small data-epg="${it.id}">${epgLine(it)}</small></div></button>`;
   const pr=getProg()[it.id];const pct=pr&&!pr.done&&pr.d?pr.p/pr.d:0;const isNew=it.added&&Date.now()-it.added<10*864e5;
@@ -1097,20 +1238,20 @@ VIEWS.home=(el)=>{
   const sp=lv.filter(c=>c.sport).map(c=>({c,e:EPG.get(c)})).filter(o=>!o.e||/–|UFC|NBA|F1|:|لیگ/.test(o.e.cur&&o.e.cur.title||'')).map(o=>o.c);
   if(ROW('sport'))html+=rowHTML('Live-Sport',sp,{why:'live'});
   const rc=getRecentCh().map(id=>APP.byId.get(id)).filter(Boolean);if(ROW('recent'))html+=rowHTML('Zuletzt gesehene Sender',rc,{why:'live'});
-  const top10=vod.slice().sort((a,b)=>((b.pop||0)/10+(b.rating||0)+(b.added>Date.now()-30*864e5?2:0))-((a.pop||0)/10+(a.rating||0)+(a.added>Date.now()-30*864e5?2:0))).slice(0,10);
-  if(ROW('top10')){html+=top10HTML('movie',TREND.top('movie')||localTop(pool('movie')));html+=top10HTML('series',TREND.top('series')||localTop(pool('series')))}
+  const top10=((TOP.top('movie')||{}).l||[]).concat((TOP.top('series')||{}).l||[]).filter((x,i)=>i<2)||[];const top10x=vod.slice().sort((a,b)=>((b.pop||0)/10+(b.rating||0)+(b.added>Date.now()-30*864e5?2:0))-((a.pop||0)/10+(a.rating||0)+(a.added>Date.now()-30*864e5?2:0))).slice(0,10);
+  if(ROW('top10')){html+=top10Row('movie');html+=top10Row('series')}
   if(ROW('new')){const np=newPopular(vod);if(np.length>3)html+=rowHTML('Neu & beliebt',np,{why:'new'})}
   if(ROW('new'))html+=rowHTML('Neu auf Netefeliks',vod.slice().sort((a,b)=>b.added-a.added).slice(0,24),{why:'new'});
   if(ROW('pop'))for(const c of p.countries){const cv=vod.filter(i=>i.langs.includes(c));if(cv.length<4)continue;html+=rowHTML('Beliebt: '+esc(CBY[c].name)+' '+(CBY[c].flag||''),cv.slice().sort((a,b)=>(b.rating||0)+(b.pop||0)/40-(a.rating||0)-(a.pop||0)/40).slice(0,24),{why:'pop'})}
   const tg=ROW('genre')?R.topGenres(t,3):[];for(const[g]of tg){const gi=scored.filter(x=>x.it.genres.includes(g)&&okR(x.it)).slice(0,24).map(x=>x.it);html+=rowHTML(esc(g)+' – ausgewählt für dich',gi,{why:'g:'+g})}
   const ml=getList().map(id=>APP.byId.get(id)).filter(Boolean);if(ROW('list'))html+=rowHTML('Meine Liste',ml,{why:'list'});
   const tz=teamZoneHTML();el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><section class="row tz" id="teamzone">${tz}</section>${html||'<p class="empty pad">Für deine Länderauswahl wurden keine Inhalte gefunden. Ändere die Länder in den Einstellungen.</p>'}</div>`;
-  APP.hero=uniq([...top.slice(0,2),...vod.filter(i=>i.q==='4K').sort((a,b)=>b.added-a.added).slice(0,2),...top10.slice(0,2),...top.slice(2,8)]).slice(0,6);
+  APP.hero=uniq([...top.slice(0,2),...vod.filter(i=>QR[i.q]>=4).sort((a,b)=>b.added-a.added).slice(0,2),...top10.slice(0,2),...top.slice(2,8)]).slice(0,6);
   const lh=(APP.teamHits||[]).find(h=>h.live);if(lh)setSpot(lh.chans[0].id,'team');else if(APP.hero.length&&PS('hero')){showHero(0);const pb=$('#spot [data-hb="1"]');if(pb)pb.setAttribute('data-autofocus','')}else if(cont[0])setSpot(cont[0].id,'cont');else if(top[0])setSpot(top[0].id,'top');
 };
 // Trailer im Hintergrund (YouTube, stumm oder mit Ton laut Einstellung). Wird erst sichtbar, wenn er wirklich läuft.
 const TR={t:null,f:null,
-  settle(it,box){clearTimeout(TR.t);TR.stop();if(!it||it.type==='live'||!box||!PS('trailer'))return;TR.t=setTimeout(async()=>{let id=null;try{id=it.demo?null:(await META.get(it)).yt}catch(e){}if(id&&box.isConnected)TR.start(id,box)},1300)},
+  settle(it,box){clearTimeout(TR.t);TR.stop();if(!it||it.type==='live'||!box||!PS('trailer'))return;TR.t=setTimeout(async()=>{let id=null;try{id=it.demo?null:(await META.get(it)).yt}catch(e){}if(id&&box.isConnected&&Date.now()-(APP.lastKey||0)>800)TR.start(id,box)},(+PS('trailerDelay')||3)*1000)},
   start(id,box){const mute=PS('trailerSound')?0:1;const f=document.createElement('iframe');f.className='yt';f.tabIndex=-1;f.setAttribute('allow','autoplay; encrypted-media');
     f.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&mute=${mute}&controls=0&loop=1&playlist=${encodeURIComponent(id)}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&disablekb=1&fs=0&enablejsapi=1`;
     f.onload=()=>{try{f.contentWindow.postMessage(JSON.stringify({event:'listening',id:1,channel:'widget'}),'*')}catch(e){}};if(!box||!box.isConnected)return;box.appendChild(f);TR.f=f},
@@ -1126,7 +1267,39 @@ const TREND={
     for(const x of d){const c=(byT.get('#'+x.id)||[]).concat(byT.get(n(x.t))||[],byT.get(n(x.o))||[]).find(it=>!x.y||!it.year||Math.abs(it.year-x.y)<=1);if(c&&!out.includes(c))out.push(c);if(out.length>=10)break}
     return out.length>=3?out:null}};
 function localTop(list){return list.slice().sort((a,b)=>((b.pop||0)/10+(b.rating||0)+(b.added>Date.now()-30*864e5?2:0))-((a.pop||0)/10+(a.rating||0)+(a.added>Date.now()-30*864e5?2:0))).slice(0,10)}
-function refreshTop10(){$$('[data-top10]').forEach(sec=>{if(sec.contains(document.activeElement))return;const ty=sec.dataset.top10;const l=TREND.top(ty)||localTop(pool(ty));const w=document.createElement('div');w.innerHTML=top10HTML(ty,l);sec.replaceWith(w.firstElementChild)})}
+function refreshTop10(){$$('[data-top10]').forEach(sec=>{if(sec.contains(document.activeElement))return;const w=document.createElement('div');w.innerHTML=top10Row(sec.dataset.top10);if(w.firstElementChild)sec.replaceWith(w.firstElementChild)})}
+// ---------- Echte Top 10 – nicht nach Geschmack: IMDb „Meistgesucht“ (wöchentlich) + Netflix-Wochencharts, abgeglichen mit deinem Abo ----------
+function imdbChart(g){const out=[];const seen=new Map();const add=(id,ts,y,r,tv)=>{if(!/^tt\d+$/.test(id||''))return;ts=ts.filter(Boolean);let e=seen.get(id);if(!e){e={id,t:[],y:y||null,r:r||0,tv:tv};seen.set(id,e);out.push(e)}for(const t of ts)if(!e.t.includes(t))e.t.push(t);if(y&&!e.y)e.y=y;if(r&&!e.r)e.r=r};
+  for(const blk of(g.r&&g.r[1])||[]){try{const j=JSON.parse(blk[0]);const L=[].concat(j).find(x=>x&&x.itemListElement)||j;(L.itemListElement||[]).forEach((x,i)=>{const it=x.item||x;const id=((it.url||'').match(/tt\d+/)||[])[0];add(id,[it.name,it.alternateName],null,x.position||i+1)})}catch(e){}}
+  const nd=g.r&&g.r[0]&&g.r[0][0]&&g.r[0][0][0];if(nd){try{const walk=(o,d)=>{if(!o||typeof o!=='object'||d>14)return;if(typeof o.id==='string'&&/^tt\d+$/.test(o.id)&&o.titleText&&o.titleText.text)
+      add(o.id,[o.titleText.text,o.originalTitleText&&o.originalTitleText.text],o.releaseYear&&o.releaseYear.year,o.meterRanking&&o.meterRanking.currentRank,o.titleType&&/tv/i.test(o.titleType.id||''));
+    for(const k in o)if(o[k]&&typeof o[k]==='object')walk(o[k],d+1)};walk(JSON.parse(nd),0)}catch(e){}}
+  out.forEach((e,i)=>{if(!e.r)e.r=i+1});return out.sort((a,b)=>a.r-b.r).slice(0,100)}
+function mergeChart(arr,l){for(const e of l){const x=arr.find(a=>a.id===e.id);if(x){for(const t of e.t)if(!x.t.includes(t))x.t.push(t);if(!x.y)x.y=e.y}else arr.push(e)}arr.sort((a,b)=>a.r-b.r)}
+function nfxTop(tsv){const rows=tsv.split('\n').slice(1).map(l=>l.split('\t')).filter(r=>r.length>=8);if(!rows.length)return{};const wk=rows[0][0];const cur=rows.filter(r=>r[0]===wk);
+  const pick=re=>cur.filter(r=>re.test(r[1])).sort((a,b)=>(+b[7]||+b[5]||0)-(+a[7]||+a[5]||0)).map((r,i)=>({t:r[3],r:i+1}));
+  const ser=[];for(const e of pick(/^TV/))if(!ser.some(x=>x.t===e.t))ser.push({t:e.t,r:ser.length+1});return{week:wk,movie:pick(/^Films/),series:ser}}
+const TOP={data:LS.get('nfk.top',null),busy:0,
+  async load(force){if(TOP.busy||!APP.cfg||APP.cfg.mode==='demo')return;const d=TOP.data;if(!force&&d&&Date.now()-d.t<12*36e5)return;TOP.busy=1;
+    try{await waitIdle(3000);const res={t:Date.now(),imdb:{movie:[],series:[]},nfx:{movie:[],series:[],week:''}};
+      for(const[ty,path]of[['movie','moviemeter'],['series','tvmeter']])for(const lang of['de-DE,de;q=0.9,en;q=0.5','en-US,en;q=0.9']){
+        try{const g=await NET.grab(`https://www.imdb.com/chart/${path}/`,{h:{'Accept-Language':lang},rules:[{re:String.raw`<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>`,g:[1],cut:6e6},{re:String.raw`<script type="application/ld\+json"[^>]*>([\s\S]*?)<\/script>`,max:4,g:[1],cut:2e6}]});
+          const l=imdbChart(g);if(l.length)mergeChart(res.imdb[ty],l)}catch(e){}}
+      try{const g=await NET.grab('https://www.netflix.com/tudum/top10/data/all-weeks-global.tsv',{head:90});Object.assign(res.nfx,nfxTop(g.body||''))}catch(e){}
+      if(res.imdb.movie.length||res.imdb.series.length||res.nfx.movie.length){TOP.data=res;LS.set('nfk.top',res);TOP._m=null;refreshTop10()}}
+    finally{TOP.busy=0}},
+  // Liste der verfügbaren Titel in Chart-Reihenfolge (mindestens 3, sonst keine Top 10)
+  top(ty){if(APP.cfg&&APP.cfg.mode==='demo'){const l=localTop(pool(ty));return l.length>=3?{l,src:l.map(()=>'Demo'),demo:1}:null}
+    const d=TOP.data;if(!d)return null;const key=d.t+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.key);TOP._m=TOP._m||{};if(TOP._m[ty]&&TOP._m[ty].k===key)return TOP._m[ty].v;
+    const idx=new Map();const add=(k,it)=>{if(!k)return;const a=idx.get(k);if(a){if(!a.includes(it))a.push(it)}else idx.set(k,[it])};
+    for(const it of pool(ty)){add(mkey(it.title),it);const m=META.cache[it.id];if(m&&m.imdbId)add('#'+m.imdbId,it);if(m&&m.engTitle)add(mkey(m.engTitle),it)}
+    const out=[],src=[];const pick=(c,y)=>{c=c.filter(it=>!out.includes(it));if(y)c=c.filter(it=>!it.year||Math.abs(it.year-y)<=1);return c.sort((a,b)=>(b.year||0)-(a.year||0)||QR[b.q]-QR[a.q])[0]};
+    for(const e of(d.imdb&&d.imdb[ty])||[]){if(ty==='movie'&&e.tv)continue;const c=pick([...(idx.get('#'+e.id)||[]),...e.t.flatMap(t=>idx.get(mkey(t))||[])],e.y);if(c){out.push(c);src.push('IMDb-Platz '+e.r)}if(out.length>=10)break}
+    if(out.length<10)for(const e of(d.nfx&&d.nfx[ty])||[]){const c=pick(idx.get(mkey(e.t))||[]);if(c){out.push(c);src.push('Netflix-Platz '+e.r)}if(out.length>=10)break}
+    const v=out.length>=3?{l:out,src}:(TREND.top(ty)?{l:TREND.top(ty),src:[]}:null);TOP._m[ty]={k:key,v};return v}};
+function top10Row(ty){const t=TOP.top(ty);if(!t)return`<section class="row" data-top10="${ty}" hidden></section>`;const d=TOP.data||{};const st=d.t?new Date(d.t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'';
+  const sub=t.demo?'Beispiel im Demo-Katalog':`meistgesucht weltweit (IMDb${d.nfx&&d.nfx[ty]&&d.nfx[ty].length?' & Netflix-Wochencharts':''}) · bei dir verfügbar${st?' · Stand '+st:''}`;
+  return`<section class="row" data-top10="${ty}"><h3 class="pad">Top 10 ${ty==='movie'?'Filme':'Serien'} diese Woche<small>${sub}</small></h3><div class="track pad">${t.l.map((it,i)=>`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(it,{why:'top'})}</div>`).join('')}</div></section>`}
 function top10HTML(ty,l){const tr=!!TREND.top(ty);return`<section class="row" data-top10="${ty}"><h3 class="pad">Top 10 ${ty==='movie'?'Filme':'Serien'} ${tr?'diese Woche':'auf Netefeliks'}<small>${tr?'weltweit angesagt · bei dir verfügbar · beste Qualität':'beliebt bei dir verfügbar'}</small></h3><div class="track pad">${l.map((it,i)=>`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(it,{why:'top'})}</div>`).join('')}</div></section>`}
 function newPopular(list){const lim=Date.now()-60*864e5;return list.filter(i=>i.added>lim).sort((a,b)=>((b.rating||6)+(b.pop||50)/25)-((a.rating||6)+(a.pop||50)/25)).slice(0,24)}
 // Highlights oben auf der Startseite (wechseln automatisch)
@@ -1145,7 +1318,7 @@ function setSpot(id,why){const it=APP.byId.get(id);const s=$('#spot');if(!it||!s
   const rtl=isRTL(it.title);const fc=rtl?'fa':(['ft-a','ft-b','ft-c'][(hstr(it.title)>>3)%3]);
   if(it.type==='live'){TR.stop();const e=EPG.get(it);const th=why==='team'&&(APP.teamHits||[]).find(h=>h.chans.includes(it));s.innerHTML=`<div class="bd">${logoHTML(it)}</div><div class="info"><h1 class="s-title ft-b" dir="auto">${esc(th?th.title.split(':').slice(-1)[0].trim():it.title)}</h1>${metaHTML(it)}<p class="s-plot" dir="auto">${th&&!th.live?`<b>Anstoß:</b> ${hhmm(th.start)} auf ${esc(it.title)}`:e&&e.cur?`<b>Jetzt:</b> ${esc(e.cur.title)} · bis ${hhmm(e.cur.end)}${e.next?`<br><span style="color:var(--mute)">Danach: ${esc(e.next.title)}</span>`:''}`:'Live-Sender'}</p>${th?`<div class="s-why"><b>Dein Team ${esc(th.team.n)}</b> – beste Übertragung für dich: ${esc(langName(it.country))}${it.q?', '+it.q:''}${th.chans.length>1?` · ${th.chans.length-1} weitere Sender verfügbar`:''}</div>`:''}</div>`;return}
   s.innerHTML=`<div class="bd kb"><div class="bdimg">${posterHTML(it,true)}</div></div><div class="info"><h1 class="s-title ${fc==='fa'?'':fc}"${rtl?' dir="rtl" style="font-family:var(--f-fa);font-weight:800;text-align:left"':''}>${esc(it.title)}</h1>${metaHTML(it,t)}<div id="spot-r">${ratingsHTML(it,META.cache[it.id])}</div><p class="s-plot" dir="auto" id="spot-p">${esc(it.plot||(META.cache[it.id]||{}).plot||'')}</p>${reason?`<div class="s-why">${reason}</div>`:''}</div>`;
-  clearTimeout(spotT);if(!it.demo)spotT=setTimeout(()=>META.get(it).then(m=>{if(s.dataset.cur!==id)return;$('#spot-r')&&($('#spot-r').innerHTML=ratingsHTML(it,m));if(m.plot&&$('#spot-p'))$('#spot-p').textContent=m.plot;if(m.backdrop&&!it.backdrop){it.backdrop=m.backdrop;$('#spot .bdimg').innerHTML=posterHTML(it,true)}}),350);
+  clearTimeout(spotT);if(!it.demo)spotT=setTimeout(()=>META.get(it).then(m=>{if(s.dataset.cur!==id)return;$('#spot-r')&&($('#spot-r').innerHTML=ratingsHTML(it,m));if(m.plot&&$('#spot-p'))$('#spot-p').textContent=m.plot;if(m.backdrop&&!it.backdrop){it.backdrop=m.backdrop;$('#spot .bdimg').innerHTML=posterHTML(it,true)}}).catch(()=>{}),650);
   TR.settle(it,$('.bd',s))}
 
 // ----- Live-TV -----
@@ -1210,7 +1383,7 @@ function vodView(type){return(el,a)=>{
   const label=type==='movie'?'Filme':'Serien';const lim=a.lim||120;
   let body='';
   if(g==='Für dich'&&!c&&sort==='rec'){
-    body+=top10HTML(type,TREND.top(type)||localTop(list));
+    body+=top10Row(type);
     {const np=newPopular(list);if(np.length>3)body+=rowHTML('Neu & beliebt',np,{why:'new'})}
     body+=rowHTML('Für dich ausgewählt',R.mmr(list.map(i=>({it:i,s:sc.get(i)})),24).map(x=>x.it),{why:'top'});
     const order=uniq([...R.topGenres(t,20).map(x=>x[0]),...genres]).filter(x=>gc[x]>=3).slice(0,10);
@@ -1264,18 +1437,22 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Genres ausblenden','Diese Genres erscheinen nirgends mehr in diesem Profil.',`<div class="chips">${all.map(g=>`<button class="chip f${PS('hideGenres').includes(g)?' on':''}" data-act="hidegen" data-g="${esc(g)}">${PS('hideGenres').includes(g)?'✕ ':''}${esc(g)}</button>`).join('')}</div>`)}
     ${optRow('Mindestbewertung für Empfehlungen','Titel darunter werden nicht empfohlen (bleiben aber auffindbar).',chs('minRating',PS('minRating'),[[0,'Alle'],[6,'ab 6'],[7,'ab 7'],[8,'ab 8']]))}
     ${optRow('Lieblingsgenres','Startpunkt für deine Empfehlungen.',`<button class="btn sm f" data-act="editgen">${(p.genres||[]).length?esc(p.genres.join(', ')):'Auswählen'}</button>`)}`}
-  else if(sec==='darstellung'){const R0=PS('rows');const rl=[['cont','Weiterschauen'],['top','Top-Empfehlungen'],['because','„Weil du … geschaut hast“'],['top10','Top 10 heute'],['sport','Live-Sport'],['recent','Zuletzt gesehene Sender'],['new','Neu auf Netefeliks'],['pop','Beliebt pro Land'],['genre','Genre-Reihen für dich'],['list','Meine Liste']];
+  else if(sec==='darstellung'){const R0=PS('rows');const rl=[['cont','Weiterschauen'],['top','Top-Empfehlungen'],['because','„Weil du … geschaut hast“'],['top10','Top 10 diese Woche'],['sport','Live-Sport'],['recent','Zuletzt gesehene Sender'],['new','Neu auf Netefeliks'],['pop','Beliebt pro Land'],['genre','Genre-Reihen für dich'],['list','Meine Liste']];
     body=`<h3>Darstellung</h3>
     ${optRow('Highlight-Show auf der Startseite','Große, wechselnde Highlights oben.',tgl('hero',PS('hero')))}
     ${optRow('Wechsel der Highlights','',chs('heroSec',PS('heroSec'),[[6,'alle 6 s'],[10,'alle 10 s'],[15,'alle 15 s']]))}
     ${optRow('Trailer automatisch abspielen','Im Hintergrund, sobald du auf einem Titel stehst.',tgl('trailer',PS('trailer')))}
     ${optRow('Trailer mit Ton','',tgl('trailerSound',PS('trailerSound')))}
     ${optRow('Postergröße','',chs('poster',PS('poster'),[['s','Klein'],['m','Mittel'],['l','Groß']]))}
-    ${optRow('Animationen','Aus = ruhiger und schneller auf älteren Geräten.',tgl('motion',PS('motion')))}
+    ${optRow('Bewegung & Effekte','„Flüssig“ verzichtet auf teure Effekte – die Bedienung reagiert sofort. Automatisch = flüssig auf dem Fire TV.',chs('motion',(m=>m===1?'auto':m===0?'off':m)(PS('motion')),[['auto','Automatisch'],['lite','Flüssig'],['full','Alle Effekte'],['off','Aus']]))}
+    ${optRow('Trailer starten nach','So lange musst du auf einem Titel stehen bleiben.',chs('trailerDelay',PS('trailerDelay'),[[2,'2 s'],[3,'3 s'],[5,'5 s']]))}
+    ${optRow('Intro beim Start','Kurzes Netefeliks-Intro beim Öffnen der App.',`<button class="tgl f${INTRO.cfg().on?' on':''}" data-act="iset" data-k="on" role="switch"><i></i><span>${INTRO.cfg().on?'An':'Aus'}</span></button>`)}
+    ${optRow('Intro-Ton','',`<button class="tgl f${INTRO.cfg().sound?' on':''}" data-act="iset" data-k="sound" role="switch"><i></i><span>${INTRO.cfg().sound?'An':'Aus'}</span></button><button class="btn sm f" data-act="iplay">Ansehen</button>`)}
     ${optRow('Reihen auf der Startseite','',`<div class="chips">${rl.map(([k,l])=>`<button class="chip f${R0[k]===0?'':' on'}" data-act="setrow" data-k="${k}">${R0[k]===0?'':'✓ '}${l}</button>`).join('')}</div>`)}`}
   else if(sec==='wiedergabe')body=`<h3>Wiedergabe</h3>
     ${optRow('Player','Der Fire-TV-Player kann 4K/HEVC, MKV, Tonspuren und Untertitel.',chs('player',PS('player'),[['native','Fire-TV-Player (empfohlen)'],['web','Einfacher Player']]))}
-    ${optRow('Bevorzugte Qualität','Bei langsamem Internet eine niedrigere Stufe wählen.',chs('quality',PS('quality'),[['auto','Beste verfügbare (bis 4K)'],['fhd','Höchstens Full HD'],['hd','Datensparen (HD)']]))}
+    ${optRow('Bevorzugte Qualität',`„Automatisch“ wählt die beste Qualität, die dein Internet schafft (gemessen: ${esc(BW.label())}). Ruckelt es, schaltet die App selbst eine Stufe runter. Pro Film und Sender kannst du in den Details oder im Player jede Qualität selbst wählen.`,chs('quality',PS('quality'),[['auto','Automatisch nach Internet'],['best','Immer beste (bis 8K)'],['fhd','Höchstens Full HD'],['hd','Datensparen (HD)']]))}
+    ${optRow('Internet-Tempo','Misst ein paar Sekunden lang die Geschwindigkeit zu deinem IPTV-Server (nutzt kurz die Verbindung deines Abos).',`<span id="bwl">${esc(BW.label())}</span><button class="btn sm f" data-act="bwtest">Jetzt messen</button>`)}
     ${optRow('Bild & Ton kombinieren','Bestes Bild einer Fassung + Ton einer anderen Sprache. Bei nur 1 Verbindung im Abo wird der Ton vorher gespeichert. Weicht die Schnittfassung leicht ab, mit „Audio-Synchronisation“ nachjustieren.',chs('mix',PS('mix'),[['off','Nie'],['ask','Wenn ich es wähle'],['auto','Automatisch: bestes Bild + Wunschsprache']]))}
     ${optRow('Gleichzeitige Verbindungen im Abo',`Bei 1 Verbindung wird der fremde Ton vorher auf dem Fire TV gespeichert.${APP.cfg&&APP.cfg.maxc?' Laut Server: '+esc(APP.cfg.maxc)+'.':''}`,chs('conns',PS('conns'),[['auto','Automatisch'],['1','1 Verbindung'],['2','2 oder mehr']]))}
     ${optRow('Gespeicherte Tonspuren (max.)','So viele vorbereitete Tonspuren bleiben auf dem Fire TV. Kommt eine neue dazu, wird die älteste automatisch gelöscht – willst du den Film nochmal so sehen, wird der Ton einfach neu vorbereitet.',chs('akeep',aKeep(),[[1,'1'],[2,'2'],[3,'3']]))}
@@ -1343,8 +1520,10 @@ function langChips(it){const ls=langsOf(it);const cv=curVer(it);let h='';
     const needPrep=canPrep()&&conns()<2&&!prepared(it,cv.lang);
     h+=`<label class="lb">Bild & Ton kombinieren</label><div class="chips" style="margin-bottom:.8rem">${needPrep?`<button class="chip f" data-act="dprep" data-id="${it.id}" data-l="${cv.lang}">${run?`${fl}${esc(langName(cv.lang))}-Ton wird vorbereitet … ${APP.prepRun.pct} %`:`${bp.q==='4K'?'4K':bp.q}-Bild + ${fl}${esc(langName(cv.lang))}-Ton: Ton vorbereiten (einmalig, ca. 100–600 MB)`}</button>`
       :`<button class="chip f${on?' on':''}" data-act="dmix" data-id="${it.id}">${bp.q==='4K'?'4K':bp.q}-Bild + ${fl}${esc(langName(cv.lang))}-Ton${prepared(it,cv.lang)?' · Ton gespeichert':''}</button>`}</div>`}}
-  const qs=uniq(sortedVersions(it).filter(v=>v.lang===cv.lang).map(v=>v.q||'Standard'));
-  if(qs.length>1)h+=`<label class="lb">Qualität</label><div class="chips">${qs.map(q=>`<button class="chip f${(cv.q||'Standard')===q?' on':''}" data-act="dq" data-id="${it.id}" data-q="${q}">${q==='4K'?'4K UHD · braucht schnelles Internet':q==='FHD'?'Full HD':q}</button>`).join('')}</div>`;
+  // Alle Qualitäten anzeigen (auch aus anderen Sprachfassungen – dann mit Sprache dahinter)
+  const qv=[];for(const v of it.versions.slice().sort((a,b)=>QR[b.q]-QR[a.q]||(a.lang===cv.lang?-1:b.lang===cv.lang?1:prefIdx(a.lang)-prefIdx(b.lang))))if(!qv.some(x=>x.q===v.q&&x.lang===v.lang))qv.push(v);
+  if(qv.length>1&&uniq(qv.map(v=>v.q)).length>1){const auto=!it._vsel;const aq=sortedVersions(it).find(v=>v.lang===cv.lang);
+    h+=`<label class="lb">Qualität</label><div class="chips"><button class="chip f${auto?' on':''}" data-act="dq" data-id="${it.id}" data-q="auto">Automatisch · ${esc(qName(aq&&aq.q))}<small style="opacity:.7;font-weight:500"> (${esc(BW.label())})</small></button>${qv.map(v=>`<button class="chip f${!auto&&cv.q===v.q&&cv.lang===v.lang?' on':''}" data-act="dq" data-id="${it.id}" data-q="${v.q||'-'}" data-l="${v.lang}">${esc(qName(v.q))}${v.lang!==cv.lang?` · ${CBY[v.lang]&&CBY[v.lang].flag?CBY[v.lang].flag+' ':''}${esc(langName(v.lang))}`:''}${QR[v.q]>=4?' · schnelles Internet':''}</button>`).join('')}</div>`}
   return h}
 function sideHTML(it){const s=[];if(it.cast.length)s.push(`<div><b>Besetzung:</b> <span dir="auto">${esc(it.cast.slice(0,5).join(', '))}</span></div>`);if(it.director)s.push(`<div><b>${it.type==='series'?'Idee':'Regie'}:</b> <span dir="auto">${esc(it.director)}</span></div>`);if(it.genres.length)s.push(`<div><b>Genres:</b> ${esc(it.genres.join(', '))}</div>`);s.push(`<div><b>Land:</b> ${CBY[it.country]?esc(CBY[it.country].name):''}</div>`);s.push(`<div><b>Kategorie:</b> <span dir="auto">${esc(it.groups.join(' · '))}</span></div>`);if(it.type!=='live')s.push(`<div><b>Sprachen:</b> ${langsOf(it).map(l=>esc(langName(l))+(bestQ(it,l)?' ('+bestQ(it,l)+')':'')).join(', ')}</div>`);return s.join('')}
 async function loadSeasons(it){
@@ -1392,10 +1571,10 @@ const P={
      <div class="pt"><h2 dir="auto">${esc(title)}</h2><p dir="auto">${esc(sub)}</p></div>
      <div class="pc">${it.type==='live'?'':`<button class="scrub f" id="scrub" aria-label="Spulen (links/rechts)"><div class="tr"><i id="pf"></i><b id="pk"></b></div></button><div class="ptime"><span id="tc">0:00</span><span id="tr">-0:00</span></div>`}
       <div class="pbtns">${it.type==='live'?`<button class="btn ic f" data-act="ch" data-d="-1" aria-label="Vorheriger Sender">${I.chUp}</button><button class="btn ic f" data-act="ch" data-d="1" aria-label="Nächster Sender">${I.chDn}</button><span class="live">LIVE</span>${o.alts&&o.alts.length>1?`<button class="btn sm f" data-act="alt">Andere Übertragung (${o.alts.length-1})</button>`:''}`:`<button class="btn ic f" data-act="seek" data-d="-10" aria-label="10 Sekunden zurück">${I.back10}</button><button class="btn ic f" data-act="pp" id="ppb" data-autofocus aria-label="Pause">${I.pause}</button><button class="btn ic f" data-act="seek" data-d="30" aria-label="30 Sekunden vor">${I.fwd10}</button>`}
-       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Sprache & Audio</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
+       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}${!ep&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Sprache & Audio</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
     document.body.appendChild(el);P.el=el;P.playing=true;
     {const s0=ep?ep.src:P.vers[P.ver].src;if(!P.demo)P.load(s0.url,s0.alt)}
-    P.tick=setInterval(()=>{if(P.engine==='nat'){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos!=null){P.pos=st.pos/1000;if(st.dur>0)P.dur=st.dur/1000;P.playing=!!st.playing;P.el.classList.toggle('buf',!!st.buf||(!st.playing&&!st.dur))}}
+    P.tick=setInterval(()=>{if(P.engine==='nat'){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos!=null){P.pos=st.pos/1000;if(st.dur>0)P.dur=st.dur/1000;P.playing=!!st.playing;P.el.classList.toggle('buf',!!st.buf||(!st.playing&&!st.dur));if(st.bw>0)P.bwMax=Math.max(P.bwMax||0,st.bw);P.rebuf(!!st.buf)}}
       if(P.demo&&P.playing&&P.dur){P.pos=Math.min(P.dur,P.pos+.25*60);if(P.pos>=P.dur){P.ended();return}}P.ui();if(Date.now()-P.last>4500&&!$('#player:focus-within .scrub:focus')&&!$('.ap'))P.el.classList.add('idle')},250);
     P.saveT=setInterval(()=>P.save(),5000);P.last=Date.now();P.ui();
     requestAnimationFrame(()=>{const f=$('[data-autofocus]',el);f&&f.focus()});
@@ -1411,7 +1590,7 @@ const P={
     v.addEventListener('loadedmetadata',()=>{if(P.startPos>5&&isFinite(v.duration))v.currentTime=P.startPos;P.audio()},{once:true});v.play().catch(()=>{})},
   langs(){return uniq(P.vers.map(v=>v.lang))},
   quals(){const l=P.vers[P.ver].lang;return P.vers.filter(v=>v.lang===l)},
-  switchTo(i){const v=P.vers[i];if(!v||i===P.ver)return;P.ver=i;P.it._vsel=v;P.triedAlt=0;P.aSet=0;if(!P.demo){P.startPos=P.pos;P.load(v.src.url,v.src.alt)}if(P.engine!=='web'){toast(langName(v.lang)+(v.q?' · '+v.q:''));return}
+  switchTo(i,auto){const v=P.vers[i];if(!v||i===P.ver)return;P.ver=i;if(!auto&&!P.ep)setVsel(P.it,v);else P.it._vsel=v;const qb=$('#qb');if(qb)qb.innerHTML=I.hd+esc(qName(v.q));P.triedAlt=0;P.aSet=0;if(!P.demo){P.startPos=P.pos;P.load(v.src.url,v.src.alt)}if(P.engine!=='web'){toast(langName(v.lang)+' · '+qName(v.q));return}
     const a=$('#plang'),q=$('#pver');if(a)a.textContent='Sprache: '+langName(v.lang);if(q)q.textContent='Qualität: '+(v.q||'Standard');if(q&&P.quals().length<2)q.remove();toast(langName(v.lang)+(v.q?' · '+v.q:''))},
   // Tonspuren innerhalb eines Streams (HLS-Audiospuren bzw. audioTracks): Wunschsprache automatisch wählen
   tracks(){if(P.hls&&P.hls.audioTracks&&P.hls.audioTracks.length>1)return P.hls.audioTracks.map((t,i)=>({i,lang:t.lang||'',name:t.name||t.lang||('Spur '+(i+1))}));const at=P.v&&P.v.audioTracks;if(at&&at.length>1){const o=[];for(let i=0;i<at.length;i++)o.push({i,lang:at[i].language||'',name:at[i].label||at[i].language||('Spur '+(i+1))});return o}return[]},
@@ -1425,10 +1604,11 @@ const P={
   sync(){if(!P.it)return 0;const k=P.skey();if(P._sy&&P._sy[k]!=null)return P._sy[k];const m=LS.get('nfk.sync',{});if(m[k]!=null)return m[k];const a=P.mix>-1&&P.vers[P.mix];const pre=a&&prepared(P.it,a.lang);return pre?pre.offsetMs||0:0},
   setSync(ms){ms=clamp(Math.round(ms/50)*50,-5000,5000);const k=P.skey();P._sy=P._sy||{};P._sy[k]=ms;const m=LS.get('nfk.sync',{});if(ms)m[k]=ms;else delete m[k];LS.set('nfk.sync',m);if(P.engine==='nat')NFK.vCmd('delay',ms);const e=$('#apsync');if(e)e.textContent=(ms>0?'+':'')+(ms/1000).toFixed(2).replace('.',',')+' s'},
   ntracks(){try{return JSON.parse(NFK.vTracks()||'{}')}catch(e){return{}}},
-  panel(keep){if(!P.el)return;const old=$('.ap');const fa=keep&&old&&document.activeElement&&old.contains(document.activeElement)?document.activeElement.dataset.k:null;if(old)old.remove();
+  panel(keep,focus){if(!P.el)return;const old=$('.ap');const fa=keep&&old&&document.activeElement&&old.contains(document.activeElement)?document.activeElement.dataset.k:null;if(old)old.remove();
     const it=P.it,nat=P.engine==='nat';const d=document.createElement('div');d.className='ap';let h='<h3>Sprache & Audio</h3>';
     const row=(k,act,label,on,extra='')=>`<button class="apo f${on?' on':''}" data-act="${act}" data-k="${k}" ${extra}>${on?I.check:'<i class="apdot"></i>'}<span>${label}</span></button>`;
-    if(!P.ep&&P.vers.length>1){h+='<h4>Version</h4>'+P.vers.map((v,i)=>row('v'+i,'apver',`${CBY[v.lang]&&CBY[v.lang].flag?CBY[v.lang].flag+' ':''}${esc(langName(v.lang))} · ${v.q==='4K'?'4K UHD':v.q==='FHD'?'Full HD':esc(v.q||'Standard')}`,i===P.ver,`data-i="${i}"`)).join('')}
+    if(!P.ep&&P.vers.length>1){const multi=uniq(P.vers.map(v=>v.lang)).length>1;const ord=P.vers.map((v,i)=>[v,i]).sort((a,b)=>prefIdx(a[0].lang)-prefIdx(b[0].lang)||QR[b[0].q]-QR[a[0].q]);
+      h+=`<h4>${multi?'Qualität & Sprachfassung':'Qualität'}</h4><p class="aph">Dein Internet: ${esc(BW.label())}. „Automatisch“ wählt die beste passende Qualität und schaltet bei Ruckeln runter.</p>`+ord.map(([v,i])=>row('v'+i,'apver',`${multi?(CBY[v.lang]&&CBY[v.lang].flag?CBY[v.lang].flag+' ':'')+esc(langName(v.lang))+' · ':''}${esc(qName(v.q))}${ord.filter(([x])=>x.lang===v.lang&&x.q===v.q).length>1?' <small style="opacity:.6">'+esc(String(v.name||'').slice(0,40))+'</small>':''}`,i===P.ver,`data-i="${i}"`)).join('')}
     if(!P.ep&&it.type!=='live'&&(nat||P.engine==='demo')&&langsOf(it).length>1){const vl=P.vers[P.ver].lang;const pic=P.vers[P.ver];
       h+='<h4>Ton aus anderer Fassung</h4><p class="aph">Behält das Bild ('+esc(langName(vl))+' · '+esc(pic.q||'Standard')+') und nimmt nur den Ton einer anderen Sprachfassung.'+(conns()<2?' Dein Abo erlaubt nur 1 Verbindung: Der Ton wird deshalb einmal vorbereitet und auf dem Fire TV gespeichert.':'')+'</p>';
       const have=nat?new Set(((P.ntracks().audio)||[]).filter(a=>!a.src).map(a=>nlang(a.lang))):new Set();
@@ -1436,16 +1616,21 @@ const P={
         if(nat&&conns()<2&&!prepared(it,l))return row('p'+l,'apprep',`${fl}${esc(langName(l))}-Ton vorbereiten (Film wird kurz beendet)`,false,`data-l="${l}"`);
         return row('m'+l,'apmix',`${fl}${esc(langName(l))}-Ton zu diesem Bild${prepared(it,l)?' · gespeichert':''}`,P.mix>-1&&P.vers[P.mix].lang===l,`data-l="${l}"`)}).join('')}
     let au=[],tx=[];if(nat){const t=P.ntracks();au=dedupeAudio(t.audio||[]);tx=t.text||[]}else{au=P.tracks().map(t=>({g:t.i,t:0,label:t.name,sel:t.i===P.curTrack()}));if(P.hls&&P.hls.subtitleTracks)tx=P.hls.subtitleTracks.map((t,i)=>({g:i,t:0,label:t.name||t.lang||('Untertitel '+(i+1)),sel:P.hls.subtitleTrack===i}))}
-    h+='<h4>Tonspur</h4>'+(au.length?au.map(a=>row('a'+a.g+'_'+a.t,'apaud',esc(a.label)+(P.mix>-1?(a.src?' · Ton-Fassung':' · Bild-Fassung'):''),a.sel,`data-g="${a.g}" data-t="${a.t}"`)).join(''):'<p class="aph">Dieser Stream hat nur eine Tonspur. Andere Sprachen findest du oben unter „Version“.</p>');
+    h+='<h4>Tonspur</h4>'+(au.length?au.map(a=>row('a'+a.g+'_'+a.t,'apaud',esc(a.label)+(P.mix>-1?(a.src?' · Ton-Fassung':' · Bild-Fassung'):''),a.sel,`data-g="${a.g}" data-t="${a.t}"`)).join(''):'<p class="aph">Dieser Stream hat nur eine Tonspur. Andere Sprachen findest du oben unter „Qualität &amp; Sprachfassung“.</p>');
     h+='<h4>Untertitel</h4>'+(tx.length?row('s-1','apsub','Aus',!tx.some(t=>t.sel),'data-g="-1" data-t="0"')+tx.map(t=>row('s'+t.g+'_'+t.t,'apsub',esc(t.label),t.sel,`data-g="${t.g}" data-t="${t.t}"`)).join(''):'<p class="aph">Keine Untertitel in diesem Stream.</p>');
     if(nat&&it.type!=='live'||nat){const ms=P.sync();h+=`<h4>Audio-Synchronisation</h4><p class="aph">Ton läuft dem Bild voraus? → „später“. Ton hinkt hinterher? → „früher“. Wird für diesen Titel gemerkt.</p>
       <div class="apsync"><button class="btn sm f" data-act="apsync" data-k="y1" data-d="-500">−0,5</button><button class="btn sm f" data-act="apsync" data-k="y2" data-d="-100">−0,1</button><b id="apsync">${(ms>0?'+':'')+(ms/1000).toFixed(2).replace('.',',')} s</b><button class="btn sm f" data-act="apsync" data-k="y3" data-d="100">+0,1</button><button class="btn sm f" data-act="apsync" data-k="y4" data-d="500">+0,5</button></div>
       <div class="apsync"><span class="aph" style="margin:0">− = Ton früher · + = Ton später</span><button class="btn sm f" data-act="apsync" data-k="y0" data-d="0">Zurücksetzen</button></div>`}
     else h+='<h4>Audio-Synchronisation</h4><p class="aph">Nur im Fire-TV-Player verfügbar.</p>';
     h+='<button class="btn sm f" data-act="apclose" data-k="x" style="margin-top:1rem">Schließen</button>';
-    d.innerHTML=h;if(!P.el)return;P.el.appendChild(d);const f=(fa&&$(`[data-k="${fa}"]`,d))||$('.apo.on',d)||$('.f',d);f&&f.focus({preventScroll:true})},
+    d.innerHTML=h;if(!P.el)return;P.el.appendChild(d);const f=(fa&&$(`[data-k="${fa}"]`,d))||(focus==='q'&&$(`[data-k="v${P.ver}"]`,d))||$('.apo.on',d)||$('.f',d);f&&f.focus({preventScroll:true})},
   err(){if(!P.el)return;$$('.perr',P.el).forEach(x=>x.remove());const d=document.createElement('div');d.className='perr';d.innerHTML='<div><b>Stream lässt sich nicht abspielen.</b><br>Der Server antwortet nicht oder das Format wird hier nicht unterstützt. Auf dem Fire TV klappt es meist; sonst eine andere Qualität wählen.</div>';P.el.appendChild(d)},
   ui(){if(!P.el||!P.dur||!isFinite(P.dur)||P.it.type==='live')return;const p=clamp(P.pos/P.dur,0,1);const f=$('#pf'),k=$('#pk');if(f){f.style.width=p*100+'%';k.style.left=p*100+'%';$('#tc').textContent=fmtT(P.pos);$('#tr').textContent='-'+fmtT(P.dur-P.pos)}const b=$('#ppb');if(b)b.innerHTML=P.playing?I.pause:I.play},
+  // Ruckelt es mehrmals kurz hintereinander, automatisch eine Qualitätsstufe runter (nur bei „Automatisch“)
+  rebuf(b){const now=Date.now();if(b&&!P._wb&&now-P.start>12000){P._bt=(P._bt||[]).filter(t=>now-t<120000);P._bt.push(now);
+      if(P._bt.length>=3&&PS('quality')==='auto'&&P.mix<0&&!P.ep){const v=P.vers[P.ver];const lo=P.vers.map((x,i)=>[x,i]).filter(([x])=>x.lang===v.lang&&QR[x.q]<QR[v.q]).sort((a,b)=>QR[b[0].q]-QR[a[0].q])[0];
+        if(lo){P._bt=[];BW.note([1,2.5,5,10,25,60][QR[lo[0].q]]/.8,'Ruckeln');toast('Internet gerade langsam – wechsle auf '+qName(lo[0].q));P.switchTo(lo[1],true)}}}
+    P._wb=b},
   wake(){if(!P.el)return;P.last=Date.now();P.el.classList.remove('idle')},
   pp(){P.playing=!P.playing;if(P.engine==='nat')NFK.vCmd(P.playing?'play':'pause',0);if(P.v)P.playing?P.v.play():P.v.pause();P.ui()},
   seek(d){if(P.it.type==='live')return;d=d<0?-PS('seek'):PS('seek')*(d>10?3:1);P.pos=clamp(P.pos+d*(P.demo?6:1),0,P.dur-1);if(P.v)P.v.currentTime=P.pos;if(P.engine==='nat')NFK.vCmd('seekTo',P.pos*1000);P.ui()},
@@ -1457,7 +1642,7 @@ const P={
   ended(){P.save();const nx=PS('autonext')?P.nextEp():null;if(nx){toast('Nächste Folge startet');P.open(P.it,{ep:nx})}else P.close()},
   logEnd(){const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}},
   after(it){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?`#main [data-id="${it.id}"]`:null)},
-  close(silent){if(!P.el)return;P.save();clearInterval(P.tick);clearInterval(P.saveT);if(P.engine==='nat'){NFK.vCmd('stop',0);document.documentElement.classList.remove('vidmode')}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
+  close(silent){if(!P.el)return;P.save();if(P.bwMax>2e6&&Date.now()-P.start>30000)BW.note(P.bwMax/1e6,'Wiedergabe');P.bwMax=0;P._bt=[];clearInterval(P.tick);clearInterval(P.saveT);if(P.engine==='nat'){NFK.vCmd('stop',0);document.documentElement.classList.remove('vidmode')}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
     const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}
     P.el.remove();P.el=null;P.v=null;P.triedAlt=0;if(UPD.info&&!UPD.shownAfter){UPD.shownAfter=1;setTimeout(()=>UPD.show(),800)}
     if(!silent){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?`#main [data-id="${it.id}"]`:null)}},
@@ -1488,7 +1673,6 @@ function prepTrim(){const l=prepList(),k=aKeep();if(l.length<=k)return l;
   const n=l.slice(0,k);LS.set('nfk.aprep',n);return n}
 function syncKeep(){try{window.NFK&&NFK.aKeep&&NFK.aKeep(aKeep())}catch(e){}prepTrim()}
 function prepared(it,lang){return prepList().find(r=>r.itemId===it.id&&r.lang===lang)||null}
-const fmtMB=b=>b>=1e9?(b/1e9).toFixed(1).replace('.',',')+' GB':Math.round(b/1e6)+' MB';
 function startPrep(it,lang){if(!canPrep()){toast('Ton vorbereiten geht nur in der Fire-TV-App');return}
   if(NFK.aBusy()){toast('Es wird schon ein Ton vorbereitet');return}
   syncKeep();const l0=prepList();if(l0.length>=aKeep()){const o=l0[l0.length-1],oi=APP.byId.get(o.itemId);toast(`Platz wird frei gemacht: „${oi?oi.title:'ältester Ton'}“ (${langName(o.lang)}) wird gelöscht`)}
@@ -1540,17 +1724,29 @@ function vLogin(err,tab){
     startScan(tab)});
 }
 async function startScan(tab){
-  screen(`<div class="scan"><h1 class="wordmark" style="font-size:4rem">NETEFELIKS</h1><div class="prog"><i id="pg"></i></div><p id="pm" style="color:var(--mute);margin:0">Verbinde…</p>
-   <div class="st"><div><b id="s1">0</b><span>Sender</span></div><div><b id="s2">0</b><span>Filme</span></div><div><b id="s3">0</b><span>Serien</span></div><div><b id="s4">0</b><span>Länder</span></div></div></div>`);
-  const onP=(msg,p)=>{const m=$('#pm'),g=$('#pg');if(m)m.textContent=msg;if(g)g.style.width=(p*100)+'%'};
-  try{await loadCatalog(onP)}catch(e){
+  const m3u=APP.cfg&&APP.cfg.mode==='m3u';
+  const STEPS=[['conn','Verbinden'],['live',m3u?'Playlist laden':'Live-Sender laden'],...(m3u?[]:[['movie','Filme laden'],['series','Serien laden']]),['ana','Länder, Genres & Qualität erkennen'],['save','Auf dem Gerät speichern']];
+  screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.6rem">NETEFELIKS</h1><div class="prog"><i id="pg"></i></div><p id="pm" class="pm">Verbinde mit deinem Server…</p>
+   <div class="st"><div><b id="s1">0</b><span>Sender</span></div><div><b id="s2">0</b><span>Filme</span></div><div><b id="s3">0</b><span>Serien</span></div><div><b id="s4">–</b><span>Länder</span></div></div>
+   <ul class="stp" id="stp">${STEPS.map(([k,l])=>`<li data-s="${k}"><i></i><span>${l}</span><em></em></li>`).join('')}</ul>
+   <p class="hint" id="pt">Nur beim ersten Mal – danach startet die App sofort mit dem gespeicherten Stand.</p></div>`);
+  const t0=Date.now();const cur={done:new Set(),det:{}};let last=0;
+  const draw=()=>{const g=$('#pg');if(!g)return;g.style.width=Math.round((cur.p||0)*1000)/10+'%';if(cur.msg)$('#pm').textContent=cur.msg;const c=cur.cnt||{};
+    $('#s1').textContent=nf(c.live);$('#s2').textContent=nf(c.movie);$('#s3').textContent=nf(c.series);
+    $$('#stp li').forEach(li=>{const k=li.dataset.s;li.className=cur.done.has(k)?'ok':k===cur.step?'on':'';$('em',li).textContent=cur.det[k]||''})};
+  const tm=setInterval(()=>{const e=$('#pt');if(!e){clearInterval(tm);return}e.textContent=`Läuft seit ${fmtT((Date.now()-t0)/1000)} · nur beim ersten Mal – danach startet die App sofort.`;draw()},1000);
+  const ui=o=>{if(o.done)cur.done.add(o.done);if(o.step)cur.step=o.step;if(o.detail!=null&&(o.step||cur.step))cur.det[o.step||cur.step]=o.detail;if(o.msg)cur.msg=o.msg;if(o.p!=null)cur.p=Math.max(cur.p||0,o.p);if(o.cnt)cur.cnt=o.cnt;
+    const n=performance.now();if(o.done||n-last>140){last=n;draw()}};
+  LS.set('nfk.scanning',Date.now());let res;
+  try{res=await loadCatalog(ui)}catch(e){clearInterval(tm);LS.del('nfk.scanning');
     const msg=e.message==='AUTH'?'Benutzername oder Passwort stimmen nicht – oder das Abo ist abgelaufen.':e.message==='KEINM3U'?'Unter diesem Link liegt keine M3U-Playlist.':/^HTTP/.test(e.message)?`Der Server hat mit Fehler ${esc(e.message.slice(5))} geantwortet. Prüfe die Server-URL.`:
       'Der Server ist nicht erreichbar. Prüfe die Adresse (inkl. Port). <br><br><b>Hinweis:</b> In dieser Browser-Vorschau sind Verbindungen zu fremden Servern gesperrt. Auf dem Fire TV bzw. als App funktioniert die echte Anmeldung – hier kannst du mit „Demo ansehen“ alles testen.';
     return vLogin(msg,tab)}
-  LS.set('nfk.cfg',APP.cfg);CACHE.save();
+  ui({step:'save',msg:'Speichere auf dem Gerät…',p:.97});await sleep(30);
+  applyCatalog(res);LS.set('nfk.cfg',APP.cfg);await CACHE.save(res.json);LS.del('nfk.scanning');
   const tot=a=>Object.values(APP.stats).reduce((s,x)=>s+x[a],0);const nc=Object.keys(APP.stats).filter(k=>k!=='XX').length;
-  const anim=(id,v)=>{const el=$('#'+id);if(!el)return;const t0=performance.now();const f=t=>{const p=Math.min(1,(t-t0)/700);el.textContent=nf(Math.round(v*p));if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)};
-  anim('s1',tot('live'));anim('s2',tot('movie'));anim('s3',tot('series'));anim('s4',nc);await sleep(1100);
+  cur.cnt={live:tot('live'),movie:tot('movie'),series:tot('series')};ui({done:'save',p:1,msg:'Fertig – '+nf(APP.items.length)+' Titel bereit',detail:''});$('#s4')&&($('#s4').textContent=nf(nc));
+  clearInterval(tm);await sleep(1300);
   afterLoad();
 }
 function afterLoad(){if(!APP.profiles.length)return vCountries({fresh:true});vProfiles()}
@@ -1621,7 +1817,7 @@ document.addEventListener('click',e=>{
    case'ver':{const qs=P.quals();const j=qs.indexOf(P.vers[P.ver]);P.switchTo(P.vers.indexOf(qs[(j+1)%qs.length]));break}
    case'plang':{const ls=P.langs();const j=ls.indexOf(P.vers[P.ver].lang);const nl=ls[(j+1)%ls.length];P.switchTo(P.vers.findIndex(v=>v.lang===nl));break}
    case'atrack':{const tr=P.tracks();if(!tr.length)break;const j=tr.findIndex(t=>t.i===P.curTrack());const n=tr[(j+1)%tr.length];P.setTrack(n.i);b.textContent='Tonspur: '+n.name;break}
-   case'dlang':{it._vsel=sortedVersions(it).find(v=>v.lang===b.dataset.l);it._sk=null;const m=APP.modal&&APP.modal.el;if(!m)break;$('#d-lang',m).innerHTML=langChips(it);$(`[data-act="dlang"][data-l="${b.dataset.l}"]`,m).focus();if(it.type==='series'){$('#eps',m).innerHTML='<h4>Folgen</h4><div class="spin"></div>';loadSeasons(it).then(()=>renderEps(it,m))}toast('Sprache: '+langName(b.dataset.l));break}
+   case'dlang':{setVsel(it,sortedVersions(it).find(v=>v.lang===b.dataset.l),true);it._sk=null;const m=APP.modal&&APP.modal.el;if(!m)break;$('#d-lang',m).innerHTML=langChips(it);$(`[data-act="dlang"][data-l="${b.dataset.l}"]`,m).focus();if(it.type==='series'){$('#eps',m).innerHTML='<h4>Folgen</h4><div class="spin"></div>';loadSeasons(it).then(()=>renderEps(it,m))}toast('Sprache: '+langName(b.dataset.l));break}
    case'lup':{const p=prof(),k=b.dataset.k,i=p.countries.indexOf(k);if(i>0){p.countries.splice(i,1);p.countries.splice(i-1,0,k);saveProfiles();APP._pool=null}renderApp(`[data-act="lup"][data-k="${k}"]`);break}
    case'profiles':APP.hist=[];vProfiles();break;
    case'psel':APP.pid=id;LS.set('nfk.pid',id);APP.alerted=null;APP.view='home';APP.args={};APP.hist=[];renderApp();startTeamWatch();break;
@@ -1653,6 +1849,11 @@ document.addEventListener('click',e=>{
    case'pname':{const p=prof();const n=$('#pname').value.trim();if(n){p.name=n;saveProfiles();renderApp('[data-act="pname"]');toast('Name gespeichert')}break}
    case'pcolor':{const p=prof();p.color=b.dataset.c;saveProfiles();renderApp(`[data-act="pcolor"][data-c="${b.dataset.c}"]`);break}
    case'apanel':P.panel();break;
+   case'qpanel':P.panel(false,'q');break;
+   case'iset':{const k=b.dataset.k;INTRO.set(k,INTRO.cfg()[k]?0:1);renderApp(`[data-act="iset"][data-k="${k}"]`);toast('Gespeichert');break}
+   case'iplay':INTRO.play(true);break;
+   case'rescan':startScan().then(()=>startBg());break;
+   case'bwtest':{const l=$('#bwl');if(l)l.textContent='Messe …';BW.test().then(m=>{toast('Internet-Tempo: '+String(m).replace('.',',')+' Mbit/s');const e=$('#bwl');if(e)e.textContent=BW.label()}).catch(e=>{toast(e.message);const x=$('#bwl');if(x)x.textContent=BW.label()});break}
    case'apclose':{const a=$('.ap');if(a)a.remove();const b2=$('#apb');b2&&b2.focus();break}
    case'apver':P.switchTo(+b.dataset.i);setTimeout(()=>P.panel(true),400);break;
    case'apaud':{if(P.engine==='nat')NFK.vSelect('audio',+b.dataset.g,+b.dataset.t);else P.setTrack(+b.dataset.g);toast('Tonspur: '+b.textContent.trim());setTimeout(()=>P.panel(true),500);break}
@@ -1676,7 +1877,7 @@ document.addEventListener('click',e=>{
    case'bgnow':toast('Playlist wird im Hintergrund aktualisiert …');bgRefresh().then(()=>{CACHE.t=Date.now();toast('Playlist ist aktuell')});break;
    case'hero':showHero(+b.dataset.i,'d'+b.dataset.i);break;
       case'dmix':{const cv=curVer(it);if(it._mixA&&it._mixA.lang===cv.lang){it._mixA=it._mixV=null;toast('Normale Fassung')}else{it._mixV=bestPic(it);it._mixA=audioVer(it,cv.lang);toast((it._mixV.q||'')+'-Bild + '+langName(cv.lang)+'-Ton')}const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);$('[data-act="dmix"]',m).focus()}break}
-   case'dq':{const cv=curVer(it);it._vsel=sortedVersions(it).find(v=>v.lang===cv.lang&&(v.q||'Standard')===b.dataset.q)||cv;const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);$(`[data-act="dq"][data-q="${b.dataset.q}"]`,m).focus()}toast('Qualität: '+b.dataset.q);break}
+   case'dq':{const cv=curVer(it);const q=b.dataset.q==='-'?'':b.dataset.q;const l=b.dataset.l||cv.lang;if(q==='auto')setVsel(it,cv,true);else setVsel(it,sortedVersions(it).find(v=>v.lang===l&&(v.q||'')===q)||cv);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);($(`[data-act="dq"][data-q="${b.dataset.q}"][data-l="${b.dataset.l||''}"]`,m)||$(`[data-act="dq"][data-q="${b.dataset.q}"]`,m)).focus()}toast(b.dataset.q==='auto'?'Qualität: automatisch nach Internet-Tempo':'Qualität: '+qName(b.dataset.q==='-'?'':b.dataset.q));break}
    case'ax':$$('.talert').forEach(popClose);break;
    case'alt':{const a=P.o.alts;const n=a[(a.indexOf(P.it)+1)%a.length];P.open(n,{alts:a});toast(n.title+' · '+langName(n.country)+(n.q?' · '+n.q:''));break}
    case'gback':if(draft.onlyGenres){draft=null;renderApp()}else vCountries({keep:true,edit:draft.edit});break;
@@ -1696,7 +1897,17 @@ document.addEventListener('click',e=>{
 // ---------- Fernbedienung / Tastatur (räumliche Navigation) ----------
 function layer(){return $('.talert')||$('.uplert')||$('.ap')||$('#player')||(APP.modal&&APP.modal.el)||$('#app')}
 function focusables(){return $$('.f',layer()).filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&!el.disabled})}
+// Schnelle Wege (ohne alle Elemente der Seite zu vermessen): Nachbar in der Reihe, Nachbar-Reihe, Spalten
+function fastMove(cur,dir){const H=dir==='left'||dir==='right';const tr=cur.closest('.track');
+  if(tr&&H){const a=tr.querySelectorAll('.f');let i=-1;for(let k=0;k<a.length;k++)if(a[k]===cur){i=k;break}const n=a[i+(dir==='right'?1:-1)];return n||(dir==='right'?cur:null)}
+  if(tr&&!H){const row=cur.closest('.row');if(!row||!row.parentElement||!row.parentElement.classList.contains('rows'))return null;let r=row;const cx=cur.getBoundingClientRect().left;
+    for(;;){r=dir==='down'?r.nextElementSibling:r.previousElementSibling;if(!r)return null;const cs=r.querySelectorAll('.f');if(!cs.length)continue;let best=null,bd=1e9;
+      for(const c of cs){const q=c.getBoundingClientRect();if(!q.width)continue;const d=Math.abs(q.left-cx);if(d<bd){bd=d;best=c}if(q.left>cx+400)break}if(best)return best}}
+  return null}
 function navMove(dir){
+  {const a=document.activeElement;if(a&&a.classList&&a.classList.contains('f')&&layer().contains(a)){const n=fastMove(a,dir);if(n===a)return;if(n){APP.kbd=true;n.focus({preventScroll:true});ensureVisible(n);return}
+    // Spalten (Kategorien, Senderliste, Einstellungen, Menüs): nur dort suchen
+    if(dir==='up'||dir==='down'){const col=a.closest('.cats,.chl,.spanel,.ap');if(col){const n2=pickDir(a,dir,[...col.querySelectorAll('.f')]);if(n2){APP.kbd=true;n2.focus({preventScroll:true});ensureVisible(n2);return}}}}}
   const list=focusables();const cur=document.activeElement&&list.includes(document.activeElement)?document.activeElement:null;
   if(!cur){(list.find(x=>x.closest('#main'))||list[0])?.focus();return}
   const r=cur.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;const H=dir==='left'||dir==='right';
@@ -1715,6 +1926,10 @@ function navMove(dir){
   const mn=Math.min(...c.map(o=>o.main));const band=c.filter(o=>o.main<=mn+(H?40:24));band.sort((a,b)=>a.cross-b.cross||a.main-b.main);
   APP.kbd=true;band[0].el.focus({preventScroll:true});ensureVisible(band[0].el);
 }
+function pickDir(cur,dir,els){const r=cur.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;const c=[];
+  for(const el of els){if(el===cur||el.disabled)continue;const q=el.getBoundingClientRect();if(!q.width)continue;const qy=q.top+q.height/2,qx=q.left+q.width/2;
+    const ok=dir==='down'?qy>cy+2&&q.top>=r.top+4:qy<cy-2&&q.bottom<=r.bottom-4;if(ok)c.push({el,main:dir==='down'?Math.max(0,q.top-r.bottom):Math.max(0,r.top-q.bottom),cross:Math.abs(qx-cx)})}
+  if(!c.length)return null;const mn=Math.min(...c.map(o=>o.main));const band=c.filter(o=>o.main<=mn+24);band.sort((a,b)=>a.cross-b.cross||a.main-b.main);return band[0].el}
 function ensureVisible(el){
   const tr=el.closest('.track');if(tr){const r=el.getBoundingClientRect(),t=tr.getBoundingClientRect();const pad=parseFloat(getComputedStyle(tr).paddingLeft)||32;
     if(r.left<t.left+pad)tr.scrollBy({left:r.left-t.left-pad});else if(r.right>t.right-24)tr.scrollBy({left:r.right-t.right+pad})}
@@ -1722,9 +1937,9 @@ function ensureVisible(el){
   if(rows&&row){rows.scrollTo({top:row.offsetTop-6});return}
   const sc=el.closest('.rows,.main,.modal,.scr,.cats');if(sc){const r=el.getBoundingClientRect(),s=sc.getBoundingClientRect();if(r.top<s.top+60)sc.scrollBy({top:r.top-s.top-80});else if(r.bottom>s.bottom-40)sc.scrollBy({top:r.bottom-s.bottom+80})}
 }
-document.addEventListener('focusin',e=>{const el=e.target;if(el.classList.contains('dot')&&el.closest('#spot')&&+el.dataset.i!==APP.heroI){showHero(+el.dataset.i,'d'+el.dataset.i);return}if($('#spot')&&el.closest('#rows')&&el.dataset.id){clearTimeout(APP._sp);APP._sp=setTimeout(()=>setSpot(el.dataset.id,el.dataset.why),110)}});
+document.addEventListener('focusin',e=>{const el=e.target;if(el.classList.contains('dot')&&el.closest('#spot')&&+el.dataset.i!==APP.heroI){showHero(+el.dataset.i,'d'+el.dataset.i);return}if($('#spot')&&el.closest('#rows')&&el.dataset.id){clearTimeout(APP._sp);APP._sp=setTimeout(()=>setSpot(el.dataset.id,el.dataset.why),document.documentElement.classList.contains('lite')?170:110)}});
 document.addEventListener('mouseover',e=>{const el=e.target.closest('.f');if(!el||el===document.activeElement||el.tagName==='INPUT')return;if(APP._mm){el.focus({preventScroll:true})}});
-document.addEventListener('mousemove',()=>{APP._mm=true;APP.kbd=false;if(P.el)P.wake()},{passive:true});
+document.addEventListener('mousemove',()=>{APP._mm=true;APP.lastKey=Date.now();APP.kbd=false;if(P.el)P.wake()},{passive:true});
 function goBack(){
   {const a=$('.talert')||$('.uplert');if(a){popClose(a);return true}}
   {const a=$('.ap');if(a){a.remove();const b2=$('#apb');b2&&b2.focus();return true}}
@@ -1737,7 +1952,7 @@ function goBack(){
 }
 window.nfkBack=goBack; // wird von der Fire-TV-App bei der Zurück-Taste aufgerufen; false = App verlassen
 document.addEventListener('keydown',e=>{
-  APP._mm=false;const k=e.key,kc=e.keyCode;const inInput=e.target.tagName==='INPUT';
+  APP._mm=false;APP.lastKey=Date.now();if(TR.f&&!P.el)TR.stop();if(INTRO.el){INTRO.skip();e.preventDefault();return}const k=e.key,kc=e.keyCode;const inInput=e.target.tagName==='INPUT';
   if(P.el)P.wake();
   const dir={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[k];
   if(P.el&&!dir&&(k===' '||k==='MediaPlayPause'||kc===179||kc===85)){e.preventDefault();P.pp();return}
@@ -1753,12 +1968,45 @@ document.addEventListener('keydown',e=>{
   if(k==='Escape'||k==='GoBack'||k==='BrowserBack'||kc===4||kc===10009||kc===461||(k==='Backspace'&&!inInput)){e.preventDefault();goBack();return}
 });
 
+// ---------- Intro beim Start: eigenes Logo-Motiv + eigener Klang (live mit Web Audio erzeugt) ----------
+const INTRO={el:null,
+  cfg(){return Object.assign({on:1,sound:1},LS.get('nfk.intro',{})||{})},
+  set(k,v){const c=INTRO.cfg();c[k]=v;LS.set('nfk.intro',c)},
+  play(force){const c=INTRO.cfg();if((!c.on&&!force)||/recovered/.test(location.hash))return Promise.resolve();
+    return new Promise(res=>{$$('.intro').forEach(x=>x.remove());const d=document.createElement('div');d.className='intro';
+      d.innerHTML=`<div class="stage"><div class="ilogo"><i class="r1"></i><i class="r2"></i><i class="pl"></i><span class="sh"></span></div><div class="iw">${'NETEFELIKS'.split('').map((ch,i)=>`<span style="animation-delay:${1.02+i*.045}s">${ch}</span>`).join('')}</div></div>`;
+      d.addEventListener('click',()=>INTRO.skip());document.body.appendChild(d);INTRO.el=d;INTRO._res=res;if(c.sound)INTRO.sound();INTRO._t=setTimeout(()=>INTRO.skip(),3200)})},
+  skip(){const d=INTRO.el;if(!d)return;INTRO.el=null;clearTimeout(INTRO._t);d.classList.add('out');setTimeout(()=>d.remove(),400);
+    try{if(INTRO._ac&&INTRO._g)INTRO._g.gain.setTargetAtTime(0,INTRO._ac.currentTime,.15)}catch(e){}const r=INTRO._res;INTRO._res=null;r&&r()},
+  sound(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=new AC();INTRO._ac=ac;if(ac.state==='suspended')ac.resume();const t=ac.currentTime+.06;
+    const out=ac.createGain();out.gain.value=.5;INTRO._g=out;out.connect(ac.destination);
+    // Hall
+    const rv=ac.createConvolver();const len=Math.floor(ac.sampleRate*2.2),ir=ac.createBuffer(2,len,ac.sampleRate);for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3)}
+    rv.buffer=ir;const wet=ac.createGain();wet.gain.value=.3;out.connect(rv);rv.connect(wet);wet.connect(ac.destination);
+    // 1) Luftzug: Rauschen, Filter fährt nach oben
+    const nb=ac.createBuffer(1,Math.floor(ac.sampleRate*1.2),ac.sampleRate);const nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+    const ns=ac.createBufferSource();ns.buffer=nb;const bp=ac.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.3;bp.frequency.setValueAtTime(240,t);bp.frequency.exponentialRampToValueAtTime(4200,t+.72);
+    const ng=ac.createGain();ng.gain.setValueAtTime(.0001,t);ng.gain.exponentialRampToValueAtTime(.3,t+.5);ng.gain.exponentialRampToValueAtTime(.001,t+.95);ns.connect(bp);bp.connect(ng);ng.connect(out);ns.start(t);ns.stop(t+1.2);
+    // 2) Tiefer Schlag, wenn das Play-Zeichen landet
+    const hit=t+.8;const k=ac.createOscillator();k.type='sine';k.frequency.setValueAtTime(130,hit);k.frequency.exponentialRampToValueAtTime(38,hit+.35);
+    const kg=ac.createGain();kg.gain.setValueAtTime(.0001,hit);kg.gain.exponentialRampToValueAtTime(.95,hit+.012);kg.gain.exponentialRampToValueAtTime(.001,hit+.9);k.connect(kg);kg.connect(out);k.start(hit);k.stop(hit+1);
+    // 3) Warmer, sich öffnender Akkord (D-Dur mit großer Septime und None)
+    const lp=ac.createBiquadFilter();lp.type='lowpass';lp.Q.value=.7;lp.frequency.setValueAtTime(500,hit);lp.frequency.exponentialRampToValueAtTime(3600,hit+1.4);
+    const pg=ac.createGain();pg.gain.setValueAtTime(.0001,hit);pg.gain.exponentialRampToValueAtTime(.14,hit+.08);pg.gain.exponentialRampToValueAtTime(.001,hit+2.4);lp.connect(pg);pg.connect(out);
+    for(const[f,dt]of[[73.42,0],[146.83,0],[220,3],[277.18,-4],[329.63,5],[440,-3]]){const o=ac.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=dt;o.connect(lp);o.start(hit);o.stop(hit+2.5)}
+    // 4) Signatur: zwei helle, aufsteigende Töne zum Lichtstreif
+    for(const[f,at]of[[880,1.12],[1318.5,1.3]]){const o=ac.createOscillator();o.type='triangle';o.frequency.value=f;const g=ac.createGain();const st=t+at;
+      g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(.2,st+.01);g.gain.exponentialRampToValueAtTime(.001,st+1.1);o.connect(g);g.connect(out);o.start(st);o.stop(st+1.2)}
+    setTimeout(()=>{try{ac.close()}catch(e){}},5200)}catch(e){}}};
+function vCrash(){screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.4rem">NETEFELIKS</h1><p style="max-width:34rem;margin:1rem auto;line-height:1.6">Beim Einlesen deiner Playlist ist dem Fire TV kurz der Arbeitsspeicher ausgegangen – die App wurde neu gestartet.<br>Schließe am besten andere Apps (Fire-TV-Taste gedrückt halten → Apps) und versuche es noch einmal.</p><button class="btn pri f" data-act="rescan" data-autofocus>Erneut einlesen</button></div>`)}
 // ---------- Start ----------
 (async function boot(){
-  if(!APP.cfg){vLogin();return}
-  // Gespeicherte Playlist sofort nutzen, frische Daten kommen im Hintergrund
-  if(APP.cfg.mode!=='demo'&&await CACHE.load()){afterLoad();startBg();return}
-  await startScan();startBg();
+  const intro=INTRO.play();const crashed=/recovered/.test(location.hash);const scanCrash=crashed&&LS.get('nfk.scanning',0);LS.del('nfk.scanning');
+  if(!APP.cfg){await intro;vLogin();return}
+  // Gespeicherte Playlist sofort nutzen (lädt während des Intros), frische Daten kommen im Hintergrund
+  if(APP.cfg.mode!=='demo'&&await CACHE.load()){await intro;afterLoad();startBg();BW.auto();if(crashed)setTimeout(()=>toast('Die App wurde nach einem Speicherproblem neu gestartet'),800);return}
+  await intro;if(scanCrash){vCrash();return}
+  await startScan();startBg();if(APP.cfg.mode!=='demo')BW.auto();
 })();
 </script>
 
