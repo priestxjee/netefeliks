@@ -10,7 +10,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -20,6 +23,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.media3.ui.SubtitleView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,12 +41,13 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 2;
+    static final int NATIVE_VERSION = 3;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
 
     private WebView web;
+    private VideoEngine video;
     private SharedPreferences prefs;
 
     @Override
@@ -50,7 +56,8 @@ public class MainActivity extends Activity {
         prefs = getSharedPreferences("netefeliks", MODE_PRIVATE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         web = new WebView(this);
-        web.setBackgroundColor(Color.rgb(13, 11, 11));
+        // Durchsichtig, damit das Video des echten Players darunter sichtbar ist (die App malt ihren Hintergrund selbst)
+        web.setBackgroundColor(Color.TRANSPARENT);
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
@@ -83,7 +90,22 @@ public class MainActivity extends Activity {
         });
         web.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         web.addJavascriptInterface(new Bridge(), "NFK");
-        setContentView(web);
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.rgb(13, 11, 11));
+        SurfaceView surface = new SurfaceView(this);
+        surface.setVisibility(View.GONE);
+        SubtitleView subs = new SubtitleView(this);
+        subs.setVisibility(View.GONE);
+        ViewGroup.LayoutParams full = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        root.addView(surface, full);
+        root.addView(subs, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(root);
+        video = new VideoEngine(this, surface, subs, new VideoEngine.Events() {
+            @Override public void emit(String ev, String arg) {
+                js("window.nfkV&&nfkV(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
+            }
+        });
         web.requestFocus();
         web.loadUrl(APP_URL);
     }
@@ -130,7 +152,14 @@ public class MainActivity extends Activity {
             }
         }
 
-        /** Startet den nativen Player (4K/HEVC, MKV, mehrere Tonspuren). */
+        // ---------- Eingebetteter Player (unter der App-Oberfläche) ----------
+        @JavascriptInterface public void vOpen(String cfg) { video.open(cfg); }
+        @JavascriptInterface public void vCmd(String c, double arg) { video.cmd(c, arg); }
+        @JavascriptInterface public String vState() { return video.state(); }
+        @JavascriptInterface public String vTracks() { return video.tracks(); }
+        @JavascriptInterface public void vSelect(String type, int g, int t) { video.select(type, g, t); }
+
+        /** Startet den nativen Vollbild-Player (ältere Variante). */
         @JavascriptInterface public void play(final String cfg) {
             runOnUiThread(new Runnable() {
                 @Override public void run() {
@@ -241,7 +270,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    @Override protected void onPause() { super.onPause(); web.onPause(); }
+    @Override protected void onPause() { super.onPause(); web.onPause(); if (video != null) video.pause(); }
     @Override protected void onResume() { super.onResume(); web.onResume(); }
-    @Override protected void onDestroy() { web.destroy(); super.onDestroy(); }
+    @Override protected void onDestroy() { if (video != null) video.release(); web.destroy(); super.onDestroy(); }
 }
