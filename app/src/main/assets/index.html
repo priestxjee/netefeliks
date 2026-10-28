@@ -967,7 +967,18 @@ const WK_MAIN=`
 let RAW=[];
 self.onmessage=function(e){const m=e.data;try{
   if(m.op==='ping'){postMessage({op:'pong'});return}
-  if(m.op==='xtb'||m.op==='m3ub'){const dec=new TextDecoder();let parts=[];for(let i=0;i<m.bufs.length;i++){parts.push(dec.decode(new Uint8Array(m.bufs[i]),{stream:true}));m.bufs[i]=null}parts.push(dec.decode());m.text=parts.join('');parts=null;m.bufs=null;m.op=m.op==='xtb'?'xt':'m3u'}
+  if(m.op==='xtb'){/* Stück für Stück: nie die ganze Liste als Text oder als ein riesiges Objekt im Speicher */
+    const dec=new TextDecoder();let carry='',scanned=0,depth=0,inStr=false,esc=false,st=-1,n=0,batch=[];const L=m.bufs.length;
+    const flush=()=>{if(batch.length){n+=xtMap(m.kind,batch,m.cats,m.B,m.U,m.P,RAW);batch=[]}};
+    for(let bi=0;bi<L;bi++){const chunk=dec.decode(new Uint8Array(m.bufs[bi]),{stream:bi<L-1});m.bufs[bi]=null;const s=carry+chunk;let i=scanned;
+      for(;i<s.length;i++){const ch=s.charCodeAt(i);
+        if(inStr){if(esc)esc=false;else if(ch===92)esc=true;else if(ch===34)inStr=false;continue}
+        if(ch===34){inStr=true;continue}
+        if(ch===123||ch===91){depth++;if(ch===123&&depth===2)st=i;continue}
+        if(ch===125||ch===93){if(ch===125&&depth===2&&st>=0){try{batch.push(JSON.parse(s.slice(st,i+1)))}catch(e){}st=-1;if(batch.length>=2000)flush()}depth--}}
+      if(st>=0){carry=s.slice(st);scanned=carry.length;st=0}else{carry='';scanned=0}}
+    flush();m.bufs=null;postMessage({op:'ok',n:n});return}
+  if(m.op==='m3ub'){const dec=new TextDecoder();let parts=[];for(let i=0;i<m.bufs.length;i++){parts.push(dec.decode(new Uint8Array(m.bufs[i]),{stream:true}));m.bufs[i]=null}parts.push(dec.decode());m.text=parts.join('');parts=null;m.bufs=null;m.op=m.op==='xtb'?'xt':'m3u'}
   if(m.op==='xt'){let arr=JSON.parse(m.text);m.text=null;const n=xtMap(m.kind,arr,m.cats,m.B,m.U,m.P,RAW);arr=null;postMessage({op:'ok',n:n});return}
   if(m.op==='m3u'){const out=M3Uparse(m.text,function(f){postMessage({op:'tick',f:f})});m.text=null;for(const x of out)RAW.push(x);postMessage({op:'ok',n:out.length,c:countTypes(out)});return}
   if(m.op==='build'){let r=catalogCore(RAW,function(i,n){postMessage({op:'tick',i:i,n:n})});RAW=[];let json=catJSON(r.items);const st=r.stats,sg=r.sig,n=r.items.length;r=null;
@@ -995,7 +1006,10 @@ async function fetchText(url,onChunk){const r=await fetch(url);if(!r.ok)throw ne
 function countOcc(s,k){let n=0,i=0;while((i=s.indexOf(k,i))>-1){n++;i+=k.length}return n}
 const fmtMB=b=>b>=1e9?(b/1e9).toFixed(1).replace('.',',')+' GB':b>=1e7?Math.round(b/1e6)+' MB':(b/1e6).toFixed(1).replace('.',',')+' MB';
 // ui(patch): Fortschritt melden (Schritt, Zähler, Prozent). Ohne ui läuft alles still im Hintergrund.
-async function loadCatalog(ui,opt={}){const lsig=LS.get('nfk.lsig',{})||{},nsig={};let changed=!opt.bg;const tsig=t=>t.length+':'+hstr(t.slice(0,3000)+t.slice(t.length>>1,(t.length>>1)+3000)+t.slice(-3000));
+// Falls der speichersparende Weg auf einem Gerät nicht klappt: automatisch nochmal auf dem bewährten Weg
+async function loadCatalog(ui,opt={}){try{return await loadCatalog0(ui,opt)}catch(e){const m=String(e&&e.message||e);if(opt.textMode||/^(AUTH|KEINM3U|HTTP)/.test(m))throw e;
+  LS.set('nfk.scanerr',{t:Date.now(),m});ui&&ui({msg:'Zweiter Versuch …',p:.02});return await loadCatalog0(ui,{...opt,textMode:true})}}
+async function loadCatalog0(ui,opt={}){const lsig=LS.get('nfk.lsig',{})||{},nsig={};let changed=!opt.bg;const tsig=t=>t.length+':'+hstr(t.slice(0,3000)+t.slice(t.length>>1,(t.length>>1)+3000)+t.slice(-3000));
   const c=APP.cfg;const cnt={live:0,movie:0,series:0};const up=o=>{if(ui)ui(Object.assign({cnt},o))};
   let w=c.mode==='demo'?null:mkWorker();if(w&&!(await wReady(w))){try{w.terminate()}catch(e){}w=null}APP.noWorker=c.mode!=='demo'&&!w;
   const raws=[];
@@ -1013,23 +1027,23 @@ async function loadCatalog(ui,opt={}){const lsig=LS.get('nfk.lsig',{})||{},nsig=
     const plan=[['live','get_live_streams','"stream_id"','live',.05,.2,'Lade Live-Sender…'],['vod','get_vod_streams','"stream_id"','movie',.2,.45,'Lade Filme…'],['series','get_series','"series_id"','series',.45,.6,'Lade Serien…']];
     for(const[kind,action,key,step,a,b,msg]of plan){up({step,msg,p:a,detail:''});const t0=performance.now();
       const onCh=(ch,bytes,total)=>{cnt[step]+=countOcc(ch,key);up({step,p:a+(b-a)*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+6e6))),detail:nf(cnt[step])+' gefunden · '+fmtMB(bytes)})};
-      if(w){let f=await fetchBufs(XT.url(c,action),onCh);const sec=(performance.now()-t0)/1000;if(f.bytes>3e6&&sec>.4)BW.note(f.bytes*8/sec/1e6,'Playlist',true);
+      if(w&&!opt.textMode){let f=await fetchBufs(XT.url(c,action),onCh);const sec=(performance.now()-t0)/1000;if(f.bytes>3e6&&sec>.4)BW.note(f.bytes*8/sec/1e6,'Playlist',true);
         nsig[kind]=bsig(f);if(nsig[kind]!==lsig[kind])changed=true;const bufs=f.bufs;f=null;
         const d=await wcall(w,{op:'xtb',kind,bufs,cats:cats[kind],B,U,P},null,bufs);cnt[step]=d.n}
-      else{const text=await fetchText(XT.url(c,action),onCh);const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
-        nsig[kind]=tsig(text);if(nsig[kind]!==lsig[kind])changed=true;cnt[step]=xtMap(kind,JSON.parse(text),cats[kind],B,U,P,raws)}
+      else{let text=await fetchText(XT.url(c,action),onCh);const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
+        nsig[kind]=tsig(text);if(nsig[kind]!==lsig[kind])changed=true;if(w){const d=await wcall(w,{op:'xt',kind,text,cats:cats[kind],B,U,P});text=null;cnt[step]=d.n}else cnt[step]=xtMap(kind,JSON.parse(text),cats[kind],B,U,P,raws)}
       up({done:step,step,detail:nf(cnt[step]),p:b})}}
   else{
     up({step:'conn',msg:'Verbinde mit deinem Server…',p:.02});let n=0;const t0=performance.now();
     const onCh=(ch,bytes,total)=>{if(!n)up({done:'conn',step:'live',msg:'Lade Playlist…'});n+=countOcc(ch,'#EXTINF');up({step:'live',p:.05+.5*(total?Math.min(1,bytes/total):Math.min(.92,bytes/(bytes+8e6))),detail:nf(n)+' Einträge · '+fmtMB(bytes)})};
-    if(w){let f=await fetchBufs(c.m3u,onCh);const sec=(performance.now()-t0)/1000;if(f.bytes>3e6&&sec>.4)BW.note(f.bytes*8/sec/1e6,'Playlist',true);
+    if(w&&!opt.textMode){let f=await fetchBufs(c.m3u,onCh);const sec=(performance.now()-t0)/1000;if(f.bytes>3e6&&sec>.4)BW.note(f.bytes*8/sec/1e6,'Playlist',true);
       if(!/#EXTM3U|#EXTINF/i.test(f.head))throw new Error('KEINM3U');nsig.m3u=bsig(f);if(nsig.m3u!==lsig.m3u)changed=true;if(!changed)return{same:true};
       up({step:'live',msg:'Lese Playlist…',p:.56});const bufs=f.bufs;f=null;const d=await wcall(w,{op:'m3ub',bufs},t=>up({p:.56+.04*t.f}),bufs);Object.assign(cnt,d.c)}
     else{const text=await fetchText(c.m3u,onCh);const sec=(performance.now()-t0)/1000;if(text.length>3e6&&sec>.4)BW.note(text.length*8/sec/1e6,'Playlist',true);
     if(!/#EXTM3U|#EXTINF/i.test(text.slice(0,20000)))throw new Error('KEINM3U');
     nsig.m3u=tsig(text);if(nsig.m3u!==lsig.m3u)changed=true;if(!changed)return{same:true};
     up({step:'live',msg:'Lese Playlist…',p:.56});
-    const out=M3Uparse(text);Object.assign(cnt,countTypes(out));for(const x of out)raws.push(x)}
+    if(w){const d=await wcall(w,{op:'m3u',text},t=>up({p:.56+.04*t.f}));Object.assign(cnt,d.c)}else{const out=M3Uparse(text);Object.assign(cnt,countTypes(out));for(const x of out)raws.push(x)}}
     for(const k of['live','movie','series'])up({done:k,detail:''});up({step:'movie',detail:nf(cnt.movie)});up({step:'series',detail:nf(cnt.series)});up({step:'live',detail:nf(cnt.live),p:.6})}
   LS.set('nfk.lsig',nsig);if(!changed)return{same:true};
   up({step:'ana',msg:'Sortiere nach Ländern, Genres & Qualität…',p:.62,detail:''});
@@ -2256,7 +2270,7 @@ async function startScan(tab){
   LS.set('nfk.scanning',Date.now());let res;
   try{res=await loadCatalog(ui)}catch(e){clearInterval(tm);LS.del('nfk.scanning');
     const msg=e.message==='AUTH'?'Benutzername oder Passwort stimmen nicht – oder das Abo ist abgelaufen.':e.message==='KEINM3U'?'Unter diesem Link liegt keine M3U-Playlist.':/^HTTP/.test(e.message)?`Der Server hat mit Fehler ${esc(e.message.slice(5))} geantwortet. Prüfe die Server-URL.`:
-      'Der Server ist nicht erreichbar. Prüfe die Adresse (inkl. Port). <br><br><b>Hinweis:</b> In dieser Browser-Vorschau sind Verbindungen zu fremden Servern gesperrt. Auf dem Fire TV bzw. als App funktioniert die echte Anmeldung – hier kannst du mit „Demo ansehen“ alles testen.';
+      (window.NFK?'Der Server ist nicht erreichbar oder das Einlesen ist fehlgeschlagen. Prüfe die Adresse (inkl. Port) und versuche es nochmal.':'Der Server ist nicht erreichbar. Prüfe die Adresse (inkl. Port). <br><br><b>Hinweis:</b> In dieser Browser-Vorschau sind Verbindungen zu fremden Servern gesperrt. Auf dem Fire TV bzw. als App funktioniert die echte Anmeldung – hier kannst du mit „Demo ansehen“ alles testen.')+`<br><small style="opacity:.7">Technischer Hinweis: ${esc(String(e&&e.message||e).slice(0,160))}</small>`;
     return vLogin(msg,tab)}
   ui({step:'save',msg:'Speichere auf dem Gerät…',p:.97});await sleep(30);
   applyCatalog(res);LS.set('nfk.cfg',APP.cfg);await CACHE.save(res.json);LS.del('nfk.scanning');
