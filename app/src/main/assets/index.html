@@ -19,7 +19,7 @@
   color-scheme:dark;
 }
 html,body{height:100%;background:var(--bg);color:var(--fg)}
-html{font-size:clamp(13px,.95vw,24px)}
+html{font-size:clamp(11px,.8vw,20px)}
 body{font-family:var(--f-body);font-size:1rem;overflow:hidden;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit}
 #app{position:fixed;inset:0;overflow:hidden}
@@ -299,18 +299,21 @@ h2.big{font-size:2.4rem;margin:0 0 .4rem;font-weight:800;letter-spacing:-.01em;t
 .modal{position:fixed;inset:0;z-index:50;background:rgba(5,4,4,.72);overflow-y:auto;overflow-x:hidden;padding:3vh max(16px,env(safe-area-inset-right,0px)) 6vh max(16px,env(safe-area-inset-left,0px));animation:fade .18s ease}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .sheet{max-width:50rem;margin:0 auto;background:var(--bg2);border-radius:.7rem;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.8)}
-.hero{position:relative;height:clamp(10rem,30vh,17rem)}
+.hero{position:relative;height:clamp(8rem,26vh,15rem)}
 .hero .art,.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--bg2) 2%,rgba(22,18,18,.2) 55%,rgba(22,18,18,0))}
 .hero .ht{position:absolute;left:2rem;right:2rem;bottom:1rem;z-index:2}
-.hero .ht .s-title{font-size:2.2rem}
+.hero .ht .s-title{font-size:1.9rem}
 .modal{padding-top:5vh}
 .sheet .acts .btn{padding:.55rem 1.1rem;font-size:.95rem}
 .sheet .acts .btn.ic{padding:.55rem}
 .dbody{font-size:.94rem}
 .dbody p.plot{font-size:.98rem}
 .dbody{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:2.2rem;padding:0 2rem 2rem}
-.dbody p.plot{font-size:1.05rem;line-height:1.6;color:#e2dad7;margin:0}
+.dbody p.plot{font-size:.98rem;line-height:1.5;color:#e2dad7;margin:0}
+.dbar{margin:.2rem 0 .6rem;gap:.45rem}.dbar .ddb{font-size:.82rem;padding:.35rem .65rem}
+.pplan span{color:var(--mute);font-weight:400}
+.langs .lmore{font-size:.75rem;color:var(--mute);margin-left:.25rem;font-weight:700}
 .side{font-size:.92rem;color:var(--mute);line-height:1.55;display:flex;flex-direction:column;gap:.7rem}
 .side b{color:#cfc6c3;font-weight:600}
 .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;margin:.9rem 0 1.1rem}
@@ -1251,7 +1254,7 @@ function rowHTML(title,items,o={}){if(!items||!items.length)return'';return`<sec
 function flagOf(c){const x=CBY[c];return x&&x.flag?`<span class="flag" title="${esc(x.name)}">${x.flag}</span>`:`<span class="tag">${esc(c)}</span>`}
 function metaHTML(it,t){const m=[];if(t&&t._ev+(prof().genres||[]).length>0&&it.type!=='live')m.push(`<span class="match">${R.match(R.score(it,t))} % Match</span>`);
   if(it.type==='live'){m.push('<span class="live">LIVE</span>');m.push(`<span dir="auto">${esc(it.group)}</span>`)}else{if(it.year)m.push(`<span>${it.year}</span>`);if(it.type==='movie'&&it.dur)m.push(`<span>${fmtDur(it.dur)}</span>`);if(it.type==='series')m.push(`<span>${it.seasons?it.seasons+(it.seasons>1?' Staffeln':' Staffel'):'Serie'}</span>`)}
-  if(it.q)m.push(`<span class="tag${it.q==='4K'?' k':''}">${it.q==='4K'?'4K UHD':it.q}</span>`);m.push(it.type==='live'?flagOf(it.country):`<span class="langs" title="${esc(langsOf(it).map(langName).join(', '))}">${langsOf(it).map(flagOf).join('')}</span>`);if(it.genres.length)m.push(`<span>${esc(it.genres.slice(0,3).join(' · '))}</span>`);
+  if(it.q)m.push(`<span class="tag${it.q==='4K'?' k':''}">${it.q==='4K'?'4K UHD':it.q}</span>`);m.push(it.type==='live'?flagOf(it.country):(()=>{const ls=langsOf(it).filter(l=>l!=='XX');const mine=ls.filter(l=>prefIdx(l)<99);const show=(mine.length?mine:ls).slice(0,3);const more=ls.length-show.length;return`<span class="langs" title="${esc(ls.map(langName).join(', '))}">${show.map(flagOf).join('')}${more>0?`<small class="lmore">+${more}</small>`:''}</span>`})());if(it.genres.length)m.push(`<span>${esc(it.genres.slice(0,3).join(' · '))}</span>`);
   return`<div class="meta">${m.join('')}</div>`}
 function ratingsHTML(it,m){m=m||{};const im=m.imdb!=null?m.imdb:(it.demo?it.rating:null),rt=m.rt!=null?m.rt:(it.demo?it.rt:null),pp=m.pop!=null?m.pop:(it.demo?it.pop:null);
   const srv=!it.demo&&im==null&&(m.tmdbScore||m.srvRating||it.rating)?(m.tmdbScore||m.srvRating||it.rating):null;
@@ -1649,7 +1652,7 @@ async function openDetails(id){
       </div><div id="d-lang" style="margin:-.3rem 0 1rem">${langChips(it)}</div>
      <div id="d-r" style="margin-bottom:1.1rem">${ratingsHTML(it,META.cache[it.id])}</div>
      <p class="plot" dir="auto" id="d-p" data-tp="1">${esc(it.plot||(META.cache[it.id]||{}).plot||'Beschreibung wird geladen …')}</p>
-     ${!it.demo&&!APP.cfg.omdb?'<p class="hint" style="margin-top:.8rem">Für IMDb- und Rotten-Tomatoes-Werte einen OMDb-Schlüssel unter Einstellungen eintragen.</p>':''}</div>
+     </div>
     <div class="side" id="d-s">${sideHTML(it)}</div></div>
    ${it.type==='series'?'<div class="dsec" id="eps"><h4>Folgen</h4><div class="spin"></div></div>':''}
    ${sims.length?`<div class="dsec" style="padding-left:0;padding-right:0"><h4 class="pad" style="margin:0">Ähnliche Titel</h4><div class="track pad">${sims.map(x=>cardHTML(x)).join('')}</div></div>`:''}
@@ -1668,7 +1671,21 @@ function playPlan(it){const{l,q}=selOf(it);const own=it.versions.filter(v=>v.lan
   pic=pic||sortedVersions(it)[0];const aud=it.type==='movie'&&pic.lang!==l&&PS('mix')!=='off'?audioVer(it,l):null;return{pic,aud,l,q}}
 const fl=l=>CBY[l]&&CBY[l].flag?CBY[l].flag+' ':'';
 function prepEta(it,l){const a=audioVer(it,l)||{};const mb=({'8K':40,'4K':18,FHD:6,HD:3.5,SD:1.5})[a.q]||2;const tot=mb*(it.dur||110)*60/8;const b=BW.get();return b?Math.max(1,Math.round(tot*8/(b.mbps*.85)/60)):null}
-function langChips(it){if(it.type==='movie')return movieChips(it);const ls=langsOf(it);const cv=curVer(it);let h='';
+function dfocus(m,k){$$('.ddm').forEach(x=>x.remove());const b=$(`[data-act="ddet"][data-k="${k}"]`,m)||$('[data-act="ddet"]',m)||$('.f',m);b&&b.focus({preventScroll:true})}
+// Film-Details: Sprache, Bild und Untertitel als eine Zeile mit Auswahlmenüs
+function detBar(it){const mov=it.type==='movie';let lang,qLabel;
+  if(mov){const pl=playPlan(it);lang=pl.l;qLabel=pl.q?qName(pl.q==='-'?'':pl.q):'Automatisch · '+qName(pl.pic.q)}else{const cv=curVer(it);lang=cv.lang;qLabel=qName(cv.q)}
+  const sub=SUBS.pref(it);const ls=langsOf(it);const nq=uniq(it.versions.map(v=>v.q||'-')).length;
+  let h='<div class="vbar dbar">';
+  if(ls.length>1)h+=`<button class="ddb f" data-act="ddet" data-k="l" data-id="${it.id}">Sprache: <b>${fl(lang)}${esc(langName(lang))}</b> ▾</button>`;
+  if(nq>1)h+=`<button class="ddb f" data-act="ddet" data-k="q" data-id="${it.id}">Bild: <b>${esc(qLabel)}</b> ▾</button>`;
+  h+=`<button class="ddb f" data-act="ddet" data-k="s" data-id="${it.id}">Untertitel: <b>${sub==='off'?'Aus':fl(sub)+esc(langName(sub))}</b> ▾</button></div>`;
+  if(mov){const pl=playPlan(it);if(pl.aud){const pic=pl.pic;let st='';const ready=!!prepared(it,pl.l),run=APP.prepRun&&APP.prepRun.itemId===it.id&&APP.prepRun.lang===pl.l;
+      if(mixDirect())st='Bild und Ton werden gleichzeitig gestreamt.';else if(ready)st='✓ Ton gespeichert – startet sofort.';else if(run)st=`Ton wird vorbereitet … ${APP.prepRun.pct} %`;else st=`Der ${esc(langName(pl.l))}-Ton wird vorher einmal geladen. <button class="chip f" data-act="dprep" data-id="${it.id}" data-l="${pl.l}">Jetzt vorbereiten</button>`;
+      h+=`<div class="pplan"><b>${esc(qName(pic.q))}-Bild aus der ${fl(pic.lang)}${esc(langName(pic.lang))}-Fassung · ${fl(pl.l)}${esc(langName(pl.l))}-Ton</b> <span>${st}</span></div>`}}
+  return h}
+function langChips(it){return detBar(it)}
+function langChipsOld(it){if(it.type==='movie')return movieChips(it);const ls=langsOf(it);const cv=curVer(it);let h='';
   if(ls.length>1)h+=`<label class="lb">Sprache</label><div class="chips" style="margin-bottom:.8rem">${ls.map(l=>`<button class="chip f${l===cv.lang?' on':''}" data-act="dlang" data-id="${it.id}" data-l="${l}">${CBY[l]&&CBY[l].flag?CBY[l].flag+' ':''}${esc(langName(l))}${bestQ(it,l)?' · '+bestQ(it,l):''}</button>`).join('')}</div>`;
   {const bp=bestPic(it);const myQ=QR[(sortedVersions(it).find(v=>v.lang===cv.lang)||{}).q||''];if(PS('mix')!=='off'&&it.type==='movie'&&bp&&bp.lang!==cv.lang&&QR[bp.q]>myQ){const on=!!(it._mixA&&it._mixA.lang===cv.lang);
     const fl=CBY[cv.lang]&&CBY[cv.lang].flag?CBY[cv.lang].flag+' ':'';const run=APP.prepRun&&APP.prepRun.itemId===it.id&&APP.prepRun.lang===cv.lang;
@@ -1698,7 +1715,7 @@ function movieChips(it){const pl=playPlan(it);const ls=langsOf(it);let h='';
   h+=subChips(it);
   h+=`<div class="pplan"><b>▶ ${esc(qName(pic.q))}-Bild${pl.aud?` aus der ${fl(pic.lang)}${esc(langName(pic.lang))}-Fassung`:''} · ${fl(pl.l)}${esc(langName(pl.l))}-Ton</b>${st?`<div>${st}</div>`:''}</div>`;
   return h}
-function sideHTML(it){const s=[];if(it.cast.length)s.push(`<div><b>Besetzung:</b> <span dir="auto">${esc(it.cast.slice(0,5).join(', '))}</span></div>`);if(it.director)s.push(`<div><b>${it.type==='series'?'Idee':'Regie'}:</b> <span dir="auto">${esc(it.director)}</span></div>`);if(it.genres.length)s.push(`<div><b>Genres:</b> ${esc(it.genres.join(', '))}</div>`);s.push(`<div><b>Land:</b> ${CBY[it.country]?esc(CBY[it.country].name):''}</div>`);s.push(`<div><b>Kategorie:</b> <span dir="auto">${esc(it.groups.join(' · '))}</span></div>`);if(it.type!=='live')s.push(`<div><b>Sprachen:</b> ${langsOf(it).map(l=>esc(langName(l))+(bestQ(it,l)?' ('+bestQ(it,l)+')':'')).join(', ')}</div>`);return s.join('')}
+function sideHTML(it){const s=[];if(it.cast.length)s.push(`<div><b>Besetzung:</b> <span dir="auto">${esc(it.cast.slice(0,5).join(', '))}</span></div>`);if(it.director)s.push(`<div><b>${it.type==='series'?'Idee':'Regie'}:</b> <span dir="auto">${esc(it.director)}</span></div>`);if(it.genres.length)s.push(`<div><b>Genres:</b> ${esc(it.genres.join(', '))}</div>`);if(it.country!=='XX'&&CBY[it.country])s.push(`<div><b>Land:</b> ${esc(CBY[it.country].name)}</div>`);{const gs=it.groups.filter(Boolean);if(gs.length)s.push(`<div><b>Kategorie:</b> <span dir="auto">${esc(gs.slice(0,2).join(' · '))}</span>${gs.length>2?` <span style="color:var(--dim)">+${gs.length-2} weitere</span>`:''}</div>`)}if(it.type!=='live'&&langsOf(it).length>1)s.push(`<div><b>Sprachen:</b> ${langsOf(it).length} Fassungen – oben unter „Sprache“ wählbar</div>`);return s.join('')}
 async function loadSeasons(it){
   const cvr=curVer(it);if(it._seasons&&it._sk===cvr)return it._seasons;it._sk=cvr;
   if(it.demo){const rr=rng(hstr(it.id));const S={};for(let s=1;s<=(it.seasons||1);s++){const n=6+Math.floor(rr()*5);S[s]=[];for(let e=1;e<=n;e++)S[s].push({id:it.id+'-'+s+'-'+e,n:e,title:pick(rr,DEMO.epi),dur:40+Math.floor(rr()*18),plot:'Folge '+e+' der '+s+'. Staffel: '+pick(rr,['Ein alter Bekannter taucht auf und bringt alles durcheinander.','Ein Hinweis führt in eine Richtung, mit der niemand gerechnet hat.','Die Lage spitzt sich zu – und eine Entscheidung fällt.','Ein Geheimnis kommt ans Licht, das nicht mehr zu verbergen ist.']),src:{demo:1}})}return it._seasons=S}
@@ -2078,7 +2095,16 @@ document.addEventListener('click',e=>{
    case'ver':{const qs=P.quals();const j=qs.indexOf(P.vers[P.ver]);P.switchTo(P.vers.indexOf(qs[(j+1)%qs.length]));break}
    case'plang':{const ls=P.langs();const j=ls.indexOf(P.vers[P.ver].lang);const nl=ls[(j+1)%ls.length];P.switchTo(P.vers.findIndex(v=>v.lang===nl));break}
    case'atrack':{const tr=P.tracks();if(!tr.length)break;const j=tr.findIndex(t=>t.i===P.curTrack());const n=tr[(j+1)%tr.length];P.setTrack(n.i);b.textContent='Tonspur: '+n.name;break}
-   case'dlang':{if(it.type==='movie'){saveSel(it,b.dataset.l,selOf(it).q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);$(`[data-act="dlang"][data-l="${b.dataset.l}"]`,m).focus()}toast('Sprache: '+langName(b.dataset.l));break}setVsel(it,sortedVersions(it).find(v=>v.lang===b.dataset.l),true);it._sk=null;const m=APP.modal&&APP.modal.el;if(!m)break;$('#d-lang',m).innerHTML=langChips(it);$(`[data-act="dlang"][data-l="${b.dataset.l}"]`,m).focus();if(it.type==='series'){$('#eps',m).innerHTML='<h4>Folgen</h4><div class="spin"></div>';loadSeasons(it).then(()=>renderEps(it,m))}toast('Sprache: '+langName(b.dataset.l));break}
+   case'ddet':{const k=b.dataset.k;$$('.ddm').forEach(x=>x.remove());let opts=[];const mov=it.type==='movie';
+     if(k==='l'){const cur=mov?playPlan(it).l:curVer(it).lang;opts=langsOf(it).map(l=>`<button class="f${l===cur?' on':''}" data-act="dlang" data-id="${it.id}" data-l="${l}"><span>${fl(l)}${esc(langName(l))}</span><small>${esc(qName(bestQ(it,l)))}</small></button>`)}
+     else if(k==='q'){if(mov){const pl=playPlan(it);const own=new Set(it.versions.filter(v=>v.lang===pl.l).map(v=>v.q||'-'));const qs=uniq(it.versions.map(v=>v.q||'-')).sort((a,c)=>QR[c==='-'?'':c]-QR[a==='-'?'':a]);
+         opts=[`<button class="f${!pl.q?' on':''}" data-act="dq" data-id="${it.id}" data-q="auto"><span>Automatisch</span><small>${esc(BW.label())}</small></button>`,...qs.map(q=>{const src=own.has(q)?null:it.versions.filter(v=>(v.q||'-')===q).sort((a,c)=>prefIdx(a.lang)-prefIdx(c.lang))[0];return`<button class="f${pl.q===q?' on':''}" data-act="dq" data-id="${it.id}" data-q="${q}"><span>${esc(qName(q==='-'?'':q))}</span><small>${src?'Bild aus '+fl(src.lang)+esc(langName(src.lang))+'-Fassung':''}</small></button>`})]}
+       else{const cv=curVer(it);opts=[`<button class="f${!it._vsel?' on':''}" data-act="dq" data-id="${it.id}" data-q="auto"><span>Automatisch</span></button>`,...uniq(it.versions.filter(v=>v.lang===cv.lang).map(v=>v.q||'-')).map(q=>`<button class="f${it._vsel&&(cv.q||'-')===q?' on':''}" data-act="dq" data-id="${it.id}" data-q="${q}" data-l="${cv.lang}"><span>${esc(qName(q==='-'?'':q))}</span></button>`)]}}
+     else{const cur=SUBS.pref(it);opts=[`<button class="f${cur==='off'?' on':''}" data-act="dsub" data-id="${it.id}" data-l="off"><span>Aus</span></button>`,...SUBS.langs().map(l=>`<button class="f${cur===l?' on':''}" data-act="dsub" data-id="${it.id}" data-l="${l}"><span>${fl(l)}${esc(langName(l))}</span></button>`)]}
+     const mm=document.createElement('div');mm.className='ddm';mm.style.setProperty('--cols',1);mm._btn=b;mm.innerHTML=opts.join('');document.body.appendChild(mm);
+     const r=b.getBoundingClientRect();mm.style.left=Math.max(8,Math.min(r.left,innerWidth-mm.offsetWidth-12))+'px';{const below=innerHeight-r.bottom-14,above=r.top-14;if(below<Math.min(mm.offsetHeight,200)&&above>below){mm.style.bottom=(innerHeight-r.top+6)+'px';mm.style.maxHeight=above+'px'}else{mm.style.top=(r.bottom+6)+'px';mm.style.maxHeight=below+'px'}}
+     ($('.on',mm)||$('.f',mm)).focus({preventScroll:true});break}
+   case'dlang':{if(it.type==='movie'){saveSel(it,b.dataset.l,selOf(it).q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'l')}toast('Sprache: '+langName(b.dataset.l));break}setVsel(it,sortedVersions(it).find(v=>v.lang===b.dataset.l),true);it._sk=null;const m=APP.modal&&APP.modal.el;if(!m)break;$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'l');if(it.type==='series'){$('#eps',m).innerHTML='<h4>Folgen</h4><div class="spin"></div>';loadSeasons(it).then(()=>renderEps(it,m))}toast('Sprache: '+langName(b.dataset.l));break}
    case'lup':{const p=prof(),k=b.dataset.k,i=p.countries.indexOf(k);if(i>0){p.countries.splice(i,1);p.countries.splice(i-1,0,k);saveProfiles();APP._pool=null}renderApp(`[data-act="lup"][data-k="${k}"]`);break}
    case'profiles':APP.hist=[];vProfiles();break;
    case'psel':APP.pid=id;LS.set('nfk.pid',id);APP.alerted=null;APP.view='home';APP.args={};APP.hist=[];renderApp();startTeamWatch();break;
@@ -2129,7 +2155,7 @@ document.addEventListener('click',e=>{
    case'apsubf':{const r=P.subRes&&P.subRes[+b.dataset.i];if(!r)break;toast('Lade Untertitel …');SUBS.dl(r).then(path=>{if(!P.el)return;SUBS.setPref(P.it,r.lang);P.applySub(path,r.lang);toast(langName(r.lang)+'-Untertitel geladen');setTimeout(()=>P.panel(true),1500)}).catch(e=>toast('Untertitel konnten nicht geladen werden ('+e.message+')'));break}
    case'aspcyc':{const m=(aspOf(P.it)+1)%ASP.length;setAsp(P.it,m);if(P.engine==='nat')NFK.vCmd('aspect',m);else webAsp(P.v,m);b.innerHTML=b.innerHTML.replace(/[^>]*$/,'')+esc(ASP[m][1]);toast('Bildformat: '+ASP[m][1]);break}
    case'apasp':{const ab=$('#aspb');const m=+b.dataset.m;setAsp(P.it,m);if(P.engine==='nat')NFK.vCmd('aspect',m);else webAsp(P.v,m);toast('Bildformat: '+ASP[m][1]);if(ab)ab.lastChild.textContent=ASP[m][1];P.panel(true);break}
-   case'dsub':{SUBS.setPref(it,b.dataset.l);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);$(`[data-act="dsub"][data-l="${b.dataset.l}"]`,m).focus()}toast(b.dataset.l==='off'?'Untertitel aus':'Untertitel: '+langName(b.dataset.l));break}
+   case'dsub':{SUBS.setPref(it,b.dataset.l);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'s')}toast(b.dataset.l==='off'?'Untertitel aus':'Untertitel: '+langName(b.dataset.l));break}
    case'apsub':{const g=+b.dataset.g;if(P.it&&P.it.type!=='live'){if(g<0){SUBS.setPref(P.it,'off');P.subWant='off'}else{const l=SUBS.langs().find(c=>C2L[c]===nlang(b.dataset.l));if(l){SUBS.setPref(P.it,l);P.subWant=l}}}if(P.engine==='nat')NFK.vSelect('text',g,+b.dataset.t);else if(P.hls)P.hls.subtitleTrack=g;toast(g<0?'Untertitel aus':'Untertitel: '+b.textContent.trim());setTimeout(()=>P.panel(true),500);break}
    // Bildqualität wählen: Ton-Sprache bleibt
    case'apq':{const it=P.it,q=b.dataset.q==='-'?'':b.dataset.q;const aL=P.mix>-1?P.vers[P.mix].lang:P.vers[P.ver].lang;
@@ -2169,8 +2195,8 @@ document.addEventListener('click',e=>{
    case'bgnow':toast('Playlist wird im Hintergrund aktualisiert …');bgRefresh().then(()=>{CACHE.t=Date.now();toast('Playlist ist aktuell')});break;
    case'hero':showHero(+b.dataset.i,'d'+b.dataset.i);break;
       case'dmix':{const cv=curVer(it);if(it._mixA&&it._mixA.lang===cv.lang){it._mixA=it._mixV=null;toast('Normale Fassung')}else{it._mixV=bestPic(it);it._mixA=audioVer(it,cv.lang);toast((it._mixV.q||'')+'-Bild + '+langName(cv.lang)+'-Ton')}const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);$('[data-act="dmix"]',m).focus()}break}
-   case'dq':if(it.type==='movie'){const q=b.dataset.q==='auto'?'':b.dataset.q;saveSel(it,selOf(it).l,q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);$(`[data-act="dq"][data-q="${b.dataset.q}"]`,m).focus()}const pl=playPlan(it);toast(q?qName(pl.pic.q)+'-Bild + '+langName(pl.l)+'-Ton':'Qualität automatisch');break}
-   {const cv=curVer(it);const q=b.dataset.q==='-'?'':b.dataset.q;const l=b.dataset.l||cv.lang;if(q==='auto')setVsel(it,cv,true);else setVsel(it,sortedVersions(it).find(v=>v.lang===l&&(v.q||'')===q)||cv);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);($(`[data-act="dq"][data-q="${b.dataset.q}"][data-l="${b.dataset.l||''}"]`,m)||$(`[data-act="dq"][data-q="${b.dataset.q}"]`,m)).focus()}toast(b.dataset.q==='auto'?'Qualität: automatisch nach Internet-Tempo':'Qualität: '+qName(b.dataset.q==='-'?'':b.dataset.q));break}
+   case'dq':if(it.type==='movie'){const q=b.dataset.q==='auto'?'':b.dataset.q;saveSel(it,selOf(it).l,q);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'q')}const pl=playPlan(it);toast(q?qName(pl.pic.q)+'-Bild + '+langName(pl.l)+'-Ton':'Qualität automatisch');break}
+   {const cv=curVer(it);const q=b.dataset.q==='-'?'':b.dataset.q;const l=b.dataset.l||cv.lang;if(q==='auto')setVsel(it,cv,true);else setVsel(it,sortedVersions(it).find(v=>v.lang===l&&(v.q||'')===q)||cv);const m=APP.modal&&APP.modal.el;if(m){$('#d-lang',m).innerHTML=langChips(it);dfocus(m,'q')}toast(b.dataset.q==='auto'?'Qualität: automatisch nach Internet-Tempo':'Qualität: '+qName(b.dataset.q==='-'?'':b.dataset.q));break}
    case'ax':$$('.talert').forEach(popClose);break;
    case'alt':{const a=P.o.alts;const n=a[(a.indexOf(P.it)+1)%a.length];P.open(n,{alts:a});toast(n.title+' · '+langName(n.country)+(n.q?' · '+n.q:''));break}
    case'gback':if(draft.onlyGenres){draft=null;renderApp()}else vCountries({keep:true,edit:draft.edit});break;
