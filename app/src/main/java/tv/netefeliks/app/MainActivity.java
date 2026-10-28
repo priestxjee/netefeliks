@@ -36,7 +36,8 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 1;
+    static final int NATIVE_VERSION = 2;
+    static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
 
@@ -129,6 +130,15 @@ public class MainActivity extends Activity {
             }
         }
 
+        /** Startet den nativen Player (4K/HEVC, MKV, mehrere Tonspuren). */
+        @JavascriptInterface public void play(final String cfg) {
+            runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    startActivityForResult(new Intent(MainActivity.this, PlayerActivity.class).putExtra("cfg", cfg), REQ_PLAY);
+                }
+            });
+        }
+
         /** Lädt eine neue APK und öffnet den Installations-Dialog. */
         @JavascriptInterface public void installApk(final String url) {
             new Thread(new Runnable() {
@@ -196,6 +206,15 @@ public class MainActivity extends Activity {
         } finally {
             if (con != null) con.disconnect();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req != REQ_PLAY) return;
+        String r = data != null ? data.getStringExtra("res") : null;
+        if (r == null) r = "{}";
+        js("window.nfkPlayed&&nfkPlayed(" + org.json.JSONObject.quote(r) + ")");
     }
 
     @Override
