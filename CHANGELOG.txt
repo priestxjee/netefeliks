@@ -1,3 +1,5 @@
+Live: Stern-Knopf (Favorit) ist beim Draufstehen jetzt deutlich hervorgehoben
+Neu: Daten sichern & wiederherstellen (Einstellungen → Abo & App) – für eine Neuinstallation ohne Datenverlust
 Trailer neu: zuerst offizielle Apple-Trailer (iTunes, wird nicht blockiert), dann IMDb, dann YouTube als direkte Datei
 Neuer Knopf „Trailer“ in den Details: Trailer im Vollbild mit Ton, Zurück beendet
 Suche übersichtlich: Reiter Alles · Filme · Serien · Sender; Filme und Serien als eigene Reihen, Sender als klare Liste mit Logo und laufender Sendung

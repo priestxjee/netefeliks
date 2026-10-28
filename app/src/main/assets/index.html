@@ -495,6 +495,9 @@ html.pip .lvh .chr{grid-template-columns:2.2rem 6rem minmax(0,1fr)}html.pip .lvh
 .lnext{border-top:1px solid var(--line);padding-top:.6rem}.lnext b{font-size:.92rem;color:var(--mute)}
 .lhint{margin:0;color:var(--dim);font-size:.72rem;line-height:1.5}.lhint b{color:var(--mute)}
 html.pip .lv3 .chr{grid-template-columns:2rem 4.6rem minmax(0,1fr)}
+.chw .mini{border:0;border-radius:.4rem;cursor:pointer}
+.chw .mini:focus,.lv3 .chw .mini:focus{background:var(--fg)!important;color:#c08a00!important;transform:scale(1.08);box-shadow:0 0 0 3px var(--fg),0 0 14px rgba(255,255,255,.35);outline:0}
+.chw .mini:focus:not(.fv){color:#111!important}
 .chl .chr.playing{box-shadow:inset 4px 0 0 var(--red,#e50914)}
 .pipbox:focus{border-color:var(--fg);box-shadow:0 0 0 2px var(--fg)}
 .piplab{position:absolute;left:.35rem;bottom:.3rem;right:.35rem;text-align:left;font-size:.78rem;font-weight:600;color:#fff;background:rgba(0,0,0,.6);padding:.15rem .4rem;border-radius:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1796,6 +1799,7 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Updates','Die App meldet neue Versionen selbst.',`<button class="btn sm f" data-act="updcheck">Nach Updates suchen</button>`)}
     ${optRow('Playlist',`Wird auf dem Gerät gespeichert und alle 6 Stunden im Hintergrund aktualisiert (nur wenn die App ruht).${CACHE.t?' Zuletzt: '+new Date(CACHE.t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):''}`,`<button class="btn sm f" data-act="bgnow">Jetzt aktualisieren</button><button class="btn sm f" data-act="rescan">Komplett neu einlesen</button>`)}
     ${optRow('Bewertungen & Trailer','Kostenlose Schlüssel von omdbapi.com (IMDb, Rotten Tomatoes) und themoviedb.org (deutsche Beschreibungen, Trailer).',`<div style="display:flex;flex-direction:column;gap:.6rem;width:100%;max-width:22rem"><input class="in f" id="omdb" value="${esc(c.omdb||'')}" placeholder="OMDb-Schlüssel"><input class="in f" id="tmdb" value="${esc(c.tmdb||'')}" placeholder="TMDB-Schlüssel (v3)"><div><button class="btn sm pri f" data-act="savekeys">Speichern</button></div></div>`)}
+    ${window.NFK&&NFK.backupSave?optRow('Daten sichern','Speichert Login, Profile, Favoriten, Fortschritt und Einstellungen als Datei auf dem Fire TV (Download-Ordner). Sie bleibt auch nach dem Deinstallieren erhalten – nach einer Neuinstallation einfach wiederherstellen.',`<button class="btn sm f" data-act="bksave">Jetzt sichern</button><button class="btn sm f" data-act="bkload">Wiederherstellen</button>`):''}
     ${optRow('Abmelden','Entfernt die Zugangsdaten von diesem Gerät.',`<button class="btn sm f" data-act="logout">Abmelden</button>`)}
     <p class="hint" style="margin-top:1.2rem">Filmdaten, Bilder und Trailer-Verweise: Dieses Produkt nutzt die TMDB-API, ist aber nicht von TMDB unterstützt oder zertifiziert.</p>`;
   el.innerHTML=`<div class="pad vh"><h2 class="vtitle">Einstellungen</h2><p class="vsub"><span class="av sm" style="background:${p.color};display:inline-grid;vertical-align:middle;margin-right:.5rem"><span>${esc(p.name[0])}</span></span>Profil ${esc(p.name)} – alles hier gilt nur für dieses Profil.</p>
@@ -2191,7 +2195,7 @@ function vLogin(err,tab){
    <div><label class="lb" for="pwd">Passwort</label><input class="in f" id="pwd" type="password" value="${esc(c.pass||'')}"></div>`
    :`<div><label class="lb" for="m3u">M3U-Playlist-Link</label><input class="in f" id="m3u" placeholder="http://server/get.php?username=…&password=…&type=m3u_plus" value="${esc(c.m3u||'')}" inputmode="url" data-autofocus></div><p class="hint">Ein get.php-Link von einem Xtream-Server wird automatisch als Xtream-Zugang genutzt – das ist schneller und liefert mehr Infos (Programm, Beschreibungen).</p>`}
    ${err?`<div class="err">${err}</div>`:''}
-   <button type="submit" class="btn pri f">Verbinden</button><div class="or">oder</div><button type="button" class="btn f" data-act="demo">Demo ansehen – ohne Abo</button>
+   <button type="submit" class="btn pri f">Verbinden</button><div class="or">oder</div><button type="button" class="btn f" data-act="demo">Demo ansehen – ohne Abo</button>${window.NFK&&NFK.backupLoad?'<button type="button" class="btn f" data-act="bkload" style="margin-top:.6rem">Sicherung wiederherstellen</button>':''}
    <p class="hint">Deine Zugangsdaten bleiben nur auf diesem Gerät gespeichert.</p></form></div>`,'login');
   $('#lf').addEventListener('submit',e=>{e.preventDefault();
     if(tab==='xt'){const server=$('#srv').value.trim(),user=$('#usr').value.trim(),pass=$('#pwd').value;if(!server||!user||!pass)return vLogin('Bitte Server-URL, Benutzername und Passwort ausfüllen.',tab);APP.cfg={...(APP.cfg||{}),mode:'xtream',server:normServer(server),user,pass}}
@@ -2302,6 +2306,11 @@ document.addEventListener('click',e=>{
      ($('.on',m)||$('.f',m)).focus({preventScroll:true});break}
    case'stab':APP.args={...APP.args,st:b.dataset.v};srRender();{const t=$(`#stabs [data-v="${b.dataset.v}"]`);t&&t.focus({preventScroll:true})}break;
    case'trfull':{if(!it)break;toast('Trailer wird gesucht …');TR.stop();TRL.find(it).then(src=>{if(!src){toast('Für diesen Titel wurde kein Trailer gefunden');return}trFull(src)}).catch(()=>toast('Für diesen Titel wurde kein Trailer gefunden'));break}
+   case'bksave':{const skip=/^nfk\.(meta|trl2?|tl|top2?|trend|lsig|scanning|crashes|appcrash|now|aprep|bw)$/;const d={v:1,t:Date.now(),ls:{}};
+     for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('nfk.')&&!skip.test(k))d.ls[k]=localStorage.getItem(k)}
+     const r=String(NFK.backupSave(JSON.stringify(d))||'');if(r==='ask')toast('Bitte den Zugriff erlauben und dann nochmal „Jetzt sichern“ drücken');else if(r.startsWith('ok:'))toast('✓ Gesichert: '+r.slice(3).split('/').slice(-2).join('/'));else toast('Sichern nicht möglich: '+r.replace(/^err:/,''));break}
+   case'bkload':{const r=String(NFK.backupLoad()||'');if(r==='ask'){toast('Bitte den Zugriff erlauben und dann nochmal drücken');break}if(r==='none'){toast('Keine Sicherung gefunden');break}if(!r.startsWith('ok:')){toast('Wiederherstellen nicht möglich: '+r.replace(/^err:/,''));break}
+     try{const d=JSON.parse(r.slice(3));let n=0;for(const k in d.ls){if(k.startsWith('nfk.')){localStorage.setItem(k,d.ls[k]);n++}}toast('✓ Wiederhergestellt ('+n+' Einträge) – App startet neu …');setTimeout(()=>location.reload(),1200)}catch(e){toast('Sicherung ist beschädigt')}break}
    case'vclr':APP.args={};renderApp('[data-act="dd"][data-k="g"]');break;
    case'vall':{let a2={};try{a2=JSON.parse(b.dataset.a)}catch(e){}APP.hist.push({v:APP.view,a:APP.args,f:b.dataset.a});APP.args=a2;renderApp('#vgrid .card');break}
    case'vf':{$$('.ddm').forEach(x=>x.remove());const k=b.dataset.k;APP.args={...APP.args,[k]:b.dataset.v,lim:0};renderApp(`[data-act="dd"][data-k="${k}"],[data-act="vf"][data-k="${k}"]`);break}

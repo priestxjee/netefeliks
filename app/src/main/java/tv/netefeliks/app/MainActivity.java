@@ -44,7 +44,7 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 17;
+    static final int NATIVE_VERSION = 18;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
@@ -202,6 +202,17 @@ public class MainActivity extends Activity {
     }
 
     /** Neuere heruntergeladene Oberfläche direkt öffnen (nicht über Umwege), sonst die eingebaute. */
+    /** Speicher-Erlaubnis für die Sicherung: fehlt sie, fragt Android einmal nach (danach nochmal drücken). */
+    boolean storagePerm(boolean write) {
+        if (android.os.Build.VERSION.SDK_INT < 23) return true;
+        String p = write && android.os.Build.VERSION.SDK_INT <= 29 ? android.Manifest.permission.WRITE_EXTERNAL_STORAGE : android.Manifest.permission.READ_EXTERNAL_STORAGE;
+        if (write && android.os.Build.VERSION.SDK_INT > 29) return true;
+        if (checkSelfPermission(p) == android.content.pm.PackageManager.PERMISSION_GRANTED) return true;
+        final String[] ps = { p };
+        runOnUiThread(new Runnable() { @Override public void run() { requestPermissions(ps, 77); } });
+        return false;
+    }
+
     String startUrl() {
         File f = webFile();
         if (f.exists() && f.length() > 1000 && prefs.getInt("webVersion", 0) > installedVersion()) return Uri.fromFile(f).toString();
@@ -260,6 +271,32 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void vMini(String json) { video.mini(json); }
         @JavascriptInterface public void vSubStyle(String json) { video.subStyle(json); }
         @JavascriptInterface public void vThumbKey(String k) { video.thumbKey(k); }
+        // Daten sichern/wiederherstellen: Datei im Download-Ordner (überlebt Deinstallieren + Neuinstallieren)
+        @JavascriptInterface public String backupSave(String json) {
+            try {
+                if (!storagePerm(true)) return "ask";
+                java.io.File d = new java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS), "Netefeliks");
+                if (!d.exists()) d.mkdirs();
+                java.io.File f = new java.io.File(d, "netefeliks-sicherung.json");
+                java.io.FileOutputStream o = new java.io.FileOutputStream(f);
+                o.write(json.getBytes("UTF-8"));
+                o.close();
+                return "ok:" + f.getAbsolutePath();
+            } catch (Throwable t) { return "err:" + t.getMessage(); }
+        }
+        @JavascriptInterface public String backupLoad() {
+            try {
+                if (!storagePerm(false)) return "ask";
+                java.io.File f = new java.io.File(new java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS), "Netefeliks"), "netefeliks-sicherung.json");
+                if (!f.exists()) return "none";
+                java.io.FileInputStream in = new java.io.FileInputStream(f);
+                java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[16384]; int n;
+                while ((n = in.read(buf)) > 0) b.write(buf, 0, n);
+                in.close();
+                return "ok:" + b.toString("UTF-8");
+            } catch (Throwable t) { return "err:" + t.getMessage(); }
+        }
 
         // ---------- Ton vorbereiten (für Abos mit nur einer Verbindung) ----------
         @JavascriptInterface public void aPrep(String key, String url, String langs) { prep.start(key, url, langs); }
