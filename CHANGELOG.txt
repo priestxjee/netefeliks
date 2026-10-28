@@ -1,8 +1,3 @@
-Fire-TV-Banner wieder im ersten Stil (roter Schriftzug), jetzt mit Rand – nichts wird mehr abgeschnitten
-Untertitel bei Filmen und Serien: aus dem Stream oder automatisch online laden (Deutsch, Persisch, Englisch …)
-Bildformat im Player: Original, Füllen, Strecken, 16:9, 4:3, 21:9 – gestreckte Bilder sind behoben
-Favoriten für Sender, Filme und Serien (Menü-Taste ≡ auf der Fernbedienung)
-Live-TV neu: deine Länder links, Kategorien oben, übersichtliche Senderliste
-Zurück-Taste springt ins Menü auf den Bereich, in dem du gerade bist
-Trailer starten nach 2 Sekunden (offizieller IMDb-Trailer, sonst YouTube)
-Weniger Speicherverbrauch beim Abspielen; nach einem Neustart geht es dort weiter, wo du warst
+Sprache wechseln ändert nur noch den Ton – die Bildqualität (z. B. 4K) bleibt
+Ton einer anderen Fassung wird direkt mitgestreamt, nichts wird gespeichert
+Im Player: „Bildqualität“ und „Sprache (Ton)“ getrennt wählbar
