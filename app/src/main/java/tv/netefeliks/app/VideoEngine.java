@@ -10,6 +10,9 @@ import android.view.View;
 import androidx.media3.common.C;
 import androidx.media3.common.Format;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.MimeTypes;
+import androidx.media3.common.VideoSize;
+import android.net.Uri;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.common.TrackSelectionOverride;
@@ -18,6 +21,7 @@ import androidx.media3.common.Tracks;
 import androidx.media3.common.text.CueGroup;
 import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.Renderer;
@@ -30,6 +34,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.MergingMediaSource;
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
+import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.SubtitleView;
 
 import org.json.JSONArray;
@@ -59,6 +64,9 @@ class VideoEngine {
 
     private final Activity act;
     private final SurfaceView surface;
+    private final AspectRatioFrameLayout frame;
+    private float videoRatio = 16f / 9f;
+    private int aspectMode = 0;
     private final SubtitleView subs;
     private final Events events;
     private final Handler ui = new Handler(Looper.getMainLooper());
@@ -90,8 +98,9 @@ class VideoEngine {
         }
     };
 
-    VideoEngine(Activity act, SurfaceView surface, SubtitleView subs, Events events) {
+    VideoEngine(Activity act, AspectRatioFrameLayout frame, SurfaceView surface, SubtitleView subs, Events events) {
         this.act = act;
+        this.frame = frame;
         this.surface = surface;
         this.subs = subs;
         this.events = events;
@@ -118,8 +127,15 @@ class VideoEngine {
                 .setReadTimeoutMs(20000);
         // DefaultDataSource: Streams vom Server (http) und vorbereitete Tonspuren vom Gerät (file://)
         sources = new DefaultMediaSourceFactory(new DefaultDataSource.Factory(act, http));
+        // Kleinerer Puffer als üblich: spart auf dem Fire TV viel Arbeitsspeicher (4K!) – sonst muss Android die Oberfläche beenden
+        DefaultLoadControl load = new DefaultLoadControl.Builder()
+                .setBufferDurationsMs(12000, 30000, 1500, 3000)
+                .setTargetBufferBytes(48 * 1024 * 1024)
+                .setPrioritizeTimeOverSizeThresholds(false)
+                .build();
         player = new ExoPlayer.Builder(act, renderers)
                 .setMediaSourceFactory(sources)
+                .setLoadControl(load)
                 .build();
         player.setVideoSurfaceView(surface);
         player.addListener(new Player.Listener() {
@@ -130,6 +146,9 @@ class VideoEngine {
                 if (s == Player.STATE_ENDED) events.emit("ended", "");
             }
             @Override public void onCues(CueGroup cueGroup) { subs.setCues(cueGroup.cues); }
+            @Override public void onVideoSizeChanged(VideoSize v) {
+                if (v.width > 0 && v.height > 0) { videoRatio = v.width * v.pixelWidthHeightRatio / v.height; applyAspect(); }
+            }
             @Override public void onTracksChanged(Tracks t) { if (mixPending) applyMix(); buildTracks(); events.emit("tracks", ""); }
         });
     }
@@ -155,6 +174,8 @@ class VideoEngine {
                     .build();
             player.setTrackSelectionParameters(p);
             setDelayMain(c.optLong("delay", 0));
+            aspectMode = c.optInt("aspect", 0);
+            applyAspect();
             float size = (float) c.optDouble("subSize", 0.0533);
             subs.setFractionalTextSize(size);
             subs.setCues(new ArrayList<androidx.media3.common.text.Cue>());
@@ -162,16 +183,17 @@ class VideoEngine {
             subs.setVisibility(View.VISIBLE);
             long start = Math.max(0, c.optLong("start", 0));
             String audioUrl = c.optString("audioUrl", "");
+            MediaItem main = item(c.getString("url"), c.optString("subUrl", ""), c.optString("subLang", ""));
             if (audioUrl.length() > 0) {
                 // Bild aus Fassung 1 + Ton aus Fassung 2: beide Streams laden und zusammenführen
-                MediaSource pic = sources.createMediaSource(MediaItem.fromUri(c.getString("url")));
+                MediaSource pic = sources.createMediaSource(main);
                 MediaSource snd = sources.createMediaSource(MediaItem.fromUri(audioUrl));
                 mixPending = true;
                 mixLangs = langs;
                 player.setMediaSource(new MergingMediaSource(true, true, pic, snd), start);
             } else {
                 mixPending = false;
-                player.setMediaItem(MediaItem.fromUri(c.getString("url")), start);
+                player.setMediaItem(main, start);
             }
             player.prepare();
             player.play();
@@ -179,6 +201,31 @@ class VideoEngine {
             ui.post(poll);
         } catch (Exception e) {
             events.emit("error", String.valueOf(e.getMessage()));
+        }
+    }
+
+    /** Stream + optional nachgeladene Untertitel-Datei (SRT). */
+    private static MediaItem item(String url, String subUrl, String subLang) {
+        if (subUrl == null || subUrl.length() == 0) return MediaItem.fromUri(url);
+        List<MediaItem.SubtitleConfiguration> l = new ArrayList<MediaItem.SubtitleConfiguration>();
+        l.add(new MediaItem.SubtitleConfiguration.Builder(Uri.parse(subUrl))
+                .setMimeType(MimeTypes.APPLICATION_SUBRIP)
+                .setLanguage(subLang == null || subLang.length() == 0 ? null : subLang)
+                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                .build());
+        return new MediaItem.Builder().setUri(url).setSubtitleConfigurations(l).build();
+    }
+
+    /** Bildformat: 0 Original, 1 Füllen (beschneiden), 2 Strecken, 3 = 16:9, 4 = 4:3, 5 = 21:9 */
+    private void applyAspect() {
+        if (frame == null) return;
+        switch (aspectMode) {
+            case 1: frame.setAspectRatio(videoRatio); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM); break;
+            case 2: frame.setAspectRatio(videoRatio); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL); break;
+            case 3: frame.setAspectRatio(16f / 9f); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT); break;
+            case 4: frame.setAspectRatio(4f / 3f); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT); break;
+            case 5: frame.setAspectRatio(21f / 9f); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT); break;
+            default: frame.setAspectRatio(videoRatio); frame.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
         }
     }
 
@@ -190,6 +237,7 @@ class VideoEngine {
                 else if ("pause".equals(c)) player.pause();
                 else if ("seekTo".equals(c)) player.seekTo(Math.max(0, (long) arg + delayMs));
                 else if ("delay".equals(c)) setDelayMain((long) arg);
+                else if ("aspect".equals(c)) { aspectMode = (int) arg; applyAspect(); }
                 else if ("stop".equals(c)) stopMain();
             }
         });

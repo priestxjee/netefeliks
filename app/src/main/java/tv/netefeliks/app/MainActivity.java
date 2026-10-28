@@ -25,7 +25,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.media3.ui.AspectRatioFrameLayout;
 import androidx.media3.ui.SubtitleView;
+import android.view.Gravity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,7 +44,7 @@ import java.net.URL;
  */
 public class MainActivity extends Activity {
     /** Bei Änderungen an diesem Java-Code um 1 erhöhen und native-version.txt anpassen. */
-    static final int NATIVE_VERSION = 7;
+    static final int NATIVE_VERSION = 8;
     static final int REQ_PLAY = 42;
     static final String APP_URL = "file:///android_asset/index.html";
     static final String ACTION_INSTALL = "tv.netefeliks.app.INSTALL_STATUS";
@@ -79,11 +81,14 @@ public class MainActivity extends Activity {
         SubtitleView subs = new SubtitleView(this);
         subs.setVisibility(View.GONE);
         ViewGroup.LayoutParams full = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        root.addView(surface, full);
+        // Bildformat (Original, Füllen, Strecken, 16:9 …): Das Video sitzt in einem Rahmen, der das Seitenverhältnis hält
+        AspectRatioFrameLayout frame = new AspectRatioFrameLayout(this);
+        frame.addView(surface, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(frame, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
         root.addView(subs, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
-        video = new VideoEngine(this, surface, subs, new VideoEngine.Events() {
+        video = new VideoEngine(this, frame, surface, subs, new VideoEngine.Events() {
             @Override public void emit(String ev, String arg) {
                 js("window.nfkV&&nfkV(" + org.json.JSONObject.quote(ev) + "," + org.json.JSONObject.quote(arg == null ? "" : arg) + ")");
             }
@@ -145,15 +150,17 @@ public class MainActivity extends Activity {
             // Absturz der Oberfläche (z. B. zu wenig Arbeitsspeicher): neu starten statt die App zu schließen
             @Override
             public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
-                recreateWeb();
+                boolean crash = Build.VERSION.SDK_INT >= 26 && detail != null && detail.didCrash();
+                recreateWeb(crash ? "crash" : "kill");
                 return true;
             }
         });
         web.addJavascriptInterface(new Bridge(), "NFK");
+        if (Build.VERSION.SDK_INT >= 26) web.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false);
         return web;
     }
 
-    void recreateWeb() {
+    void recreateWeb(final String why) {
         runOnUiThread(new Runnable() {
             @Override public void run() {
                 try {
@@ -164,7 +171,7 @@ public class MainActivity extends Activity {
                 web = createWeb();
                 root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 web.requestFocus();
-                web.loadUrl(APP_URL + "#recovered");
+                web.loadUrl(APP_URL + "#recovered-" + why);
             }
         });
     }
@@ -232,6 +239,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void grab(String id, String url, String opts) { net.grab(id, url, opts); }
         @JavascriptInterface public void speed(String id, String url, int seconds) { net.speed(id, url, seconds); }
         @JavascriptInterface public double imgSize() { return (double) net.imgSize(); }
+        @JavascriptInterface public void subDl(String id, String url, String enc) { net.sub(id, url, enc); }
         @JavascriptInterface public void imgClear() { net.clearImages(); }
 
         /** Startet den nativen Vollbild-Player (ältere Variante). */
@@ -343,6 +351,12 @@ public class MainActivity extends Activity {
                 if (!"\"1\"".equals(v)) finish();
             }
         });
+    }
+
+    /** Android meldet knappen Arbeitsspeicher: die Oberfläche räumt Zwischenspeicher auf. */
+    @Override public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (web != null) js("window.nfkTrim&&nfkTrim(" + level + ")");
     }
 
     @Override protected void onPause() { super.onPause(); web.onPause(); if (video != null) video.pause(); }

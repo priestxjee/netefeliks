@@ -26,6 +26,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.nio.charset.Charset;
 
 /**
  * Netzwerk-Arbeit außerhalb der Oberfläche, damit die App flüssig bleibt:
@@ -142,6 +144,54 @@ class Net {
             r.put("r", res);
         }
         return r;
+    }
+
+    // ---------- Untertitel laden (gz oder Text), in UTF-8 umwandeln und als .srt speichern ----------
+    void sub(final String id, final String url, final String enc) {
+        pool.execute(new Runnable() {
+            @Override public void run() {
+                String out;
+                try {
+                    HttpURLConnection c = open(url, null, 12000);
+                    if (c.getResponseCode() >= 400) throw new Exception("HTTP " + c.getResponseCode());
+                    InputStream in = c.getInputStream();
+                    ByteArrayOutputStream raw = new ByteArrayOutputStream(64 * 1024);
+                    byte[] b = new byte[16 * 1024];
+                    int n;
+                    while ((n = in.read(b)) > 0) { raw.write(b, 0, n); if (raw.size() > 8 * 1024 * 1024) break; }
+                    in.close();
+                    c.disconnect();
+                    byte[] data = raw.toByteArray();
+                    if (data.length > 2 && (data[0] & 0xff) == 0x1f && (data[1] & 0xff) == 0x8b) {
+                        GZIPInputStream gz = new GZIPInputStream(new ByteArrayInputStream(data));
+                        ByteArrayOutputStream un = new ByteArrayOutputStream(data.length * 3);
+                        while ((n = gz.read(b)) > 0) un.write(b, 0, n);
+                        gz.close();
+                        data = un.toByteArray();
+                    }
+                    Charset cs = Charset.forName("UTF-8");
+                    boolean utf8bom = data.length > 2 && (data[0] & 0xff) == 0xEF && (data[1] & 0xff) == 0xBB && (data[2] & 0xff) == 0xBF;
+                    if (!utf8bom && enc != null && enc.length() > 0 && !enc.toUpperCase().contains("UTF")) {
+                        String e = enc.toUpperCase().replace("CP", "windows-");
+                        try { cs = Charset.forName(e); } catch (Exception x) { try { cs = Charset.forName(enc); } catch (Exception y) { /* UTF-8 */ } }
+                    }
+                    String text = new String(data, cs);
+                    if (text.length() > 0 && text.charAt(0) == '\uFEFF') text = text.substring(1);
+                    File d = new File(ctx.getCacheDir(), "subs");
+                    if (!d.exists()) d.mkdirs();
+                    File[] old = d.listFiles();
+                    if (old != null && old.length > 30) for (File f : old) f.delete();
+                    File f = new File(d, Integer.toHexString(url.hashCode()) + ".srt");
+                    FileOutputStream fo = new FileOutputStream(f);
+                    fo.write(text.getBytes("UTF-8"));
+                    fo.close();
+                    out = new JSONObject().put("path", f.getAbsolutePath()).toString();
+                } catch (Throwable t) {
+                    out = "{\"err\":" + JSONObject.quote(String.valueOf(t.getMessage())) + "}";
+                }
+                events.emit("nfkSub", id, out);
+            }
+        });
     }
 
     // ---------- Internet-Tempo zum Server messen ----------
