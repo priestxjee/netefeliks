@@ -1,3 +1,6 @@
+Menü: Startseite steht jetzt in der Mitte (nach Live-TV und Sport, vor Filme); bei „Kein Interesse an Sport“ verschwindet Sport ganz aus dem Menü (in den Einstellungen wieder einschaltbar)
+Neues Einstellungs-Symbol (Zahnrad statt Sonne) – im Menü und im Player
+Einrichten: Team-Auswahl kompakter, die Liste scrollt in einem eigenen Kasten und die Seite springt nicht mehr nach unten
 Fokus auf der eigenen Auswahl (aktive Kategorie, laufender Sender) jetzt genauso weiß wie überall – vorher dunkler Hintergrund mit schwarzer Schrift
 Details: Daumen hoch und runter stehen zusammen unter den Knöpfen
 Details: das Szenenbild wird jetzt ganz gezeigt (16:9), Titel, Knöpfe und Beschreibung liegen auf dem unteren Teil des Bildes
