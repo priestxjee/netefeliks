@@ -1,3 +1,6 @@
+Neues Intro mit dem Tivinator-Logo: das TV erscheint, der Play-Knopf fällt drehend auf seinen Platz (mit Ton), danach erscheint der Schriftzug
+App-Symbol und Fire-TV-Kachel mit dem Tivinator-Logo
+Trailer laufen nicht mehr im Hintergrund (bremste die App) – Trailer gibt es nur noch über den Knopf „Trailer“ in den Details
 Neuer Name: Tivinator – neues Logo, App-Symbol, Fire-TV-Kachel, Intro und Schriftzug im schwarzen Stil
 Neues Design im Stil von Apple TV: tiefes Schwarz, neutrale Grautöne, weiß leuchtende Auswahl mit weichem Schatten; Rot nur noch für LIVE
 Beschreibungen erscheinen direkt in deiner Sprache – kein kurzes Aufblitzen des Originals mehr; ohne eigene Wahl folgt die Sprache der Beschreibungen der App-Sprache
