@@ -1,3 +1,4 @@
+Menüleiste links: Auswahl ist jetzt ein weicher, nach rechts auslaufender Lichtstreifen mit rotem Strich statt eines weißen Kastens – passt zum Schatten der Leiste
 Live: Vollbild aus dem Mini-Fenster öffnet den Sender jetzt frisch im Vollbild (genau wie beim Senderwechsel) – kein schwarzes Bild mehr, dafür ca. 1 Sekunde Laden
 Live-Vollbild: ▲/▼ wechselt nur den Sender – keine Leiste und kein weißes Namensfeld mehr, nur der Name oben links für 3 Sekunden
 Player: Qualität, Bildformat, Ton & Untertitel und Schließen stecken jetzt in einem Zahnrad-Menü unten rechts; Zurück schließt das Menü
