@@ -1,3 +1,5 @@
+Beschreibungen erscheinen direkt in deiner Sprache – kein kurzes Aufblitzen des Originals mehr; ohne eigene Wahl folgt die Sprache der Beschreibungen der App-Sprache
+Update-Hinweis ist jetzt klein; was neu ist, steht unter „Details“
 Neu: App-Sprache Deutsch · English · فارسی – in Einstellungen → Profil und schon bei der Anmeldung; Titel und Sendernamen bleiben im Original
 Wunschsprachen: einzelne Sprachen lassen sich jetzt entfernen (Einstellungen → Sprache & Synchron) und neue hinzufügen; danach „Playlist neu einordnen“, um entfernte Länder aus der App zu räumen
 Arabische Fassungen werden als Bildquelle nur noch genommen, wenn es keine andere gibt (oft eingebrannte arabische Untertitel) – außer Arabisch ist deine Sprache 1
