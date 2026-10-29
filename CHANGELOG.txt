@@ -1,3 +1,8 @@
+Filme & Serien: jetzt wird der komplette Bestand eingelesen – auch Titel aus Ländern/Sprachen, die nicht im Profil stehen (nur Live-Sender bleiben auf deine Länder beschränkt)
+Suche findet alle Filme und Serien deines Anbieters; Titel mit Fassung in deiner Sprache stehen oben
+Synchron: gibt es einen Titel auch in deiner Sprache, wird automatisch diese Fassung abgespielt; Titel ohne deine Sprache zeigen oben rechts ein Sprach-Kennzeichen (z. B. 🇬🇧 EN)
+Filme/Serien: Genre-, Kategorie- und Sortier-Ansichten zeigen alle Titel (deine Sprachen zuerst); neuer Filter „Sprache“ mit allen Sprachen und „Meine Sprachen (inkl. Synchron)“
+Beim nächsten Start wird der Katalog einmal neu eingelesen
 Erste Anmeldung: zuerst die Fragen (Länder, Genres, Teams, Name), danach wird nur das Gewählte eingelesen – schneller und braucht weniger Speicher
 Neu: „Kein Interesse an Sport“ – keine Teams, keine Sport-Hinweise, Startseite nur mit Filmen und Serien; Live-Spiele auf der Startseite in Einstellungen → Sport ein-/ausschaltbar (Standard: nur mit Lieblingsteams)
 Neu: Avatare für Profile (Tiere, Figuren, Symbole) – bei der Profil-Erstellung und in Einstellungen → Profil
