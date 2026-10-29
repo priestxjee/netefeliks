@@ -244,7 +244,7 @@ h2.big{font-size:2.4rem;margin:0 0 .4rem;font-weight:800;letter-spacing:-.01em;t
 .pf:focus .av{transform:scale(1.07);box-shadow:0 0 0 4px var(--fg)}
 .pf:focus{color:var(--fg)}
 .av.sm{width:2.4rem;height:2.4rem;font-size:1.3rem;border-radius:.3rem}
-.colors{display:flex;gap:.7rem;flex-wrap:wrap}
+.colors{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
 .sw{width:3rem;height:3rem;border-radius:.4rem;border:0;cursor:pointer}
 .sw.on{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--fg)}
 .sw:focus{transform:scale(1.12)}
@@ -379,6 +379,14 @@ html.vidmode #app,html.vidmode .modal{visibility:hidden}
 .player.buf .pspin{display:grid}
 .ap{position:absolute;top:0;right:0;bottom:0;width:min(25rem,100vw);z-index:8;background:rgba(14,11,11,.95);border-left:1px solid var(--line);padding:1.4rem max(1.3rem,env(safe-area-inset-right,0px)) 1.4rem 1.3rem;overflow-y:auto;display:flex;flex-direction:column;gap:.3rem;animation:fade .15s}
 .ap h3{margin:0 0 .4rem;font-size:1.25rem}
+.aptabs{display:flex;gap:.35rem;margin:.1rem 0 .6rem;padding:.25rem;background:rgba(255,255,255,.06);border-radius:.6rem;flex:none}
+.aptab{flex:1;border:0;background:none;color:var(--mute);font-weight:700;font-size:.85rem;padding:.5rem .3rem;border-radius:.45rem;cursor:pointer;white-space:nowrap}
+.aptab.on{background:rgba(229,9,20,.85);color:#fff}
+.aptab:focus{background:var(--fg);color:#111;outline:0}
+.apbody{display:flex;flex-direction:column;gap:.3rem}
+.apbody h4:first-child{margin-top:.2rem}
+.apchips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.2rem 0 .4rem}
+.apnav{justify-content:flex-start}.apnav span{flex:1}.apnav>b{font-size:1.2rem;opacity:.7}
 .ap h4{margin:.9rem 0 .25rem;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 .apo{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;background:none;border:0;border-radius:.4rem;padding:.55rem .7rem;color:var(--fg);font-weight:600;font-size:.95rem;cursor:pointer}
 .apo svg{width:1.1rem;height:1.1rem;color:var(--red);flex:0 0 auto}
@@ -392,7 +400,8 @@ html.vidmode #app,html.vidmode .modal{visibility:hidden}
 .subprev{position:relative;width:min(30rem,100%);aspect-ratio:16/9;border-radius:.6rem;overflow:hidden;background:linear-gradient(160deg,#3b4a5e,#16202c 55%,#5a3a2a);display:flex;align-items:flex-end;justify-content:center;container-type:size}
 .subprev>span{font-size:calc(var(--sz) * 100cqh);line-height:1.25;text-align:center;padding:.05em .35em;margin-bottom:calc(var(--sp) * 100cqh);border-radius:.15em;max-width:92%}
 .subprev.sm{width:100%;margin:.2rem 0 .4rem}
-.sw{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:.35em;vertical-align:-.05em;border:1px solid rgba(255,255,255,.4)}
+i.sw{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:.35em;vertical-align:-.05em;border:1px solid rgba(255,255,255,.4)}
+button.sw{width:2.6rem;height:2.6rem;min-width:0;min-height:0;padding:0;flex:none;aspect-ratio:1;border-radius:50%!important;box-sizing:border-box}
 .aph{color:var(--mute);font-size:.82rem;line-height:1.45;margin:.1rem 0 .3rem}
 .apsync{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin:.2rem 0}
 .apsync b{min-width:4.6rem;text-align:center;font-variant-numeric:tabular-nums;font-size:1.05rem}
@@ -528,6 +537,32 @@ html.pip .lv3 .chr{grid-template-columns:2rem 4.6rem minmax(0,1fr)}
 .pipbox:focus{border-color:var(--fg);box-shadow:0 0 0 2px var(--fg)}
 .piplab{position:absolute;left:.35rem;bottom:.3rem;right:.35rem;text-align:left;font-size:.78rem;font-weight:600;color:#fff;background:rgba(0,0,0,.6);padding:.15rem .4rem;border-radius:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .piplab b{color:#fff;background:var(--red);border-radius:.15rem;padding:0 .25rem;margin-right:.25rem;font-size:.68rem}
+/* Übergang Liste ↔ Vollbild */
+html.vidin #app{opacity:0;transition:opacity .18s ease-out}
+html.vidback #app{animation:appin .3s ease-out}
+@keyframes appin{from{opacity:0}to{opacity:1}}
+html.vidin .player.nat{animation:appin .25s ease-out}
+/* Live-TV: Farbe & Tiefe statt Schwarz */
+.lv3{position:relative;isolation:isolate}
+.lv3::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;will-change:transform;
+  background:radial-gradient(70% 65% at 0% 105%,rgba(229,9,20,.24),transparent 70%),radial-gradient(55% 60% at 100% 100%,rgba(110,45,190,.2),transparent 72%),radial-gradient(60% 45% at 40% -5%,rgba(229,9,20,.1),transparent 70%),linear-gradient(180deg,#171112,#0c0a0b)}
+html.pip .lv3::before{clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,var(--hx1,0) var(--hy1,0),var(--hx2,0) var(--hy1,0),var(--hx2,0) var(--hy2,0),var(--hx1,0) var(--hy2,0),var(--hx1,0) var(--hy1,0))}
+.lv3 .lcol1{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.06);border-radius:.9rem;margin-bottom:1rem;padding-top:.5rem;overflow:hidden}
+.lv3 .lt{flex-wrap:wrap;row-gap:.1rem}.lv3 .lt h2{display:flex;align-items:center;gap:.5rem;white-space:nowrap}
+.lv3 .lt h2::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:var(--red,#e50914);box-shadow:0 0 0 3px rgba(229,9,20,.25),0 0 12px rgba(229,9,20,.8)}
+.lv3 .cat{border-radius:.5rem;margin:0 .35rem}
+.lv3 .cat.on{background:linear-gradient(90deg,rgba(229,9,20,.42),rgba(229,9,20,.1));color:#fff;box-shadow:inset 3px 0 0 var(--red,#e50914)}
+.lv3 .cat.on em{color:#fff}
+.lv3 .cat:focus{background:var(--fg);color:#111;box-shadow:none}.lv3 .cat:focus em{color:#111}
+.lv3 .chr{background:linear-gradient(90deg,rgba(255,255,255,.055),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.05)}
+.lv3 .chr .no{color:rgba(255,255,255,.45)}
+.lv3 .chl .chr.playing{background:linear-gradient(90deg,rgba(229,9,20,.38),rgba(229,9,20,.08) 70%);border-color:rgba(229,9,20,.35)}
+.lv3 .chl .chr.playing:focus{background:var(--fg)}
+.lv3 .lbar h3{display:flex;align-items:baseline;gap:.4rem}
+.lv3 .linfo{background:linear-gradient(160deg,rgba(229,9,20,.2),rgba(120,50,190,.08) 55%,rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.07);border-radius:.9rem;padding:.9rem 1rem;flex:1}
+.lv3 .pipbox{border-radius:.7rem;border-color:rgba(255,255,255,.14)}
+.lv3 .pipidle{background:radial-gradient(80% 90% at 50% 0%,rgba(229,9,20,.3),#120c0d 70%)}
+html.lite .lv3 .lt h2::before{box-shadow:none}
 /* Intro */
 .intro{position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#2a0507 0%,#0b0606 55%,#000 100%);display:grid;place-items:center;overflow:hidden;cursor:pointer}
 .intro::before{content:"";position:absolute;left:50%;top:50%;width:70vmin;height:70vmin;margin:-35vmin 0 0 -35vmin;border-radius:50%;background:radial-gradient(circle,rgba(229,9,20,.55),transparent 65%);opacity:0;transform:scale(.4);animation:iglow 1.6s .55s ease-out both}
@@ -1642,7 +1677,7 @@ VIEWS.live=(el,a)=>{
   let cats='';
   cats+=item('__fav','★ ','Favoriten',favs.length);
   if(rc.length)cats+=item('__recent','↺ ','Zuletzt gesehen',rc.length);
-  if(pins.length)cats+=pins.map(g=>item(g,'📌 ',esc(g),gsz[g]||lv.filter(c=>c.groups.includes(g)).length)).join('');
+  if(pins.length)cats+=pins.map(g=>item(g,'',esc(g),gsz[g]||lv.filter(c=>c.groups.includes(g)).length)).join('');
   cats+='<div class="csep"></div>';
   cats+=countries.map(c=>item('__c:'+c,(CBY[c]&&CBY[c].flag?CBY[c].flag+' ':''),esc(c==='XX'?'Ohne Land':(CBY[c]||{name:c}).name.split(' · ')[0]),lv.filter(x=>x.country===c).length)).join('');
   cats+=`<div class="csep"></div><button class="cat f sm2" data-act="lall" data-v="${all?0:1}"><span>${all?'Nur meine Länder':'Weitere Länder'}</span><em>${all?'':'+'}</em></button>`;
@@ -1651,7 +1686,7 @@ VIEWS.live=(el,a)=>{
     const gs=[...gm.entries()].sort((x,y)=>isSportStr(x[0])-isSportStr(y[0])||y[1]-x[1]);
     if(gs.length>1)chipsH=`<div class="chips lchips"><button class="chip f${!selG?' on':''}" data-act="lg" data-g="__c:${selC}">Alle</button>${(()=>{const sh=g=>g.replace(/^\s*[A-Za-z]{2,3}\s*[|:\-–]\s*/,'')||g;const cnt={};gs.forEach(([g])=>cnt[sh(g)]=(cnt[sh(g)]||0)+1);return gs.map(([g,n])=>`<button class="chip f${selG===g?' on':''}" data-act="lg" data-g="__c:${selC}|${esc(g)}">${esc(cnt[sh(g)]>1?g:sh(g))} <small>${n}</small></button>`).join('')})()}</div>`}
   const head=sel==='__fav'?'★ Favoriten':sel==='__recent'?'Zuletzt gesehen':selC?((CBY[selC]&&CBY[selC].flag?CBY[selC].flag+' ':'')+esc(selC==='XX'?'Ohne Länderangabe':CBY[selC].name)+(selG?' · '+esc(selG):'')):esc(sel);
-  const pinBtn=selG?`<button class="btn sm f" data-act="lpin" data-g="${esc(selG)}">${pins.includes(selG)?'📌 Lösen':'📌 Links anheften'}</button>`:'';
+  const pinBtn=selG?`<button class="btn sm f" data-act="lpin" data-g="${esc(selG)}">${pins.includes(selG)?'Lösen':'Links anheften'}</button>`:'';
   const row=(c,i)=>{const e=EPG.get(c);const fv=favSet.has(c.id);const nq=uniq(c.versions.map(v=>v.q).filter(Boolean)).length;
     return`<div class="chw"><button class="chr f" data-id="${c.id}" data-act="play"><span class="no">${i+1}</span><span class="lg">${logoHTML(c)}</span><span class="tx"><b dir="auto">${esc(c.title)}${c.q?` <span class="tag${QR[c.q]>=4?' k':''}">${esc(c.q==='FHD'?'FHD':c.q)}</span>`:''}${nq>1?` <span class="qn">${nq} Qualitäten</span>`:''}</b><div data-epg="${c.id}">${e&&e.cur?`<span dir="auto">${esc(e.cur.title)}</span> · ${hhmm(e.cur.start)}–${hhmm(e.cur.end)}`:epgLine(c)}</div>${e&&e.cur?`<i class="epb"><i style="width:${Math.round(clamp((Date.now()-e.cur.start)/(e.cur.end-e.cur.start),0,1)*100)}%"></i></i>`:''}</span><span class="nx" dir="auto">${e&&e.next?'Danach: '+esc(e.next.title):''}</span></button>${sel==='__fav'?(i?`<button class="mini f" data-act="lfmove" data-id="${c.id}" data-d="-1" aria-label="Nach oben">▲</button>`:''):''}<button class="mini f${fv?' fv':''}" data-act="lfav" data-id="${c.id}" aria-label="${fv?'Aus Favoriten entfernen':'Zu Favoriten'}">${fv?'★':'☆'}</button></div>`};
   APP._ll=list;APP._ln=Math.min(list.length,150);APP._lrow=row;
@@ -1859,7 +1894,7 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Mini-Fenster','Beim Verlassen eines Senders läuft er klein in Live-TV weiter, bis du einen neuen wählst.',tgl('livePip',PS('livePip')))}
     ${optRow('Sendernummern anzeigen','',tgl('liveNums',PS('liveNums')))}
     ${optRow('Reihenfolge der Länder','Oben in der Liste = oben in Live-TV.',`<div class="plist">${liveCountries(livePool(false)).map((c,i,arr)=>`<div class="prow"><span style="min-width:11rem">${CBY[c]&&CBY[c].flag?CBY[c].flag+' ':''}${esc(c==='XX'?'Ohne Land':CBY[c].name)}</span>${i?`<button class="btn sm f" data-act="lmove" data-c="${c}" data-d="-1">▲</button>`:''}${i<arr.length-1?`<button class="btn sm f" data-act="lmove" data-c="${c}" data-d="1">▼</button>`:''}</div>`).join('')}</div>`)}
-    ${optRow('Favoriten & angeheftete Kategorien','☆ neben einem Sender oder Menü-Taste ≡ = Favorit. Kategorien heftest du in Live-TV mit „📌 Links anheften“ an.',`<button class="btn sm f" data-act="livereset">Alles zurücksetzen</button>`)}`;
+    ${optRow('Favoriten & angeheftete Kategorien','☆ neben einem Sender oder Menü-Taste ≡ = Favorit. Kategorien heftest du in Live-TV mit „Links anheften“ an.',`<button class="btn sm f" data-act="livereset">Alles zurücksetzen</button>`)}`;
   else if(sec==='empf'){const t=R.taste();const tg=R.topGenres(t,8),max=tg[0]?tg[0][1]:1,tp=R.topPeople(t);
     body=`<h3>Empfehlungen</h3><p class="hint">So sieht der Algorithmus dich gerade – aus ${t._ev} Aktionen (Schauen, Abbrechen, Daumen, Favoriten). Ältere zählen weniger.</p>
     <div style="display:flex;flex-direction:column;gap:.5rem;margin:1rem 0;max-width:36rem">${tg.length?tg.map(([g,v])=>`<div class="tb"><span>${esc(g)}</span><span class="bt"><i style="width:${Math.max(4,v/max*100)}%"></i></span><em>${Math.round(v/max*100)}</em></div>`).join(''):'<p class="hint">Noch keine Daten – schau etwas, dann füllt sich das.</p>'}</div>
@@ -2014,15 +2049,15 @@ const P={
     if(o.preview){if(P.engine!=='nat'||!o.card)return;APP.pip={it,ep,vod:1,card:o.card};P.it=it;P.ep=ep;P.startPos=startAt;P.pos=startAt;
       {const cur=P.vers[P.ver];if(cur&&QR[cur.q||'']>3){let bi=-1;P.vers.forEach((v,i)=>{if(v.lang===cur.lang&&QR[v.q||'']<=3&&(bi<0||QR[v.q||'']>QR[P.vers[bi].q||'']))bi=i});if(bi>-1){APP.pip.full=P.ver;P.ver=bi}}}
       TRL.log('Weiterschauen-Vorschau: „'+it.title+'“ ab '+fmtT(startAt)+' · '+qName((P.vers[P.ver]||{}).q));document.documentElement.classList.add('pip');o.card.classList.add('cprev');if(ep||APP.pip.full!=null)P.reload();else{const s0=P.vers[P.ver].src;P.load(s0.url,s0.alt)}setTimeout(cprevSync,60);return}
-    if(P.engine==='nat'){el.classList.add('nat');document.documentElement.classList.add('vidmode')}
+    if(P.engine==='nat'){el.classList.add('nat');if(fromPip)document.documentElement.classList.add('vidin');else document.documentElement.classList.add('vidmode')}
     if(P.mix>-1)sub=(sub?sub+' · ':'')+mixLabel();
     el.innerHTML=`${P.demo?`<div class="sim">${it.type==='live'?`<div class="simlogo">${logoHTML(it)}</div>`:artHTML(ep?{...it,title:ep.title}:it,true)}<span class="lab">Demo-Wiedergabe${it.type==='live'?'':' · 60× schneller, damit du den Verlauf siehst'}</span></div>`:P.engine==='nat'?'<div class="pspin"><div class="spin"></div></div>':'<video id="vid" playsinline autoplay></video>'}
      <div class="pt"><h2 dir="auto">${esc(title)}</h2><p dir="auto">${esc(sub)}</p></div>
      <div class="pc">${it.type==='live'?'':`<button class="scrub f" id="scrub" aria-label="Spulen (links/rechts)"><div class="tr"><i id="pf"></i><b id="pk"></b></div></button><div class="ptime"><span id="tc">0:00</span><span id="tr">-0:00</span></div>`}
       <div class="pbtns">${it.type==='live'?`<button class="btn ic f" data-act="ch" data-d="-1" aria-label="Vorheriger Sender">${I.chUp}</button><button class="btn ic f" data-act="ch" data-d="1" aria-label="Nächster Sender">${I.chDn}</button><span class="live">LIVE</span>${o.alts&&o.alts.length>1?`<button class="btn sm f" data-act="alt">Andere Übertragung (${o.alts.length-1})</button>`:''}`:`<button class="btn ic f" data-act="seek" data-d="-10" aria-label="10 Sekunden zurück">${I.back10}</button><button class="btn ic f" data-act="pp" id="ppb" data-autofocus aria-label="Pause">${I.pause}</button><button class="btn ic f" data-act="seek" data-d="30" aria-label="30 Sekunden vor">${I.fwd10}</button>`}
-       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}${(!ep||it.type==='series')&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}${P.engine==='nat'||P.engine==='web'?`<button class="btn sm f" data-act="aspcyc" id="aspb" aria-label="Bildformat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 10V9h2M17 14v1h-2"/></svg>${esc(ASP[aspOf(it)][1])}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Sprache & Audio</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
+       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}${(!ep||it.type==='series')&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}${P.engine==='nat'||P.engine==='web'?`<button class="btn sm f" data-act="aspcyc" id="aspb" aria-label="Bildformat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 10V9h2M17 14v1h-2"/></svg>${esc(ASP[aspOf(it)][1])}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Ton & Untertitel</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
     document.body.appendChild(el);P.el=el;P.playing=true;
-    {const s0=ep?ep.src:P.vers[P.ver].src;if(fromPip&&P.engine==='nat'){const wasPrev=APP.pip&&APP.pip.vod&&APP.pip.full!=null;P.cur={url:s0.url,alt:s0.alt||''};if(APP.pip&&APP.pip.card)APP.pip.card.classList.remove('cprev');APP.pip=null;document.documentElement.classList.remove('pip');NFK.vMini('');
+    {const s0=ep?ep.src:P.vers[P.ver].src;if(fromPip&&P.engine==='nat'){const wasPrev=APP.pip&&APP.pip.vod&&APP.pip.full!=null;const capped=APP.pip&&!APP.pip.vod&&APP.pip.capped;P.cur=capped?{url:APP.pip.capped.url,alt:''}:{url:s0.url,alt:s0.alt||''};if(APP.pip&&APP.pip.card)APP.pip.card.classList.remove('cprev');APP.pip=null;pipToFull(capped?s0:null);
       if(wasPrev){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos>0)P.pos=st.pos/1000;P.reload()}}else if(!P.demo){if(ep&&P.mix>-1)P.reload();else P.load(s0.url,s0.alt)}}
     P.tick=setInterval(()=>{if(P.engine==='nat'){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos!=null&&P.skT!=null&&(!P.skDone||(Math.abs(st.pos/1000-P.skT)>2.5&&Date.now()<P.skUntil))){st.pos=null}else if(P.skT!=null&&P.skDone){P.skT=null}if(st.pos!=null){P.pos=st.pos/1000;if(st.dur>0)P.dur=st.dur/1000;P.playing=!!st.playing;P.el.classList.toggle('buf',!!st.buf||(!st.playing&&!st.dur));if(st.bw>0)P.bwMax=Math.max(P.bwMax||0,st.bw);P.rebuf(!!st.buf)}}
       if(P.demo&&P.playing&&P.dur){P.pos=Math.min(P.dur,P.pos+.25*60);if(P.pos>=P.dur){P.ended();return}}P.ui();if(Date.now()-P.last>3500&&P.skT==null&&!$('.ap'))P.el.classList.add('idle')},250);
@@ -2064,42 +2099,46 @@ const P={
   setSync(ms){const lim=P.mix>-1?600000:10000;ms=clamp(Math.round(ms/50)*50,-lim,lim);const big=P.mix>-1&&(Math.abs(ms)>=3000||Math.abs(P.sync())>=3000)&&Math.round(ms/1000)!==Math.round(P.sync()/1000);const k=P.skey();P._sy=P._sy||{};P._sy[k]=ms;const m=LS.get('nfk.sync',{});if(ms)m[k]=ms;else delete m[k];LS.set('nfk.sync',m);if(P.engine==='nat'){if(big){P.startPos=P.pos}NFK.vCmd('delay',ms)}const e=$('#apsync');if(e)e.textContent=fmtSync(ms);if(big)toast('Ton wird neu ausgerichtet: '+fmtSync(ms))},
   ntracks(){try{return JSON.parse(NFK.vTracks()||'{}')}catch(e){return{}}},
   panel(keep,focus){if(!P.el)return;const old=$('.ap');const fa=keep&&old&&document.activeElement&&old.contains(document.activeElement)?document.activeElement.dataset.k:null;if(old)old.remove();
-    const it=P.it,nat=P.engine==='nat';const d=document.createElement('div');d.className='ap';let h='<h3>Sprache & Audio</h3>';
+    const it=P.it,nat=P.engine==='nat';const d=document.createElement('div');d.className='ap';const S={ton:'',sub:'',sync:'',bild:''};let h='';
     const row=(k,act,label,on,extra='')=>`<button class="apo f${on?' on':''}" data-act="${act}" data-k="${k}" ${extra}>${on?I.check:'<i class="apdot"></i>'}<span>${label}</span></button>`;
     const movieSplit=((!P.ep&&it.type==='movie')||(P.ep&&it.type==='series'))&&(nat||P.engine==='demo');const ser=!!P.ep;
     if(movieSplit){const pic=P.vers[P.ver];const aL=P.mix>-1?P.vers[P.mix].lang:pic.lang;const qs=uniq(P.vers.map(v=>v.q||'')).sort((a,b)=>QR[b]-QR[a]);
-      if(qs.length>1)h+=`<h4>Bildqualität</h4><p class="aph">Bleibt gleich, wenn du unten die Sprache wechselst. Dein Internet: ${esc(BW.label())}.</p>`+qs.map(q=>{const src=P.vers.some(v=>(v.q||'')===q&&v.lang===aL)?null:P.vers.filter(v=>(v.q||'')===q).sort((a,b)=>prefIdx(a.lang)-prefIdx(b.lang))[0];
+      if(qs.length>1)S.bild+=`<h4>Bildqualität</h4><p class="aph">Bleibt gleich, wenn du beim Ton die Sprache wechselst. Dein Internet: ${esc(BW.label())}.</p>`+qs.map(q=>{const src=P.vers.some(v=>(v.q||'')===q&&v.lang===aL)?null:P.vers.filter(v=>(v.q||'')===q).sort((a,b)=>prefIdx(a.lang)-prefIdx(b.lang))[0];
         return row('q'+(q||'-'),'apq',esc(qName(q))+(src?` <small style="opacity:.65">· Bild aus ${fl(src.lang)}${esc(langName(src.lang))}-Fassung</small>`:''),(pic.q||'')===q,`data-q="${q||'-'}"`)}).join('');
-      const ls=langsOf(it);if(ls.length>1)h+=`<h4>Sprache (Ton)</h4>`+ls.map(l=>{const same=pic.lang===l;const direct=P.vers.some(v=>v.lang===l&&(v.q||'')===(pic.q||''));const ok=same||direct||P.engine==='demo'||mixDirect()||(!ser&&!!prepared(it,l));
+      const ls=langsOf(it);if(ls.length>1)S.ton+=`<h4>Sprache</h4>`+ls.map(l=>{const same=pic.lang===l;const direct=P.vers.some(v=>v.lang===l&&(v.q||'')===(pic.q||''));const ok=same||direct||P.engine==='demo'||mixDirect()||(!ser&&!!prepared(it,l));
         const note=same||direct?'':ok?(!ser&&prepared(it,l)?' · Ton gespeichert':''):ser?' · in eigener Bildqualität':' · Ton wird einmal vorbereitet (Film stoppt kurz)';
         return row('l'+l,'apl',`${fl(l)}${esc(langName(l))}<small style="opacity:.65">${note}</small>`,aL===l,`data-l="${l}"`)}).join('')}
     if(!movieSplit&&!P.ep&&P.vers.length>1){const multi=uniq(P.vers.map(v=>v.lang)).length>1;const ord=P.vers.map((v,i)=>[v,i]).sort((a,b)=>prefIdx(a[0].lang)-prefIdx(b[0].lang)||QR[b[0].q]-QR[a[0].q]);
-      h+=`<h4>${multi?'Qualität & Sprachfassung':'Qualität'}</h4><p class="aph">Dein Internet: ${esc(BW.label())}. „Automatisch“ wählt die beste passende Qualität und schaltet bei Ruckeln runter.</p>`+ord.map(([v,i])=>row('v'+i,'apver',`${multi?(CBY[v.lang]&&CBY[v.lang].flag?CBY[v.lang].flag+' ':'')+esc(langName(v.lang))+' · ':''}${esc(qName(v.q))}${ord.filter(([x])=>x.lang===v.lang&&x.q===v.q).length>1?' <small style="opacity:.6">'+esc(String(v.name||'').slice(0,40))+'</small>':''}`,i===P.ver,`data-i="${i}"`)).join('')}
+      S[multi?'ton':'bild']+=`<h4>${multi?'Qualität & Sprachfassung':'Qualität'}</h4><p class="aph">Dein Internet: ${esc(BW.label())}. „Automatisch“ wählt die beste passende Qualität und schaltet bei Ruckeln runter.</p>`+ord.map(([v,i])=>row('v'+i,'apver',`${multi?(CBY[v.lang]&&CBY[v.lang].flag?CBY[v.lang].flag+' ':'')+esc(langName(v.lang))+' · ':''}${esc(qName(v.q))}${ord.filter(([x])=>x.lang===v.lang&&x.q===v.q).length>1?' <small style="opacity:.6">'+esc(String(v.name||'').slice(0,40))+'</small>':''}`,i===P.ver,`data-i="${i}"`)).join('')}
     if(!movieSplit&&!P.ep&&it.type!=='live'&&(nat||P.engine==='demo')&&langsOf(it).length>1){const vl=P.vers[P.ver].lang;const pic=P.vers[P.ver];
-      h+='<h4>Ton aus anderer Fassung</h4><p class="aph">Behält das Bild ('+esc(langName(vl))+' · '+esc(pic.q||'Standard')+') und nimmt nur den Ton einer anderen Sprachfassung.'+(!mixDirect()?' Dein Abo erlaubt nur 1 Verbindung: Der Ton wird deshalb einmal vorbereitet und auf dem Fire TV gespeichert.':'')+'</p>';
+      S.ton+='<h4>Ton aus anderer Fassung</h4><p class="aph">Behält das Bild ('+esc(langName(vl))+' · '+esc(pic.q||'Standard')+') und nimmt nur den Ton einer anderen Sprachfassung.'+(!mixDirect()?' Dein Abo erlaubt nur 1 Verbindung: Der Ton wird deshalb einmal vorbereitet und auf dem Fire TV gespeichert.':'')+'</p>';
       const have=nat?new Set(((P.ntracks().audio)||[]).filter(a=>!a.src).map(a=>nlang(a.lang))):new Set();
-      h+=row('m-1','apmix','Aus – Ton der Bild-Fassung',P.mix<0,'data-l=""')+langsOf(it).filter(l=>l!==vl&&(!have.has(C2L[l])||(P.mix>-1&&P.vers[P.mix].lang===l))).map(l=>{const fl=CBY[l]&&CBY[l].flag?CBY[l].flag+' ':'';
+      S.ton+=row('m-1','apmix','Aus – Ton der Bild-Fassung',P.mix<0,'data-l=""')+langsOf(it).filter(l=>l!==vl&&(!have.has(C2L[l])||(P.mix>-1&&P.vers[P.mix].lang===l))).map(l=>{const fl=CBY[l]&&CBY[l].flag?CBY[l].flag+' ':'';
         if(nat&&!mixDirect()&&!prepared(it,l))return row('p'+l,'apprep',`${fl}${esc(langName(l))}-Ton vorbereiten (Film wird kurz beendet)`,false,`data-l="${l}"`);
         return row('m'+l,'apmix',`${fl}${esc(langName(l))}-Ton zu diesem Bild${prepared(it,l)?' · gespeichert':''}`,P.mix>-1&&P.vers[P.mix].lang===l,`data-l="${l}"`)}).join('')}
     // Audio-Synchronisation: weit oben, damit man sie schnell findet
-    if(nat||P.engine==='demo'){const ms=P.sync();h+=`<h4>Ton verschieben (Synchronisation)</h4><p class="aph">Ton kommt zu früh? → „später“ (+). Ton hinkt hinterher? → „früher“ (−). Wird für diesen Titel gemerkt.</p>
+    if(nat||P.engine==='demo'){const ms=P.sync();S.sync+=`<h4>Ton verschieben</h4><p class="aph">Ton kommt zu früh? → „später“ (+). Ton hinkt hinterher? → „früher“ (−). Wird für diesen Titel gemerkt.</p>
       <div class="apsync"><button class="btn sm f" data-act="apsync" data-k="y1" data-d="-1000">−1 s</button><button class="btn sm f" data-act="apsync" data-k="y2" data-d="-500">−0,5</button><b id="apsync">${fmtSync(ms)}</b><button class="btn sm f" data-act="apsync" data-k="y3" data-d="500">+0,5</button><button class="btn sm f" data-act="apsync" data-k="y4" data-d="1000">+1 s</button></div>
       <div class="apsync"><button class="btn sm f" data-act="apsync" data-k="y5" data-d="-100">−0,1</button><button class="btn sm f" data-act="apsync" data-k="y6" data-d="100">+0,1</button><button class="btn sm f" data-act="apsync" data-k="y0" data-d="0">Zurücksetzen</button></div>
       ${P.mix>-1?`<p class="aph" style="margin-top:.4rem">Ton aus anderer Fassung – großer Versatz (z. B. andere Schnittfassung):</p><div class="apsync"><button class="btn sm f" data-act="apsync" data-k="z1" data-d="-60000">−1 min</button><button class="btn sm f" data-act="apsync" data-k="z2" data-d="-10000">−10 s</button><button class="btn sm f" data-act="apsync" data-k="z3" data-d="10000">+10 s</button><button class="btn sm f" data-act="apsync" data-k="z4" data-d="60000">+1 min</button></div>`:''}
       <p class="aph" style="margin-top:.2rem">− = Ton früher · + = Ton später · ${P.mix>-1?'bis ±10 Minuten':'bis ±10 s'}</p>`}
-    h+='<h4>Bildformat</h4>'+ASP.map(([m,l])=>row('ar'+m,'apasp',l,aspOf(it)===m,`data-m="${m}"`)).join('');
+    
     let au=[],tx=[];if(nat){const t=P.ntracks();au=dedupeAudio(t.audio||[]);tx=t.text||[]}else{au=P.tracks().map(t=>({g:t.i,t:0,label:t.name,sel:t.i===P.curTrack()}));if(P.hls&&P.hls.subtitleTracks)tx=P.hls.subtitleTracks.map((t,i)=>({g:i,t:0,label:t.name||t.lang||('Untertitel '+(i+1)),sel:P.hls.subtitleTrack===i}))}
-    h+='<h4>Tonspur</h4>'+(au.length?au.map(a=>row('a'+a.g+'_'+a.t,'apaud',esc(a.label)+(P.mix>-1?(a.src?' · Ton-Fassung':' · Bild-Fassung'):''),a.sel,`data-g="${a.g}" data-t="${a.t}"`)).join(''):'<p class="aph">Dieser Stream hat nur eine Tonspur. Andere Sprachen findest du oben unter „Qualität &amp; Sprachfassung“.</p>');
-    {const off=!tx.some(t=>t.sel);h+='<h4>Untertitel</h4>'+row('s-1','apsub','Aus',off,'data-g="-1" data-t="0"')+tx.map(t=>row('s'+t.g+'_'+t.t,'apsub',esc(t.label)+(P.subFile&&nlang(t.lang)===C2L[P.subFile.lang]?' · online geladen':''),t.sel,`data-g="${t.g}" data-t="${t.t}" data-l="${esc(t.lang||'')}"`)).join('');
-      if(it.type!=='live'&&nat){h+='<p class="aph" style="margin-top:.6rem">Weitere Untertitel online suchen:</p>'+SUBS.langs().map(l=>row('so'+l,'apsubo',`${fl(l)}${esc(langName(l))} suchen`,false,`data-l="${l}"`)).join('');
-        if(P.subRes)h+=(P.subRes.length?`<p class="aph">${esc(langName(P.subResL))} – passend zu deiner Fassung zuerst:</p>`+P.subRes.map((r,i)=>row('sf'+i,'apsubf',`${esc(r.name.slice(0,48)||'Untertitel '+(i+1))} <small style="opacity:.6">· ${nf(r.dl)}×</small>`,false,`data-i="${i}"`)).join(''):`<p class="aph">Keine ${esc(langName(P.subResL))}-Untertitel gefunden.</p>`)}}
-    h+='<h4>Untertitel-Aussehen</h4>'+subPrev('sm')+SUBST.map(([k,lab])=>row('st'+k,'apsty',`${lab}: <b>${esc(subOpt(k)[1])}</b> <small style="opacity:.6">› ändern</small>`,false,`data-s="${k}"`)).join('');
+    S.ton+='<h4>Tonspur</h4>'+(au.length?au.map(a=>row('a'+a.g+'_'+a.t,'apaud',esc(a.label)+(P.mix>-1?(a.src?' · Ton-Fassung':' · Bild-Fassung'):''),a.sel,`data-g="${a.g}" data-t="${a.t}"`)).join(''):'<p class="aph">Dieser Stream hat nur eine Tonspur. Andere Sprachen findest du oben.</p>');
+    {const off=!tx.some(t=>t.sel);S.sub+='<h4>Untertitel</h4>'+row('s-1','apsub','Aus',off,'data-g="-1" data-t="0"')+tx.map(t=>row('s'+t.g+'_'+t.t,'apsub',esc(t.label)+(P.subFile&&nlang(t.lang)===C2L[P.subFile.lang]?' · online geladen':''),t.sel,`data-g="${t.g}" data-t="${t.t}" data-l="${esc(t.lang||'')}"`)).join('');if(!tx.length)S.sub+='<p class="aph">Diese Fassung hat keine eingebauten Untertitel.</p>'}
+    S.sub+=`<button class="apo f apnav" data-act="aptab" data-k="tlook" data-t="look">${I.sub||''}<span>Aussehen ändern <small style="opacity:.6">· ${esc(subOpt('subSize')[1])} · ${esc(subOpt('subColor')[1])}</small></span><b>›</b></button>`;
+    S.look='<button class="apo f apnav" data-act="aptab" data-k="tback" data-t="sub"><b>‹</b><span>Zurück zu Untertitel</span></button><h4>Untertitel-Aussehen</h4>'+subPrev('sm')+SUBST.map(([k,lab])=>row('st'+k,'apsty',`${lab}: <b>${esc(subOpt(k)[1])}</b> <small style="opacity:.6">› ändern</small>`,false,`data-s="${k}"`)).join('');
+    // Reiter: Ton · Untertitel · Synchron · Bild – jeweils nur ein Bereich, kein langes Scrollen
+    const TABS=[['ton','Ton'],['sub','Untertitel'],['sync','Synchron'],['bild','Bild']].filter(([k])=>S[k]);
+    if(focus==='q')P.apTab='bild';else if(focus==='sf')P.apTab='sub';else if(!keep&&P.apTab==='look')P.apTab='sub';
+    if(!S[P.apTab]&&!(P.apTab==='look'&&S.sub))P.apTab=(TABS[0]||['ton'])[0];const cur=P.apTab==='look'?'sub':P.apTab;
+    h='<div class="aphead"><h3>Ton & Untertitel</h3></div><div class="aptabs">'+TABS.map(([k,l])=>`<button class="aptab f${k===cur?' on':''}" data-act="aptab" data-k="t${k}" data-t="${k}">${l}</button>`).join('')+'</div><div class="apbody">'+(S[P.apTab]||'')+'</div>';
     h+='<button class="btn sm f" data-act="apclose" data-k="x" style="margin-top:1rem">Schließen</button>';
-    d.innerHTML=h;if(!P.el)return;P.el.appendChild(d);const f=(focus==='sf'&&$('[data-k="sf0"]',d))||(fa&&$(`[data-k="${fa}"]`,d))||(focus==='q'&&$(`[data-k="v${P.ver}"]`,d))||$('.apo.on',d)||$('.f',d);if(keep&&old)d.scrollTop=old.scrollTop;if(f){f.focus({preventScroll:true});ensureVisible(f)}},
+    d.innerHTML=h;if(!P.el)return;P.el.appendChild(d);const f=(focus==='nav'&&$('.apbody .f',d))||(fa&&$(`[data-k="${fa}"]`,d))||(focus==='tab'&&$('.aptab.on',d))||(focus==='q'&&$(`[data-k="v${P.ver}"]`,d))||$('.apo.on',d)||$('.f',d);if(keep&&old)d.scrollTop=old.scrollTop;if(f){f.focus({preventScroll:true});ensureVisible(f)}},
   err(){if(!P.el)return;$$('.perr',P.el).forEach(x=>x.remove());const d=document.createElement('div');d.className='perr';d.innerHTML='<div><b>Stream lässt sich nicht abspielen.</b><br>Der Server antwortet nicht oder das Format wird hier nicht unterstützt. Auf dem Fire TV klappt es meist; sonst eine andere Qualität wählen.</div>';P.el.appendChild(d)},
   ui(){if(!P.el||!P.dur||!isFinite(P.dur)||P.it.type==='live')return;const p=clamp(P.pos/P.dur,0,1);const f=$('#pf'),k=$('#pk');if(f){f.style.width=p*100+'%';k.style.left=p*100+'%';$('#tc').textContent=fmtT(P.pos);$('#tr').textContent='-'+fmtT(P.dur-P.pos)}const b=$('#ppb');if(b)b.innerHTML=P.playing?I.pause:I.play},
   // Untertitel der gewünschten Sprache: ist keiner im Stream, automatisch online suchen und dazuladen
-  autoSub(){if(P.engine!=='nat'||!P.it||P.it.type==='live'||!P.subWant||P.subWant==='off'||P.subTried||P.subFile)return;const t=P.ntracks().text||[];const want=C2L[P.subWant];if(t.some(x=>nlang(x.lang)===want))return;P.subTried=1;
+  autoSub(){return;if(P.engine!=='nat'||!P.it||P.it.type==='live'||!P.subWant||P.subWant==='off'||P.subTried||P.subFile)return;const t=P.ntracks().text||[];const want=C2L[P.subWant];if(t.some(x=>nlang(x.lang)===want))return;P.subTried=1;
     const it=P.it,l=P.subWant;SUBS.search(it,P.ep,l).then(r=>{if(!P.el||P.it!==it)return;if(!r.length){toast('Keine '+langName(l)+'-Untertitel gefunden');return}return SUBS.dl(r[0]).then(path=>{if(P.el&&P.it===it){P.applySub(path,l);toast(langName(l)+'-Untertitel geladen')}})}).catch(()=>{})},
   applySub(path,l){P.subFile={path,lang:l};P.subWant=l;if(P.engine!=='nat'||!P.cur)return;P.startPos=P.pos;P.load(P.cur.url,P.cur.alt)},
   // Ruckelt es mehrmals kurz hintereinander, automatisch eine Qualitätsstufe runter (nur bei „Automatisch“)
@@ -2125,10 +2164,11 @@ const P={
   ended(){P.save();const nx=PS('autonext')?P.nextEp():null;if(nx){toast('Nächste Folge startet');P.open(P.it,{ep:nx})}else P.close()},
   logEnd(){const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}},
   after(it){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?`#main [data-id="${it.id}"]`:null)},
-  close(silent){if(!P.el)return;clearTimeout(P.skTm);P.skT=null;P.skN=0;P.save();if(P.bwMax>2e6&&Date.now()-P.start>30000)BW.note(P.bwMax/1e6,'Wiedergabe');P.bwMax=0;P._bt=[];clearInterval(P.tick);clearInterval(P.saveT);const pip=!silent&&P.engine==='nat'&&P.it&&P.it.type==='live'&&APP.view==='live'&&!APP.modal&&PS('livePip')!==0&&!!(window.NFK&&NFK.vMini);if(P.engine==='nat'){if(pip)APP.pip={it:P.it};else NFK.vCmd('stop',0);document.documentElement.classList.remove('vidmode')}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
+  close(silent){if(!P.el)return;clearTimeout(P.skTm);P.skT=null;P.skN=0;P.save();if(P.bwMax>2e6&&Date.now()-P.start>30000)BW.note(P.bwMax/1e6,'Wiedergabe');P.bwMax=0;P._bt=[];clearInterval(P.tick);clearInterval(P.saveT);const pip=!silent&&P.engine==='nat'&&P.it&&P.it.type==='live'&&APP.view==='live'&&!APP.modal&&PS('livePip')!==0&&!!(window.NFK&&NFK.vMini);if(P.engine==='nat'){if(pip){APP.pip={it:P.it};const c0=P.cur&&P.cur.url;const v0=P.vers&&P.vers[P.ver];if(c0&&v0&&v0.src&&v0.src.url!==c0)APP.pip.capped={url:c0}}else NFK.vCmd('stop',0);const h0=document.documentElement;h0.classList.remove('vidmode','vidin');if(pip){h0.classList.add('vidback');setTimeout(()=>h0.classList.remove('vidback'),320)}}P.hls&&P.hls.destroy();P.hls=null;if(P.v){P.v.pause();P.v.removeAttribute('src');P.v.load()}
     const it=P.it;if(it&&it.type!=='live'&&P.dur){const w=P.pos-P.startPos,pct=P.pos/P.dur;if(pct>.9)logEvent(it,'finish');else if(P.startPos<P.dur*.05&&pct<.1&&w<(P.demo?60*12:600))logEvent(it,'abandon');else logEvent(it,'progress',pct)}
     P.el.remove();P.el=null;P.v=null;P.triedAlt=0;if(UPD.info&&!UPD.shownAfter){UPD.shownAfter=1;setTimeout(()=>UPD.show(),800)}
-    if(!silent){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?(APP.pip?'#pipbox':`#main [data-id="${it.id}"]`):null)}},
+    if(!silent&&pip&&it&&pipBack(it))return;
+    if(!silent){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?(APP.pip?`#chl [data-id="${it.id}"]`:`#main [data-id="${it.id}"]`):null)}},
   chan(d){const it=P.it;const list=chanList(it);const i=list.indexOf(it);const n=list[(i+d+list.length)%list.length];if(n&&n!==it){P.open(n);toast(n.title)}},
 };
 
@@ -2190,17 +2230,34 @@ function cprevSync(){const p=APP.pip;if(!p||!p.vod||P.el)return;const c=p.card;i
   if(r.width<10||r.bottom<0||r.top>H){pipStop();return}NFK.vMini(JSON.stringify({x:0,y:0,w:1,h:1,fx:r.left/W,fy:r.top/H,fw:r.width/W,fh:r.height/H}))}
 function pipStop(keepNative){if(!APP.pip)return;if(APP.pip.vod){try{const st=JSON.parse(NFK.vState()||'{}');if(st.pos>3000&&st.dur>0){P.it=APP.pip.it;P.ep=APP.pip.ep;P.pos=st.pos/1000;P.dur=st.dur/1000;P.save()}}catch(e){}if(APP.pip.card)APP.pip.card.classList.remove('cprev');if(!P.el){P.it=null;P.ep=null}}try{NFK.vMini('');if(!keepNative)NFK.vCmd('stop',0)}catch(e){}APP.pip=null;document.documentElement.classList.remove('pip');const pb=$('#pipbox');if(pb&&!keepNative)pb.innerHTML='<span class="pipidle"><span>▶</span>Sender auswählen und OK drücken</span>';$$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'))}
 // Sender in der Liste ausgewählt: erst im Mini-Fenster abspielen (nochmal OK = Vollbild)
-function pipPlay(it,btn){const v=curVer(it);if(!v||!v.src||!v.src.url){P.open(it);return}pushRecentCh(it.id);
-  const pref=(prof().countries||[]).flatMap(c=>(LANG[c]||[]).slice(1));APP.pip={it};document.documentElement.classList.add('pip');
+function pipPlay(it,btn){let v=curVer(it);if(!v||!v.src||!v.src.url){P.open(it);return}pushRecentCh(it.id);
+  // 4K/8K im kleinen Fenster überfordert den Stick – dort die beste Full-HD-Fassung, im Vollbild dann wieder 4K
+  let capped=null;if(QR[v.q||'']>3){const alt=sortedVersions(it).filter(x=>x.src&&x.src.url&&QR[x.q||'']<=3&&QR[x.q||'']>=2).sort((a,b)=>QR[b.q||'']-QR[a.q||''])[0];if(alt){capped={url:alt.src.url};v=alt}}
+  const pref=(prof().countries||[]).flatMap(c=>(LANG[c]||[]).slice(1));APP.pip={it,capped};document.documentElement.classList.add('pip');
   const lab=`<span class="piplab"><b>LIVE</b> <span dir="auto">${esc(it.title)}</span></span>`;let pb=$('#pipbox');
   if(pb)pb.innerHTML=lab;liveInfo(it);
   $$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'));btn&&btn.classList.add('playing');
-  requestAnimationFrame(()=>{if(!APP.pip||APP.pip.it!==it)return;NFK.vOpen(JSON.stringify({url:v.src.url,start:0,langs:PS('audio')==='orig'?[]:pref,subs:[],subsOn:false,aspect:aspOf(it),subSize:subStyleObj().size,subStyle:subStyleObj(),delay:0}));pipSync()});
+  requestAnimationFrame(()=>{if(!APP.pip||APP.pip.it!==it)return;const rc=pipRect();NFK.vOpen(JSON.stringify(Object.assign({url:v.src.url,start:0,langs:PS('audio')==='orig'?[]:pref,subs:[],subsOn:false,aspect:aspOf(it),subSize:subStyleObj().size,subStyle:subStyleObj(),delay:0},rc&&natV()>=28?{mini:rc}:{})));pipSync()});
   toast('Nochmal OK = Vollbild')}
 // Mini-Fenster folgt dem Rahmen auch beim Scrollen
 {let pq=0;const f=()=>{if(pq||!APP.pip||P.el)return;pq=requestAnimationFrame(()=>{pq=0;pipSync()})};document.addEventListener('scroll',f,true);addEventListener('resize',f);document.addEventListener('focusin',f)}
-function pipSync(){if(!APP.pip||P.el)return;if(APP.pip.vod){cprevSync();return}const b=APP.view==='live'&&$('#pipbox');if(!b){pipStop();return}document.documentElement.classList.add('pip');const r=b.getBoundingClientRect(),d=window.devicePixelRatio||1;
-  const W=innerWidth,H=innerHeight;NFK.vMini(JSON.stringify({x:Math.round(r.left*d)+2,y:Math.round(r.top*d)+2,w:Math.round(r.width*d)-4,h:Math.round(r.height*d)-4,fx:(r.left+2)/W,fy:(r.top+2)/H,fw:(r.width-4)/W,fh:(r.height-4)/H}))}
+function pipRect(extra){const b=$('#pipbox');if(!b)return null;const r=b.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=innerWidth,H=innerHeight;
+  // Loch im Hintergrund genau dort, wo das Video liegt (sonst würde der farbige Hintergrund das Bild verdecken)
+  const lv=b.closest('.lv3');if(lv){const L=lv.getBoundingClientRect();lv.style.setProperty('--hx1',(r.left-L.left+2)+'px');lv.style.setProperty('--hy1',(r.top-L.top+2)+'px');lv.style.setProperty('--hx2',(r.right-L.left-2)+'px');lv.style.setProperty('--hy2',(r.bottom-L.top-2)+'px')}
+  return Object.assign({x:Math.round(r.left*d)+2,y:Math.round(r.top*d)+2,w:Math.round(r.width*d)-4,h:Math.round(r.height*d)-4,fx:(r.left+2)/W,fy:(r.top+2)/H,fw:(r.width-4)/W,fh:(r.height-4)/H},extra||{})}
+const natV=()=>window.NFK&&NFK.nativeVersion?NFK.nativeVersion():0;
+function pipSync(anim){if(!APP.pip||P.el)return;if(APP.pip.vod){cprevSync();return}const rc=APP.view==='live'&&pipRect(anim&&natV()>=28?{anim:1}:null);if(!rc){pipStop();return}document.documentElement.classList.add('pip');NFK.vMini(JSON.stringify(rc))}
+// Wächter: das Live-Bild darf nie im Vollbild hinter der Liste weiterlaufen (kostet viel Leistung)
+setInterval(()=>{if(APP.pip&&!APP.pip.vod&&!P.el&&APP.view==='live'&&window.NFK&&NFK.vMini)pipSync()},1500);
+// Mini-Fenster → Vollbild: Liste blendet aus, das Bild wächst aus dem Fenster heraus
+function pipToFull(upg){const h=document.documentElement;h.classList.add('vidin');const fin=()=>{h.classList.remove('vidin','pip');if(P.el)h.classList.add('vidmode');if(upg&&P.el)P.load(upg.url,upg.alt)};
+  if(natV()>=28){NFK.vMini(JSON.stringify({full:1,anim:1}));setTimeout(fin,230)}else setTimeout(()=>{NFK.vMini('');fin()},170)}
+// Vollbild → Mini-Fenster: Liste bleibt wie sie war (kein Neuaufbau), Fokus auf dem laufenden Sender
+function pipBack(it){if(APP.view!=='live'||!$('#chl')||!$('#pipbox'))return false;const h=document.documentElement;
+  const row=$(`#chl [data-id="${CSS.escape(it.id)}"]`);if(!row)return false;
+  $('#pipbox').innerHTML=`<span class="piplab"><b>LIVE</b> <span dir="auto">${esc(it.title)}</span></span>`;
+  $$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'));row.classList.add('playing');liveInfo(it);
+  h.classList.add('pip','vidback');pipSync(true);row.focus({preventScroll:true});row.scrollIntoView({block:'nearest'});setTimeout(()=>h.classList.remove('vidback'),320);return true}
 // ---------- Weitermachen nach einem Neustart der Oberfläche ----------
 const NOW={save(){try{LS.set('nfk.now',{t:Date.now(),pid:APP.pid,v:APP.view,a:APP.args,play:P.el&&P.it&&!P.demo?{id:P.it.id,ep:P.ep?P.ep.id:null}:null})}catch(e){}}};
 window.nfkTrim=lvl=>{META.mem.clear();TRL.mem.clear();APP._tc=null;APP._pool=null;for(const it of APP.items){if(it._f){it._f=null;it._fn=null}}if(lvl>=10&&P.el)TR.stop()};
@@ -2457,6 +2514,7 @@ document.addEventListener('click',e=>{
    case'pname':{const p=prof();const n=$('#pname').value.trim();if(n){p.name=n;saveProfiles();renderApp('[data-act="pname"]');toast('Name gespeichert')}break}
    case'pcolor':{const p=prof();p.color=b.dataset.c;saveProfiles();renderApp(`[data-act="pcolor"][data-c="${b.dataset.c}"]`);break}
    case'apanel':P.panel();break;
+   case'aptab':{const t=b.dataset.t;const nav=b.classList.contains('apnav');P.apTab=t;P.panel(true,nav?'nav':'tab');break}
    case'qpanel':P.panel(false,'q');break;
    case'pipfull':if(APP.pip)P.open(APP.pip.it,{fromPip:1});else if(APP._lfoc&&window.NFK&&NFK.vMini)pipPlay(APP._lfoc);else if(APP._lfoc)P.open(APP._lfoc);break;
    case'iset':{const k=b.dataset.k;INTRO.set(k,INTRO.cfg()[k]?0:1);renderApp(`[data-act="iset"][data-k="${k}"]`);toast('Gespeichert');break}

@@ -1,3 +1,12 @@
+Profilfarben: runde Kreise statt verzerrter Ovale
+Player: „Ton & Untertitel“ in Reiter aufgeteilt (Ton · Untertitel · Synchron · Bild) – kein langes Runterscrollen mehr; Untertitel-Aussehen unter Untertitel → „Aussehen ändern“
+Player: Bildformat und die unzuverlässige Online-Untertitelsuche aus dem Menü entfernt (Bildformat bleibt unten in der Leiste)
+Live: Bild lief manchmal im Vollbild hinter der Liste weiter (deshalb hing Live) – jetzt immer nur im Mini-Fenster, Wächter prüft ständig nach
+Live: flüssiger Übergang – das Bild wächst aus dem Mini-Fenster ins Vollbild und schrumpft bei Zurück wieder hinein, ohne dass Liste oder Kästchen aufblitzen
+Live: nach Zurück aus dem Vollbild steht die Auswahl auf dem laufenden Sender (nicht mehr auf dem Mini-Bild); Liste wird nicht neu aufgebaut
+Live: 4K-Sender laufen im Mini-Fenster in Full HD (flüssiger), im Vollbild wieder in 4K
+Live: neues, lebendigeres Design mit Farbverläufen, Kartenflächen und rot markiertem laufenden Sender; Pin-Symbol entfernt
+Trailer: schwarze Kino-Balken im Video werden erkannt und weggezoomt – keine schwarze Linie mehr im Bild
 Behoben: Beim Blättern sprang der Fokus plötzlich in die Menüleiste links (wenn ein Trailer startete)
 Trailer: Schrift liegt jetzt sauber über dem Video (keine Linie mehr durch Beschreibung und Bewertungen)
 Weiterschauen-Vorschau: Trailer-Fenster kann der App nicht mehr die Fernbedienung wegnehmen; bei Fehlern zweiter Versuch und Hinweis

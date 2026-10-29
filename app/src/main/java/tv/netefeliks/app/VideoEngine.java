@@ -192,6 +192,7 @@ class VideoEngine {
             lastCfg = c;
             miniOff();
             if (frame != null) frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+            if (c.has("mini") && player != null) { try { miniApply(c.getJSONObject("mini")); } catch (Exception ignored) { } }
             String[] langs = arr(c.optJSONArray("langs"));
             String[] subLangs = arr(c.optJSONArray("subs"));
             boolean subsOn = c.optBoolean("subsOn", false);
@@ -218,7 +219,7 @@ class VideoEngine {
             if (st != null) applySubStyle(st);
             subs.setCues(new ArrayList<androidx.media3.common.text.Cue>());
             surface.setVisibility(View.VISIBLE);
-            subs.setVisibility(View.VISIBLE);
+            subs.setVisibility(miniOn ? View.GONE : View.VISIBLE);
             long start = Math.max(0, c.optLong("start", 0) - clipV);
             MediaItem main = item(c.getString("url"), c.optString("subUrl", ""), c.optString("subLang", ""));
             if (audioUrl.length() > 0) {
@@ -277,30 +278,67 @@ class VideoEngine {
                 try {
                     if (json == null || json.length() == 0) { miniOff(); return; }
                     JSONObject c = new JSONObject(json);
-                    ViewGroup root = (ViewGroup) frame.getParent();
-                    int[] r = rect(c, root);
-                    if (miniBox == null) {
-                        miniBox = new FrameLayout(act);
-                        miniBox.setBackgroundColor(0xFF000000);
-                        miniAr = new AspectRatioFrameLayout(act);
-                        miniAr.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-                        miniTex = new TextureView(act);
-                        miniAr.addView(miniTex, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                        miniBox.addView(miniAr, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
-                        root.addView(miniBox, root.indexOfChild(frame) + 1);
-                    }
-                    miniAr.setAspectRatio(videoRatio);
-                    FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, r[2]), Math.max(1, r[3]), Gravity.TOP | Gravity.LEFT);
-                    lp.leftMargin = r[0];
-                    lp.topMargin = r[1];
-                    miniBox.setLayoutParams(lp);
-                    miniBox.setVisibility(View.VISIBLE);
-                    if (!miniOn) { player.setVideoTextureView(miniTex); miniOn = true; }
-                    frame.setVisibility(View.INVISIBLE);
-                    subs.setVisibility(View.GONE);
+                    if (c.optBoolean("full")) { if (c.optBoolean("anim")) miniGrow(); else miniOff(); return; }
+                    miniApply(c);
                 } catch (Exception ignored) { }
             }
         });
+    }
+
+    private int[] miniRect;
+
+    /** Mini-Fenster an diese Stelle legen. Mit "anim" schrumpft das Bild aus dem Vollbild hinein. */
+    private void miniApply(JSONObject c) {
+        ViewGroup root = (ViewGroup) frame.getParent();
+        int[] r = rect(c, root);
+        // gleiche Stelle wie schon: nichts tun (die App prüft regelmäßig nach)
+        if (miniOn && miniBox != null && miniBox.getVisibility() == View.VISIBLE && miniRect != null && java.util.Arrays.equals(r, miniRect)) return;
+        if (miniBox == null) {
+            miniBox = new FrameLayout(act);
+            miniBox.setBackgroundColor(0xFF000000);
+            miniAr = new AspectRatioFrameLayout(act);
+            miniAr.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            miniTex = new TextureView(act);
+            miniAr.addView(miniTex, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            miniBox.addView(miniAr, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+            root.addView(miniBox, root.indexOfChild(frame) + 1);
+        }
+        boolean shrink = c.optBoolean("anim") && !miniOn && frame.getVisibility() == View.VISIBLE && r[2] > 0 && r[3] > 0;
+        miniAr.setAspectRatio(videoRatio);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, r[2]), Math.max(1, r[3]), Gravity.TOP | Gravity.LEFT);
+        lp.leftMargin = r[0];
+        lp.topMargin = r[1];
+        miniBox.animate().cancel();
+        miniBox.setLayoutParams(lp);
+        miniRect = r;
+        miniBox.setVisibility(View.VISIBLE);
+        if (!miniOn) { player.setVideoTextureView(miniTex); miniOn = true; }
+        frame.setVisibility(View.INVISIBLE);
+        subs.setVisibility(View.GONE);
+        if (shrink) {
+            float W = root.getWidth(), H = root.getHeight();
+            miniBox.setPivotX(0); miniBox.setPivotY(0);
+            miniBox.setScaleX(W / r[2]); miniBox.setScaleY(H / r[3]);
+            miniBox.setTranslationX(-r[0]); miniBox.setTranslationY(-r[1]);
+            miniBox.animate().scaleX(1f).scaleY(1f).translationX(0f).translationY(0f).setDuration(260)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).start();
+        } else {
+            miniBox.setScaleX(1f); miniBox.setScaleY(1f); miniBox.setTranslationX(0f); miniBox.setTranslationY(0f);
+        }
+    }
+
+    /** Mini-Fenster wächst zum Vollbild, danach übernimmt die normale Bildfläche. */
+    private void miniGrow() {
+        if (!miniOn || miniBox == null || miniBox.getVisibility() != View.VISIBLE || miniRect == null) { miniOff(); return; }
+        ViewGroup root = (ViewGroup) frame.getParent();
+        float W = root.getWidth(), H = root.getHeight();
+        int[] r = miniRect;
+        if (W <= 0 || H <= 0 || r[2] <= 0 || r[3] <= 0) { miniOff(); return; }
+        miniBox.animate().cancel();
+        miniBox.setPivotX(0); miniBox.setPivotY(0);
+        miniBox.animate().scaleX(W / r[2]).scaleY(H / r[3]).translationX(-r[0]).translationY(-r[1]).setDuration(220)
+                .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator())
+                .withEndAction(new Runnable() { @Override public void run() { if (miniOn) miniOff(); } }).start();
     }
 
     /** Rechteck in Bildschirm-Pixeln: bevorzugt Anteile (fx…), sonst alte Pixelangaben. */
@@ -316,7 +354,12 @@ class VideoEngine {
     private void miniOff() {
         if (miniOn && player != null) player.setVideoSurfaceView(surface);
         miniOn = false;
-        if (miniBox != null) miniBox.setVisibility(View.GONE);
+        miniRect = null;
+        if (miniBox != null) {
+            miniBox.animate().cancel();
+            miniBox.setVisibility(View.GONE);
+            miniBox.setScaleX(1f); miniBox.setScaleY(1f); miniBox.setTranslationX(0f); miniBox.setTranslationY(0f);
+        }
         if (frame != null) {
             frame.setVisibility(View.VISIBLE);
             frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
