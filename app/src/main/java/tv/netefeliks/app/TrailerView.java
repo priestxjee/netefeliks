@@ -112,6 +112,7 @@ class TrailerView {
             yt.setBackgroundColor(0xFF000000);
             yt.setFocusable(false);
             yt.setFocusableInTouchMode(false);
+            box.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
             WebSettings s = yt.getSettings();
             s.setJavaScriptEnabled(true);
             s.setDomStorageEnabled(true);
@@ -133,11 +134,22 @@ class TrailerView {
                 + "</script><script src='https://www.youtube.com/iframe_api'></script></body></html>";
         yt.loadDataWithBaseURL("https://www.netefeliks.app/", html, "text/html", "utf-8", null);
         events.emit("start yt " + r[2] + "x" + r[3]);
+        keepAppFocus();
+    }
+
+    /** Die Fernbedienung muss immer bei der App-Oberfläche bleiben (oberstes Element), nie beim Trailer-Fenster. */
+    private void keepAppFocus() {
+        final View top = root.getChildAt(root.getChildCount() - 1);
+        if (top == null || top == box) return;
+        top.requestFocus();
+        top.postDelayed(new Runnable() { @Override public void run() { if (!top.hasFocus()) top.requestFocus(); } }, 800);
+        top.postDelayed(new Runnable() { @Override public void run() { if (!top.hasFocus()) top.requestFocus(); } }, 2500);
     }
 
     private void stopMain() {
         if (yt != null) { yt.loadUrl("about:blank"); yt.setVisibility(View.GONE); }
         if (player != null) { player.release(); player = null; }   // Arbeitsspeicher sofort freigeben
+        if (box != null) keepAppFocus();
         if (box != null) box.setVisibility(View.GONE);
     }
 }

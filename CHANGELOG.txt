@@ -1,3 +1,5 @@
+Trailer: Schrift liegt jetzt sauber über dem Video (keine Linie mehr durch Beschreibung und Bewertungen)
+Weiterschauen-Vorschau: Trailer-Fenster kann der App nicht mehr die Fernbedienung wegnehmen; bei Fehlern zweiter Versuch und Hinweis
 Trailer-Vorschau: oben ausgerichtet (nichts mehr oben abgeschnitten) und weicher Übergang zur Schrift
 Weiterschauen-Vorschau flüssiger und nicht mehr dunkel: läuft klein in Full HD, bei OK sofort wieder volle Qualität an derselben Stelle; kein Trailer-Laden nebenbei
 Trailer von YouTube laufen jetzt in einem eigenen kleinen Fenster mit Bild

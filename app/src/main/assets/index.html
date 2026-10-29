@@ -78,7 +78,7 @@ video.yt{transform:none;object-fit:cover;background:transparent}
 .t10 .card{position:relative}
 .vtitle.sm{font-size:1.9rem;margin-top:.3rem}
 .vtitle small{font:600 .9rem var(--f-body);color:var(--mute);letter-spacing:0;margin-left:.4rem}
-.spot .info{position:absolute;left:var(--gut);bottom:1rem;width:min(42rem,58%);display:flex;flex-direction:column;gap:.6rem}
+.spot .info{position:absolute;left:var(--gut);bottom:1rem;width:min(42rem,58%);display:flex;flex-direction:column;gap:.6rem;z-index:4}
 .s-title{margin:0;font-size:3.3rem;line-height:.98;font-weight:400;text-wrap:balance;text-shadow:0 4px 30px rgba(0,0,0,.6);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .s-plot{margin:0;color:#ddd5d2;font-size:1.02rem;line-height:1.5;max-width:38rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .s-why{font-size:.9rem;color:var(--mute);font-weight:600}
@@ -2013,7 +2013,7 @@ const P={
     // Weiterschauen-Vorschau: läuft klein in der Karte weiter (OK = Vollbild, ohne Neustart)
     if(o.preview){if(P.engine!=='nat'||!o.card)return;APP.pip={it,ep,vod:1,card:o.card};P.it=it;P.ep=ep;P.startPos=startAt;P.pos=startAt;
       {const cur=P.vers[P.ver];if(cur&&QR[cur.q||'']>3){let bi=-1;P.vers.forEach((v,i)=>{if(v.lang===cur.lang&&QR[v.q||'']<=3&&(bi<0||QR[v.q||'']>QR[P.vers[bi].q||'']))bi=i});if(bi>-1){APP.pip.full=P.ver;P.ver=bi}}}
-      document.documentElement.classList.add('pip');o.card.classList.add('cprev');if(ep||APP.pip.full!=null)P.reload();else{const s0=P.vers[P.ver].src;P.load(s0.url,s0.alt)}setTimeout(cprevSync,60);return}
+      TRL.log('Weiterschauen-Vorschau: „'+it.title+'“ ab '+fmtT(startAt)+' · '+qName((P.vers[P.ver]||{}).q));document.documentElement.classList.add('pip');o.card.classList.add('cprev');if(ep||APP.pip.full!=null)P.reload();else{const s0=P.vers[P.ver].src;P.load(s0.url,s0.alt)}setTimeout(cprevSync,60);return}
     if(P.engine==='nat'){el.classList.add('nat');document.documentElement.classList.add('vidmode')}
     if(P.mix>-1)sub=(sub?sub+' · ':'')+mixLabel();
     el.innerHTML=`${P.demo?`<div class="sim">${it.type==='live'?`<div class="simlogo">${logoHTML(it)}</div>`:artHTML(ep?{...it,title:ep.title}:it,true)}<span class="lab">Demo-Wiedergabe${it.type==='live'?'':' · 60× schneller, damit du den Verlauf siehst'}</span></div>`:P.engine==='nat'?'<div class="pspin"><div class="spin"></div></div>':'<video id="vid" playsinline autoplay></video>'}
@@ -2186,7 +2186,7 @@ const TL={cache:LS.get('nfk.tl',{})||{},busy:new Set(),
 new MutationObserver(()=>{clearTimeout(TL._mt);TL._mt=setTimeout(TL.fix,180)}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 // ---------- Live als Mini-Fenster weiterlaufen lassen ----------
 // Vorschau-Fenster genau auf die Karte legen; Fokus weg = Vorschau beenden (Fortschritt wird gespeichert)
-function cprevSync(){const p=APP.pip;if(!p||!p.vod||P.el)return;const c=p.card;if(!c||!c.isConnected||document.activeElement!==c){pipStop();return}const r=c.getBoundingClientRect(),W=innerWidth,H=innerHeight;
+function cprevSync(){const p=APP.pip;if(!p||!p.vod||P.el)return;const c=p.card;if(!c||!c.isConnected||document.activeElement!==c){TRL.log('Vorschau beendet ('+(!c||!c.isConnected?'Karte neu gezeichnet':'Fokus weg')+')');pipStop();return}const r=c.getBoundingClientRect(),W=innerWidth,H=innerHeight;
   if(r.width<10||r.bottom<0||r.top>H){pipStop();return}NFK.vMini(JSON.stringify({x:0,y:0,w:1,h:1,fx:r.left/W,fy:r.top/H,fw:r.width/W,fh:r.height/H}))}
 function pipStop(keepNative){if(!APP.pip)return;if(APP.pip.vod){try{const st=JSON.parse(NFK.vState()||'{}');if(st.pos>3000&&st.dur>0){P.it=APP.pip.it;P.ep=APP.pip.ep;P.pos=st.pos/1000;P.dur=st.dur/1000;P.save()}}catch(e){}if(APP.pip.card)APP.pip.card.classList.remove('cprev');if(!P.el){P.it=null;P.ep=null}}try{NFK.vMini('');if(!keepNative)NFK.vCmd('stop',0)}catch(e){}APP.pip=null;document.documentElement.classList.remove('pip');const pb=$('#pipbox');if(pb&&!keepNative)pb.innerHTML='<span class="pipidle"><span>▶</span>Sender auswählen und OK drücken</span>';$$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'))}
 // Sender in der Liste ausgewählt: erst im Mini-Fenster abspielen (nochmal OK = Vollbild)
@@ -2255,7 +2255,10 @@ window.nfkA=(ev,key,arg)=>{const r=APP.prepRun;
   if(ev==='error'||ev==='cancel'){APP.prepRun=null;prepPill();toast(ev==='cancel'?'Vorbereiten abgebrochen':'Ton vorbereiten fehlgeschlagen: '+arg)}};
 function chanList(it){if(APP.view==='live'){const g=APP.args.g||'__all',lv=livePool(APP.args.all);if(g==='__fav')return(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(Boolean);return(g==='__all'?lv:g==='__sport'?lv.filter(c=>c.sport):g.startsWith('__c:')?lv.filter(c=>c.country===g.slice(4)):lv.filter(c=>c.groups.includes(g)))}return APP.view==='live'&&APP.args.g?(APP.args.g==='__sport'?pool('live').filter(c=>c.sport):APP.args.g==='__fav'?getRecentCh().map(id=>APP.byId.get(id)).filter(Boolean):pool('live').filter(c=>c.groups.includes(APP.args.g))):pool('live').filter(c=>c.groups.includes(it.group))}
 // Ereignisse des eingebetteten Android-Players
-window.nfkV=(ev,arg)=>{if(!P.el||P.engine!=='nat')return;
+window.nfkV=(ev,arg)=>{
+  // Fehler während der Weiterschauen-Vorschau: erst die Originalfassung versuchen, sonst Hinweis
+  if(!P.el&&APP.pip&&APP.pip.vod&&ev==='error'){const p=APP.pip;TRL.log('Vorschau-Fehler: '+String(arg||'').slice(0,100));if(p.full!=null&&!p.retry){p.retry=1;P.ver=p.full;p.full=null;P.reload();return}toast('Vorschau nicht möglich: '+String(arg||'').slice(0,80));pipStop();return}
+  if(!P.el||P.engine!=='nat')return;
   if(ev==='ended'){P.ended();return}
   if(ev==='tracks'){if($('.ap'))P.panel(true);P.autoSub();return}
   if(ev==='error'){const c=P.cur||{};P.tried.add(c.url);
