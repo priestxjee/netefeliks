@@ -2655,7 +2655,9 @@ function navMove(dir){
   if(!c.length){if(dir==='up'&&APP.view==='home'&&cur.closest('#rows')&&(APP.hero||[]).length&&PS('hero')){showHero(APP.heroI||0,'1');$('#rows').scrollTo({top:0})}return}
   // Links/Rechts: zuerst in die Spalte daneben (Kategorien, Einstellungs-Menü …), dort auf den aktiven Eintrag –
   // erst wenn es keine gibt, weiter zur Menüleiste
-  if(H&&!inRail){const main0=$('#main')||document.body;const cols=new Map();
+  // Nachbarn in derselben Zeile (z. B. Filter-Chips, Knöpfe nebeneinander) haben Vorrang
+  const sibRow=H&&c.some(o=>o.ov&&o.el.parentElement===cur.parentElement);
+  if(H&&!inRail&&!sibRow){const main0=$('#main')||document.body;const cols=new Map();
     for(const o of c){if(o.el.closest('.rail'))continue;let p=o.el.parentElement,col=null;
       while(p&&p!==main0&&p!==document.body){const pr=p.getBoundingClientRect();if(dir==='left'?pr.right<=r.left+4:pr.left>=r.right-4)col=p;else break;p=p.parentElement}
       if(col){if(!cols.has(col))cols.set(col,[]);cols.get(col).push(o)}}

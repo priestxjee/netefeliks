@@ -1,3 +1,4 @@
+Steuerung: Links/Rechts zwischen Filter-Chips und Knöpfen in einer Zeile bleibt in der Zeile (z. B. Musik: Deutschland → Iran), erst am Anfang der Zeile geht es in die Kategorien
 Menüleiste: nach links landet man immer auf dem Bereich, in dem man gerade ist (z. B. Startseite), nicht auf dem Eintrag, der zufällig auf gleicher Höhe liegt
 Live: neue Kategorie „♪ Musik“ – alle Musiksender (MTV, Deluxe Music, PMC, Avang, Radio Javan …) und Radiosender aus deinen Ländern, filterbar nach Land und „Radio“
 Top 10: immer 10 Titel – fehlen Chart-Titel in deinem Abo, wird mit den beliebtesten aktuellen Titeln aufgefüllt
