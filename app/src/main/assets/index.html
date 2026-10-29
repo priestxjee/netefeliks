@@ -1626,6 +1626,8 @@ const TOP={data:LS.get('nfk.top2',null),busy:0,
     const out=[],src=[];const pick=(c,y)=>{c=c.filter(it=>!out.includes(it));if(y)c=c.filter(it=>!it.year||Math.abs(it.year-y)<=1);return c.sort((a,b)=>(b.year||0)-(a.year||0)||QR[b.q]-QR[a.q])[0]};
     for(const e of(d.imdb&&d.imdb[ty])||[]){if(ty==='movie'&&e.tv)continue;const c=pick([...(idx.get('#'+e.id)||[]),...e.t.flatMap(t=>idx.get(mkey(t))||[])],e.y);if(c){out.push(c);src.push('IMDb-Platz '+e.r)}if(out.length>=10)break}
     if(out.length<10)for(const e of(d.nfx&&d.nfx[ty])||[]){const c=pick(idx.get(mkey(e.t))||[]);if(c){out.push(c);src.push('Netflix-Platz '+e.r)}if(out.length>=10)break}
+    // nicht genug Chart-Titel in deinem Abo: mit den beliebtesten aktuellen Titeln auf 10 auffüllen
+    if(out.length>=3&&out.length<10){const yr=new Date().getFullYear();const pl=pool(ty);for(const it of[...localTop(pl.filter(x=>(x.year||0)>=yr-1)),...localTop(pl)]){if(out.length>=10)break;if(!out.includes(it)){out.push(it);src.push('beliebt bei dir')}}}
     const v=out.length>=3?{l:out,src}:(TREND.top(ty)?{l:TREND.top(ty),src:[]}:null);TOP._m[ty]={k:key,v};return v}};
 function top10Row(ty){const t=TOP.top(ty);if(!t)return`<section class="row" data-top10="${ty}" hidden></section>`;const d=TOP.data||{};const st=d.t?new Date(d.t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'';
   const sub=t.demo?'Beispiel im Demo-Katalog':`meistgesucht weltweit (IMDb${d.nfx&&d.nfx[ty]&&d.nfx[ty].length?' & Netflix-Wochencharts':''}) · bei dir verfügbar${st?' · Stand '+st:''}`;
@@ -1670,6 +1672,12 @@ function setSpot(id,why){const it=APP.byId.get(id);const s=$('#spot');if(!it||!s
   if(why==='cont'){TR.stop();return}TR.settle(it,$('.bd',s))}
 
 // ----- Live-TV -----
+// Musiksender erkennen (Name + Kategorie): Musik-TV und Radio
+const MUS_RE=/\b(music|musik|musica|musique|muzik|muziek|karaoke|jukebox)\b|\b(mtv|vh1|viva|deluxe ?music|mezzo|stingray|trace ?(urban|tv|latina|africa|gospel|vanilla|caribbean)?|clubbing ?tv|kerrang|kiss ?(tv|fm)|the box|box hits|4music|clubland|now ?(70|80|90|00)'?s|vevo|qello|classica|folx|schlager|melodie ?tv|volksmusik|gute laune|kronehit|imusic|bridge ?tv|muz ?tv|pmc|avang|navahang|radio ?javan|rj ?tv|bia2|mifa|rotana ?(clip|music)|mazzika|melody ?(hits|tv|classic)|bet jams|afrobeats|nrj|fun ?radio|top ?hits|schlagerparadies|starparadies|heimatkanal|deejay|o2tv music)\b|موسیقی|موزیک|ترانه|آهنگ|رادیو|\b(radio|fm)\b/i;
+const MUS_WEAK=/\b(hits|concerts?|konzert|clips?)\b/i,MUS_NOT=/cinema|kino|movie|film|aflam|serie|sport|kids|news|سینما|فیلم|سریال/i;
+const RAD_RE=/\bradio\b|\bfm\b|رادیو/i;const _mus=new WeakMap();
+function musInfo(c){let v=_mus.get(c);if(v===undefined){const t=c.title+' '+(c.groups||[c.group]).join(' ');v=c.sport?0:MUS_RE.test(t)||(MUS_WEAK.test(t)&&!MUS_NOT.test(t))?(RAD_RE.test(t)&&!/\btv\b/i.test(c.title)?2:1):0;_mus.set(c,v)}return v}
+const isMusicCh=c=>musInfo(c)>0,musR=c=>musInfo(c)===2;
 function livePool(all){if(all)return APP.items.filter(i=>i.type==='live'&&allowed(i));const p=prof();const cs=new Set(p.countries);if(p.other)cs.add('XX');return APP.items.filter(i=>i.type==='live'&&cs.has(i.country)&&allowed(i))}
 // Live-TV-Ordnung des Profils: Länder-Reihenfolge, aufgeklappte Länder, angeheftete Kategorien, eigene Senderliste
 function liveCountries(lv){const p=prof();const present=uniq(lv.map(c=>c.country));const base=c=>{const i=p.countries.indexOf(c);return i<0?(c==='XX'?90:50):i};
@@ -1678,16 +1686,18 @@ function liveCountries(lv){const p=prof();const present=uniq(lv.map(c=>c.country
 VIEWS.live=(el,a)=>{
   const all=!!a.all,lv=livePool(all);const countries=liveCountries(lv);const p=prof();
   const favs=(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c));const rc=getRecentCh().map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c)).slice(0,30);
+  const mus=lv.filter(isMusicCh);
   const pins=(PS('livePins')||[]).filter(g=>lv.some(c=>c.groups.includes(g)));
-  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');
+  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');if(sel==='__music'&&!mus.length)sel='__c:'+(countries[0]||'');
   const selC=sel.startsWith('__c:')?sel.slice(4).split('|')[0]:'';const selG=sel.startsWith('__c:')&&sel.includes('|')?sel.slice(sel.indexOf('|')+1):(!sel.startsWith('__')?sel:'');
   const gsz={};for(const c of lv)gsz[c.group]=(gsz[c.group]||0)+1;
-  let list;if(sel==='__fav')list=favs;else if(sel==='__recent')list=rc;else if(selC){list=lv.filter(c=>c.country===selC&&(!selG||c.groups.includes(selG)));list.sort((x,y)=>(x.sport-y.sport)||(gsz[y.group]-gsz[x.group])||x.group.localeCompare(y.group))}else{list=lv.filter(c=>c.groups.includes(sel))}
+  let list;if(sel==='__fav')list=favs;else if(sel==='__recent')list=rc;else if(sel==='__music'){const mf=a.mf||'';const ci=c=>{const i=countries.indexOf(c.country);return i<0?99:i};list=mus.filter(c=>mf==='radio'?musR(c):mf?(c.country===mf&&!musR(c)):true);list.sort((x,y)=>musR(x)-musR(y)||ci(x)-ci(y)||x.title.localeCompare(y.title))}else if(selC){list=lv.filter(c=>c.country===selC&&(!selG||c.groups.includes(selG)));list.sort((x,y)=>(x.sport-y.sport)||(gsz[y.group]-gsz[x.group])||x.group.localeCompare(y.group))}else{list=lv.filter(c=>c.groups.includes(sel))}
   const lim=a.lim||120;const favSet=new Set(PS('liveFav')||[]);
   const item=(k,ic,l,n)=>`<button class="cat f${k===sel||(k.startsWith('__c:')&&selC&&k==='__c:'+selC)?' on':''}" data-act="lg" data-g="${esc(k)}"${(k===sel||(selC&&k==='__c:'+selC))?' data-autofocus':''}><span dir="auto">${ic}${l}</span><em>${n}</em></button>`;
   let cats='';
   cats+=item('__fav','★ ','Favoriten',favs.length);
   if(rc.length)cats+=item('__recent','↺ ','Zuletzt gesehen',rc.length);
+  if(mus.length)cats+=item('__music','♪ ','Musik',mus.length);
   if(pins.length)cats+=pins.map(g=>item(g,'',esc(g),gsz[g]||lv.filter(c=>c.groups.includes(g)).length)).join('');
   cats+='<div class="csep"></div>';
   cats+=countries.map(c=>item('__c:'+c,(CBY[c]&&CBY[c].flag?CBY[c].flag+' ':''),esc(c==='XX'?'Ohne Land':(CBY[c]||{name:c}).name.split(' · ')[0]),lv.filter(x=>x.country===c).length)).join('');
@@ -1696,7 +1706,10 @@ VIEWS.live=(el,a)=>{
   let chipsH='';if(selC){const gm=new Map();for(const c of lv)if(c.country===selC)for(const g of c.groups)gm.set(g,(gm.get(g)||0)+1);
     const gs=[...gm.entries()].sort((x,y)=>isSportStr(x[0])-isSportStr(y[0])||y[1]-x[1]);
     if(gs.length>1)chipsH=`<div class="chips lchips"><button class="chip f${!selG?' on':''}" data-act="lg" data-g="__c:${selC}">Alle</button>${(()=>{const sh=g=>g.replace(/^\s*[A-Za-z]{2,3}\s*[|:\-–]\s*/,'')||g;const cnt={};gs.forEach(([g])=>cnt[sh(g)]=(cnt[sh(g)]||0)+1);return gs.map(([g,n])=>`<button class="chip f${selG===g?' on':''}" data-act="lg" data-g="__c:${selC}|${esc(g)}">${esc(cnt[sh(g)]>1?g:sh(g))} <small>${n}</small></button>`).join('')})()}</div>`}
-  const head=sel==='__fav'?'★ Favoriten':sel==='__recent'?'Zuletzt gesehen':selC?((CBY[selC]&&CBY[selC].flag?CBY[selC].flag+' ':'')+esc(selC==='XX'?'Ohne Länderangabe':CBY[selC].name)+(selG?' · '+esc(selG):'')):esc(sel);
+  if(sel==='__music'){const mf=a.mf||'';const cs=countries.filter(c=>mus.some(x=>x.country===c&&!musR(x)));const nr=mus.filter(musR).length;
+    const ch=(k,l,n)=>`<button class="chip f${mf===k?' on':''}" data-act="lmf" data-mf="${k}">${l} <small>${n}</small></button>`;
+    chipsH=`<div class="chips lchips">${ch('','Alle',mus.length)}${cs.map(c=>ch(c,(CBY[c]&&CBY[c].flag?CBY[c].flag+' ':'')+esc(c==='XX'?'Ohne Land':(CBY[c]||{name:c}).name.split(' · ')[0]),mus.filter(x=>x.country===c&&!musR(x)).length)).join('')}${nr?ch('radio','📻 Radio',nr):''}</div>`}
+  const head=sel==='__music'?'♪ Musik':sel==='__fav'?'★ Favoriten':sel==='__recent'?'Zuletzt gesehen':selC?((CBY[selC]&&CBY[selC].flag?CBY[selC].flag+' ':'')+esc(selC==='XX'?'Ohne Länderangabe':CBY[selC].name)+(selG?' · '+esc(selG):'')):esc(sel);
   const pinBtn=selG?`<button class="btn sm f" data-act="lpin" data-g="${esc(selG)}">${pins.includes(selG)?'Lösen':'Links anheften'}</button>`:'';
   const row=(c,i)=>{const e=EPG.get(c);const fv=favSet.has(c.id);const nq=uniq(c.versions.map(v=>v.q).filter(Boolean)).length;
     return`<div class="chw"><button class="chr f" data-id="${c.id}" data-act="play"><span class="no">${i+1}</span><span class="lg">${logoHTML(c)}</span><span class="tx"><b dir="auto">${esc(c.title)}${c.q?` <span class="tag${QR[c.q]>=4?' k':''}">${esc(c.q==='FHD'?'FHD':c.q)}</span>`:''}${nq>1?` <span class="qn">${nq} Qualitäten</span>`:''}</b><div data-epg="${c.id}">${e&&e.cur?`<span dir="auto">${esc(e.cur.title)}</span> · ${hhmm(e.cur.start)}–${hhmm(e.cur.end)}`:epgLine(c)}</div>${e&&e.cur?`<i class="epb"><i style="width:${Math.round(clamp((Date.now()-e.cur.start)/(e.cur.end-e.cur.start),0,1)*100)}%"></i></i>`:''}</span><span class="nx" dir="auto">${e&&e.next?'Danach: '+esc(e.next.title):''}</span></button>${sel==='__fav'?(i?`<button class="mini f" data-act="lfmove" data-id="${c.id}" data-d="-1" aria-label="Nach oben">▲</button>`:''):''}<button class="mini f${fv?' fv':''}" data-act="lfav" data-id="${c.id}" aria-label="${fv?'Aus Favoriten entfernen':'Zu Favoriten'}">${fv?'★':'☆'}</button></div>`};
@@ -2328,7 +2341,7 @@ window.nfkA=(ev,key,arg)=>{const r=APP.prepRun;
     APP.prepRun=null;prepPill();const it=APP.byId.get(k[0]);if(it&&!P.el)setTimeout(()=>readyMix(it,k[1]),400);
     toast(`${langName(k[1])}-Ton ist bereit – jetzt mit bestem Bild abspielbar`);const m=APP.modal&&APP.modal.el;if(m&&it&&$('#d-lang',m))$('#d-lang',m).innerHTML=langChips(it);return}
   if(ev==='error'||ev==='cancel'){APP.prepRun=null;prepPill();toast(ev==='cancel'?'Vorbereiten abgebrochen':'Ton vorbereiten fehlgeschlagen: '+arg)}};
-function chanList(it){if(APP.view==='live'){const g=APP.args.g||'__all',lv=livePool(APP.args.all);if(g==='__fav')return(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(Boolean);return(g==='__all'?lv:g==='__sport'?lv.filter(c=>c.sport):g.startsWith('__c:')?lv.filter(c=>c.country===g.slice(4)):lv.filter(c=>c.groups.includes(g)))}return APP.view==='live'&&APP.args.g?(APP.args.g==='__sport'?pool('live').filter(c=>c.sport):APP.args.g==='__fav'?getRecentCh().map(id=>APP.byId.get(id)).filter(Boolean):pool('live').filter(c=>c.groups.includes(APP.args.g))):pool('live').filter(c=>c.groups.includes(it.group))}
+function chanList(it){if(APP.view==='live'&&APP._ll&&APP._ll.includes(it))return APP._ll;if(APP.view==='live'){const g=APP.args.g||'__all',lv=livePool(APP.args.all);if(g==='__fav')return(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(Boolean);return(g==='__all'?lv:g==='__sport'?lv.filter(c=>c.sport):g.startsWith('__c:')?lv.filter(c=>c.country===g.slice(4)):lv.filter(c=>c.groups.includes(g)))}return APP.view==='live'&&APP.args.g?(APP.args.g==='__sport'?pool('live').filter(c=>c.sport):APP.args.g==='__fav'?getRecentCh().map(id=>APP.byId.get(id)).filter(Boolean):pool('live').filter(c=>c.groups.includes(APP.args.g))):pool('live').filter(c=>c.groups.includes(it.group))}
 // Ereignisse des eingebetteten Android-Players
 window.nfkV=(ev,arg)=>{
   if(ev==='log'){TRL.log('Player: '+arg);return}
@@ -2462,6 +2475,7 @@ document.addEventListener('click',e=>{
    case'season':renderEps(it,APP.modal.el,b.dataset.s);$(`[data-act="season"][data-s="${b.dataset.s}"]`,APP.modal.el).focus();break;
    case'ep':{const ep=it._seasons[b.dataset.s].find(x=>x.id===b.dataset.e);ep._s=b.dataset.s;P.open(it,{ep});break}
    case'close':closeModal();break;
+   case'lmf':APP.args={g:'__music',all:APP.args.all,mf:b.dataset.mf};renderApp(`.chip[data-act="lmf"][data-mf="${CSS.escape(b.dataset.mf)}"]`);break;
    case'lg':APP.args={g:b.dataset.g,all:APP.args.all};renderApp(`.cat[data-g="${CSS.escape(b.dataset.g)}"]`);break;
    case'sf':APP.args={f:b.dataset.f};renderApp(`.chip[data-f="${CSS.escape(b.dataset.f)}"]`);break;
    case'dd':{const k=b.dataset.k;let d={};try{d=JSON.parse($('#ddata').textContent)}catch(e){}$$('.ddm').forEach(x=>x.remove());

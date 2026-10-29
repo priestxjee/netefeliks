@@ -1,3 +1,6 @@
+Live: neue Kategorie „♪ Musik“ – alle Musiksender (MTV, Deluxe Music, PMC, Avang, Radio Javan …) und Radiosender aus deinen Ländern, filterbar nach Land und „Radio“
+Top 10: immer 10 Titel – fehlen Chart-Titel in deinem Abo, wird mit den beliebtesten aktuellen Titeln aufgefüllt
+Live-Vollbild: ▲/▼ bleibt in der Unterkategorie, aus der du gekommen bist
 Steuerung: Links/Rechts springt zuerst in die Spalte daneben (Live-Kategorien, Einstellungs-Menü) auf den aktiven Eintrag – nicht mehr direkt in die Menüleiste, nur weil man weiter unten steht
 Live: Schrift auf dem ausgewählten Sender kräftiger schwarz
 Menüleiste links: Auswahl ist jetzt ein weicher, nach rechts auslaufender Lichtstreifen mit rotem Strich statt eines weißen Kastens – passt zum Schatten der Leiste
