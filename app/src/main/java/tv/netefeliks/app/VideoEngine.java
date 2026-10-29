@@ -171,6 +171,7 @@ class VideoEngine {
                 if (s == Player.STATE_ENDED) events.emit("ended", "");
             }
             @Override public void onCues(CueGroup cueGroup) { subs.setCues(cueGroup.cues); }
+            @Override public void onRenderedFirstFrame() { awaitFrame = false; }
             @Override public void onVideoSizeChanged(VideoSize v) {
                 if (v.width > 0 && v.height > 0) { videoRatio = v.width * v.pixelWidthHeightRatio / v.height; applyAspect(); if (miniAr != null) miniAr.setAspectRatio(videoRatio); }
             }
@@ -192,7 +193,7 @@ class VideoEngine {
             lastCfg = c;
             miniOff();
             if (frame != null) frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
-            if (c.has("mini") && player != null) { try { miniApply(c.getJSONObject("mini")); } catch (Exception ignored) { } }
+            if (c.has("mini") && player != null) { try { miniApply(c.getJSONObject("mini")); } catch (Exception ignored) { } c.remove("mini"); }
             String[] langs = arr(c.optJSONArray("langs"));
             String[] subLangs = arr(c.optJSONArray("subs"));
             boolean subsOn = c.optBoolean("subsOn", false);
@@ -286,6 +287,36 @@ class VideoEngine {
     }
 
     private int[] miniRect;
+    private boolean awaitFrame;
+    private int swapGen;
+
+    /** Nach dem Wechsel Mini → Vollbild muss ein Bild kommen. Sonst (schwarzes Bild, nur Ton): neu verbinden. */
+    private void watchFrame(final int g, final int attempt) {
+        if (attempt == 0) awaitFrame = true;
+        ui.postDelayed(new Runnable() { @Override public void run() {
+            if (g != swapGen || !awaitFrame || miniOn || player == null || lastCfg == null) return;
+            if (player.getVideoFormat() == null) return;                    // nur Ton (z. B. Radio): nichts zu tun
+            if (player.getPlaybackState() != Player.STATE_READY || !player.getPlayWhenReady()) {
+                if (attempt < 8) watchFrame(g, attempt + 1);
+                return;
+            }
+            if (attempt < 1) {
+                // erst sanft: Bildfläche neu zuweisen
+                player.clearVideoSurface();
+                player.setVideoSurfaceView(surface);
+                watchFrame(g, attempt + 1);
+                return;
+            }
+            try {
+                long pos = Math.max(0, player.getCurrentPosition() - delayMs + clipV);
+                JSONObject c = new JSONObject(lastCfg.toString());
+                c.remove("mini");
+                c.put("start", pos);
+                events.emit("log", "Bild neu verbunden");
+                openMain(c.toString());
+            } catch (Exception ignored) { }
+        } }, attempt == 0 ? 1500 : 1200);
+    }
 
     /** Mini-Fenster an diese Stelle legen. Mit "anim" schrumpft das Bild aus dem Vollbild hinein. */
     private void miniApply(JSONObject c) {
@@ -352,17 +383,19 @@ class VideoEngine {
     }
 
     private void miniOff() {
-        if (miniOn && player != null) player.setVideoSurfaceView(surface);
+        boolean swap = miniOn && player != null;
         miniOn = false;
         miniRect = null;
+        // erst die große Bildfläche sichtbar machen, dann das Video dorthin umleiten
+        if (frame != null) {
+            frame.setVisibility(View.VISIBLE);
+            frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+        }
+        if (swap) { player.setVideoSurfaceView(surface); watchFrame(++swapGen, 0); }
         if (miniBox != null) {
             miniBox.animate().cancel();
             miniBox.setVisibility(View.GONE);
             miniBox.setScaleX(1f); miniBox.setScaleY(1f); miniBox.setTranslationX(0f); miniBox.setTranslationY(0f);
-        }
-        if (frame != null) {
-            frame.setVisibility(View.VISIBLE);
-            frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
         }
         if (player != null && lastCfg != null) subs.setVisibility(View.VISIBLE);
     }
