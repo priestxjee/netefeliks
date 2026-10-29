@@ -16,6 +16,11 @@ import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.AspectRatioFrameLayout;
 
 import org.json.JSONObject;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 /**
  * Trailer-Vorschau mit dem echten Android-Player (die Web-Oberfläche des Fire TV zeigt eingebettete Videos oft nur mit Ton).
@@ -31,6 +36,8 @@ class TrailerView {
     private AspectRatioFrameLayout ar;
     private TextureView tex;
     private ExoPlayer player;
+    // YouTube-Trailer: eigene, kleine (nicht durchsichtige) WebView – dort zeigt der Fire TV das Bild zuverlässig
+    private WebView yt;
 
     TrailerView(Activity act, FrameLayout root, Events events) {
         this.act = act;
@@ -68,6 +75,9 @@ class TrailerView {
             ar.setResizeMode(fit ? AspectRatioFrameLayout.RESIZE_MODE_FIT : AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
             box.setBackgroundColor(fit ? 0xFF000000 : 0x00000000);
             box.setVisibility(View.VISIBLE);
+            if (c.has("yt")) { openYt(c, fit, r); return; }
+            if (yt != null) { yt.setVisibility(View.GONE); yt.loadUrl("about:blank"); }
+            ar.setVisibility(View.VISIBLE);
             if (player == null) {
                 player = new ExoPlayer.Builder(act)
                         .setLoadControl(new DefaultLoadControl.Builder().setBufferDurationsMs(4000, 12000, 800, 1500)
@@ -94,7 +104,39 @@ class TrailerView {
         }
     }
 
+    private void openYt(JSONObject c, boolean fit, int[] r) throws Exception {
+        if (player != null) { player.release(); player = null; }
+        ar.setVisibility(View.GONE);
+        if (yt == null) {
+            yt = new WebView(act);
+            yt.setBackgroundColor(0xFF000000);
+            yt.setFocusable(false);
+            yt.setFocusableInTouchMode(false);
+            WebSettings s = yt.getSettings();
+            s.setJavaScriptEnabled(true);
+            s.setDomStorageEnabled(true);
+            s.setMediaPlaybackRequiresUserGesture(false);
+            yt.setWebChromeClient(new WebChromeClient());
+            yt.setWebViewClient(new WebViewClient());
+            yt.addJavascriptInterface(new Object() {
+                @JavascriptInterface public void ev(final String e) { act.runOnUiThread(new Runnable() { @Override public void run() { events.emit(e); } }); }
+            }, "NT");
+            box.addView(yt, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+        yt.setVisibility(View.VISIBLE);
+        String id = c.getString("yt").replaceAll("[^A-Za-z0-9_-]", "");
+        boolean mute = c.optBoolean("mute", true);
+        String html = "<!doctype html><html><head><meta name=viewport content='width=device-width,initial-scale=1'><style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#p,iframe{position:absolute;border:0}</style></head><body><div id=p></div>"
+                + "<script>var FIT=" + (fit ? "true" : "false") + ";function fit(){var f=document.querySelector('iframe');if(!f)return;var W=innerWidth,H=innerHeight,w=W,h=W*9/16;if(FIT?h>H:h<H){h=H;w=H*16/9}f.style.width=w+'px';f.style.height=h+'px';f.style.left=(W-w)/2+'px';f.style.top=(H-h)/2+'px'}addEventListener('resize',fit);"
+                + "function onYouTubeIframeAPIReady(){new YT.Player('p',{videoId:'" + id + "',host:'https://www.youtube-nocookie.com',playerVars:{autoplay:1,mute:" + (mute ? 1 : 0) + ",controls:0,playsinline:1,rel:0,modestbranding:1,iv_load_policy:3,fs:0,disablekb:1,loop:1,playlist:'" + id + "'},"
+                + "events:{onReady:function(e){fit();try{e.target.playVideo()}catch(x){}},onStateChange:function(e){if(e.data===1)NT.ev('first');if(e.data===0){try{e.target.playVideo()}catch(x){}}},onError:function(e){NT.ev('error:youtube '+e.data)}}});setTimeout(fit,50)}"
+                + "</script><script src='https://www.youtube.com/iframe_api'></script></body></html>";
+        yt.loadDataWithBaseURL("https://www.netefeliks.app/", html, "text/html", "utf-8", null);
+        events.emit("start yt " + r[2] + "x" + r[3]);
+    }
+
     private void stopMain() {
+        if (yt != null) { yt.loadUrl("about:blank"); yt.setVisibility(View.GONE); }
         if (player != null) { player.release(); player = null; }   // Arbeitsspeicher sofort freigeben
         if (box != null) box.setVisibility(View.GONE);
     }

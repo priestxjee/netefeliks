@@ -1,3 +1,5 @@
+Weiterschauen-Vorschau flüssiger und nicht mehr dunkel: läuft klein in Full HD, bei OK sofort wieder volle Qualität an derselben Stelle; kein Trailer-Laden nebenbei
+Trailer von YouTube laufen jetzt in einem eigenen kleinen Fenster mit Bild
 Weiterschauen wie bei Netflix: Karte wird größer, nach 2 s läuft die Folge/der Film klein weiter, OK = Vollbild ohne Neustart
 Live: Kategorien-Leiste scrollt mit, man sieht immer die Auswahl
 Trailer & Bewertungen: Anfragen laufen jetzt zuerst wie ein normaler Browser (weniger Sperren)
