@@ -129,6 +129,15 @@ class VideoEngine {
         this.surface = surface;
         this.subs = subs;
         this.events = events;
+        // merken, ob die große Bildfläche wirklich bereit ist (beim ersten Sender ist sie es oft noch nicht)
+        surface.getHolder().addCallback(new android.view.SurfaceHolder.Callback() {
+            @Override public void surfaceCreated(android.view.SurfaceHolder h) {
+                surfaceReady = true;
+                if (pendingMini != null) { JSONObject c = pendingMini; pendingMini = null; try { if (player != null && !miniOn) miniApply(c); } catch (Exception ignored) { } }
+            }
+            @Override public void surfaceChanged(android.view.SurfaceHolder h, int f, int w, int hh) { }
+            @Override public void surfaceDestroyed(android.view.SurfaceHolder h) { surfaceReady = false; }
+        });
     }
 
     private void ensure() {
@@ -287,7 +296,8 @@ class VideoEngine {
     }
 
     private int[] miniRect;
-    private boolean awaitFrame;
+    private boolean awaitFrame, surfaceReady, swapRisky;
+    private JSONObject pendingMini;
     private int swapGen;
 
     /** Nach dem Wechsel Mini → Vollbild muss ein Bild kommen. Sonst (schwarzes Bild, nur Ton): neu verbinden. */
@@ -360,6 +370,19 @@ class VideoEngine {
             miniBox.addView(miniAr, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
             root.addView(miniBox, root.indexOfChild(frame) + 1);
         }
+        if (!miniOn && !surfaceReady && frame.getVisibility() == View.VISIBLE && surface.getVisibility() == View.VISIBLE && !c.optBoolean("force")) {
+            // große Bildfläche entsteht gerade – kurz warten (die App-Oberfläche deckt alles bis auf das Mini-Fenster ab)
+            final boolean first = pendingMini == null;
+            pendingMini = c;
+            if (first) ui.postDelayed(new Runnable() { @Override public void run() {
+                if (pendingMini == null || miniOn || player == null) return;
+                JSONObject p2 = pendingMini; pendingMini = null;
+                try { p2.put("force", true); miniApply(p2); swapRisky = true; } catch (Exception ignored) { }
+            } }, 900);
+            return;
+        }
+        if (!miniOn) swapRisky = !surfaceReady;
+        pendingMini = null;
         boolean shrink = c.optBoolean("anim") && !miniOn && frame.getVisibility() == View.VISIBLE && r[2] > 0 && r[3] > 0;
         miniAr.setAspectRatio(videoRatio);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, r[2]), Math.max(1, r[3]), Gravity.TOP | Gravity.LEFT);
@@ -419,7 +442,15 @@ class VideoEngine {
             frame.setVisibility(View.VISIBLE);
             frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
         }
-        if (swap) { player.setVideoSurfaceView(surface); watchFrame(++swapGen, 0); }
+        pendingMini = null;
+        if (swap) {
+            player.setVideoSurfaceView(surface);
+            final int g = ++swapGen;
+            if (swapRisky && lastCfg != null) {
+                swapRisky = false;
+                ui.post(new Runnable() { @Override public void run() { if (g == swapGen && !miniOn && player != null && lastCfg != null) reopenFull("erster Sender"); } });
+            } else watchFrame(g, 0);
+        }
         if (miniBox != null) {
             miniBox.animate().cancel();
             miniBox.setVisibility(View.GONE);

@@ -1,3 +1,4 @@
+Live: erster Sender nach dem Öffnen von Live-TV zeigt im Vollbild jetzt ein Bild (das große Bild wird erst fertig aufgebaut, bevor es ins Mini-Fenster wechselt; notfalls wird im Vollbild frisch geöffnet)
 Live-Vollbild: Sender startet wieder wie früher erst groß und dann im Mini-Fenster (so kam im Vollbild immer ein Bild); nach dem Umschalten prüft der Player per Bildprobe, ob wirklich ein Bild da ist – ist es schwarz, wird der Sender im Vollbild sofort neu geöffnet
 Live: schwarzes Bild (nur Ton) beim Wechsel ins Vollbild – Bildfläche wird jetzt richtig umgeschaltet; kommt trotzdem kein Bild, verbindet der Player es nach ca. 1,5 s automatisch neu
 Live: Auswahl in der Liste wieder klar weiß mit dunkler Schrift; laufender Sender rot mit weißer Schrift
