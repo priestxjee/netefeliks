@@ -2240,7 +2240,7 @@ function pipPlay(it,btn){let v=curVer(it);if(!v||!v.src||!v.src.url){P.open(it);
   const lab=`<span class="piplab"><b>LIVE</b> <span dir="auto">${esc(it.title)}</span></span>`;let pb=$('#pipbox');
   if(pb)pb.innerHTML=lab;liveInfo(it);
   $$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'));btn&&btn.classList.add('playing');
-  requestAnimationFrame(()=>{if(!APP.pip||APP.pip.it!==it)return;const rc=pipRect();NFK.vOpen(JSON.stringify(Object.assign({url:v.src.url,start:0,langs:PS('audio')==='orig'?[]:pref,subs:[],subsOn:false,aspect:aspOf(it),subSize:subStyleObj().size,subStyle:subStyleObj(),delay:0},rc&&natV()>=28?{mini:rc}:{})));pipSync()});
+  requestAnimationFrame(()=>{if(!APP.pip||APP.pip.it!==it)return;const rc=pipRect();NFK.vOpen(JSON.stringify(Object.assign({url:v.src.url,start:0,langs:PS('audio')==='orig'?[]:pref,subs:[],subsOn:false,aspect:aspOf(it),subSize:subStyleObj().size,subStyle:subStyleObj(),delay:0},{})));pipSync()});
   toast('Nochmal OK = Vollbild')}
 // Mini-Fenster folgt dem Rahmen auch beim Scrollen
 {let pq=0;const f=()=>{if(pq||!APP.pip||P.el)return;pq=requestAnimationFrame(()=>{pq=0;pipSync()})};document.addEventListener('scroll',f,true);addEventListener('resize',f);document.addEventListener('focusin',f)}
@@ -2254,7 +2254,8 @@ function pipSync(anim){if(!APP.pip||P.el)return;if(APP.pip.vod){cprevSync();retu
 setInterval(()=>{if(APP.pip&&!APP.pip.vod&&!P.el&&APP.view==='live'&&window.NFK&&NFK.vMini)pipSync()},1500);
 // Mini-Fenster → Vollbild: Liste blendet aus, das Bild wächst aus dem Fenster heraus
 function pipToFull(upg){const h=document.documentElement;h.classList.add('vidin');const fin=()=>{h.classList.remove('vidin','pip');if(P.el)h.classList.add('vidmode');if(upg&&P.el)P.load(upg.url,upg.alt)};
-  if(natV()>=28){NFK.vMini(JSON.stringify({full:1,anim:1}));setTimeout(fin,230)}else setTimeout(()=>{NFK.vMini('');fin()},170)}
+  if(natV()>=28){NFK.vMini(JSON.stringify({full:1,anim:1}));setTimeout(fin,230)}else setTimeout(()=>{NFK.vMini('');fin()},170);
+  setTimeout(()=>{if(!P.el)return;const h=document.documentElement;if(h.classList.contains('pip')||h.classList.contains('vidin')||!h.classList.contains('vidmode')){h.classList.remove('pip','vidin');h.classList.add('vidmode')}TRL.log('Live-Vollbild: Seite '+h.className+' · Hintergrund '+getComputedStyle(document.body).backgroundColor)},900)}
 // Vollbild → Mini-Fenster: Liste bleibt wie sie war (kein Neuaufbau), Fokus auf dem laufenden Sender
 function pipBack(it){if(APP.view!=='live'||!$('#chl')||!$('#pipbox'))return false;const h=document.documentElement;
   const row=$(`#chl [data-id="${CSS.escape(it.id)}"]`);if(!row)return false;
@@ -2316,6 +2317,7 @@ window.nfkA=(ev,key,arg)=>{const r=APP.prepRun;
 function chanList(it){if(APP.view==='live'){const g=APP.args.g||'__all',lv=livePool(APP.args.all);if(g==='__fav')return(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(Boolean);return(g==='__all'?lv:g==='__sport'?lv.filter(c=>c.sport):g.startsWith('__c:')?lv.filter(c=>c.country===g.slice(4)):lv.filter(c=>c.groups.includes(g)))}return APP.view==='live'&&APP.args.g?(APP.args.g==='__sport'?pool('live').filter(c=>c.sport):APP.args.g==='__fav'?getRecentCh().map(id=>APP.byId.get(id)).filter(Boolean):pool('live').filter(c=>c.groups.includes(APP.args.g))):pool('live').filter(c=>c.groups.includes(it.group))}
 // Ereignisse des eingebetteten Android-Players
 window.nfkV=(ev,arg)=>{
+  if(ev==='log'){TRL.log('Player: '+arg);return}
   // Fehler während der Weiterschauen-Vorschau: erst die Originalfassung versuchen, sonst Hinweis
   if(!P.el&&APP.pip&&APP.pip.vod&&ev==='error'){const p=APP.pip;TRL.log('Vorschau-Fehler: '+String(arg||'').slice(0,100));if(p.full!=null&&!p.retry){p.retry=1;P.ver=p.full;p.full=null;P.reload();return}toast('Vorschau nicht möglich: '+String(arg||'').slice(0,80));pipStop();return}
   if(!P.el||P.engine!=='nat')return;

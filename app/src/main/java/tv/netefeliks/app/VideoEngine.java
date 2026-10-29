@@ -294,28 +294,54 @@ class VideoEngine {
     private void watchFrame(final int g, final int attempt) {
         if (attempt == 0) awaitFrame = true;
         ui.postDelayed(new Runnable() { @Override public void run() {
-            if (g != swapGen || !awaitFrame || miniOn || player == null || lastCfg == null) return;
+            if (g != swapGen || miniOn || player == null || lastCfg == null) return;
+            // Ansicht erzwingen: großes Bild sichtbar, Mini-Fenster weg
+            if (miniBox != null && miniBox.getVisibility() == View.VISIBLE) { miniBox.animate().cancel(); miniBox.setVisibility(View.GONE); }
+            if (frame.getVisibility() != View.VISIBLE) frame.setVisibility(View.VISIBLE);
+            if (surface.getVisibility() != View.VISIBLE) surface.setVisibility(View.VISIBLE);
+            boolean valid = surface.getHolder().getSurface() != null && surface.getHolder().getSurface().isValid();
+            events.emit("log", "Vollbild-Prüfung " + attempt + ": Bild " + (awaitFrame ? "fehlt" : "kommt") + ", Fläche " + (valid ? "ok" : "nicht bereit")
+                    + ", " + surface.getWidth() + "x" + surface.getHeight() + ", Zustand " + player.getPlaybackState());
             if (player.getVideoFormat() == null) return;                    // nur Ton (z. B. Radio): nichts zu tun
             if (player.getPlaybackState() != Player.STATE_READY || !player.getPlayWhenReady()) {
                 if (attempt < 8) watchFrame(g, attempt + 1);
                 return;
             }
-            if (attempt < 1) {
-                // erst sanft: Bildfläche neu zuweisen
+            if (awaitFrame && attempt < 1) {
                 player.clearVideoSurface();
                 player.setVideoSurfaceView(surface);
                 watchFrame(g, attempt + 1);
                 return;
             }
+            if (awaitFrame || !valid) { reopenFull("kein Bild nach dem Umschalten"); return; }
+            // Bild wird angeblich gezeigt – nachsehen, ob es wirklich nicht nur schwarz ist
+            if (Build.VERSION.SDK_INT < 24 || surface.getWidth() <= 0) return;
             try {
-                long pos = Math.max(0, player.getCurrentPosition() - delayMs + clipV);
-                JSONObject c = new JSONObject(lastCfg.toString());
-                c.remove("mini");
-                c.put("start", pos);
-                events.emit("log", "Bild neu verbunden");
-                openMain(c.toString());
+                final Bitmap b = Bitmap.createBitmap(64, 36, Bitmap.Config.ARGB_8888);
+                PixelCopy.request(surface, b, new PixelCopy.OnPixelCopyFinishedListener() {
+                    @Override public void onPixelCopyFinished(int r) {
+                        int max = 0;
+                        if (r == PixelCopy.SUCCESS) for (int y = 2; y < 34; y += 3) for (int x = 2; x < 62; x += 3) {
+                            int px = b.getPixel(x, y); int l = Math.max(Math.max((px >> 16) & 255, (px >> 8) & 255), px & 255); if (l > max) max = l; }
+                        b.recycle();
+                        if (g != swapGen || miniOn) return;
+                        events.emit("log", "Vollbild-Bildprobe: " + (r == PixelCopy.SUCCESS ? "Helligkeit " + max : "nicht möglich (" + r + ")"));
+                        if (r == PixelCopy.SUCCESS && max < 12) reopenFull("Bild schwarz");
+                    }
+                }, ui);
             } catch (Exception ignored) { }
         } }, attempt == 0 ? 1500 : 1200);
+    }
+
+    private void reopenFull(String why) {
+        try {
+            long pos = Math.max(0, player.getCurrentPosition() - delayMs + clipV);
+            JSONObject c = new JSONObject(lastCfg.toString());
+            c.remove("mini");
+            c.put("start", pos);
+            events.emit("log", "Bild neu verbunden (" + why + ")");
+            openMain(c.toString());
+        } catch (Exception ignored) { }
     }
 
     /** Mini-Fenster an diese Stelle legen. Mit "anim" schrumpft das Bild aus dem Vollbild hinein. */
@@ -370,6 +396,8 @@ class VideoEngine {
         miniBox.animate().scaleX(W / r[2]).scaleY(H / r[3]).translationX(-r[0]).translationY(-r[1]).setDuration(220)
                 .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator())
                 .withEndAction(new Runnable() { @Override public void run() { if (miniOn) miniOff(); } }).start();
+        // falls die Animation nicht zu Ende läuft: spätestens nach 0,4 s umschalten
+        ui.postDelayed(new Runnable() { @Override public void run() { if (miniOn && miniBox != null && miniBox.getScaleX() != 1f) miniOff(); } }, 400);
     }
 
     /** Rechteck in Bildschirm-Pixeln: bevorzugt Anteile (fx…), sonst alte Pixelangaben. */
