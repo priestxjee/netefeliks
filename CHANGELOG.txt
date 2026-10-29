@@ -1,3 +1,5 @@
+Steuerung: Links/Rechts springt zuerst in die Spalte daneben (Live-Kategorien, Einstellungs-Menü) auf den aktiven Eintrag – nicht mehr direkt in die Menüleiste, nur weil man weiter unten steht
+Live: Schrift auf dem ausgewählten Sender kräftiger schwarz
 Menüleiste links: Auswahl ist jetzt ein weicher, nach rechts auslaufender Lichtstreifen mit rotem Strich statt eines weißen Kastens – passt zum Schatten der Leiste
 Live: Vollbild aus dem Mini-Fenster öffnet den Sender jetzt frisch im Vollbild (genau wie beim Senderwechsel) – kein schwarzes Bild mehr, dafür ca. 1 Sekunde Laden
 Live-Vollbild: ▲/▼ wechselt nur den Sender – keine Leiste und kein weißes Namensfeld mehr, nur der Name oben links für 3 Sekunden

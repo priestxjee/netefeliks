@@ -567,7 +567,7 @@ html.pip .lv3::before{clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,
 .lv3 .chl .chr.playing{background:linear-gradient(90deg,rgba(229,9,20,.38),rgba(229,9,20,.08) 70%);border-color:rgba(229,9,20,.35)}
 .lv3 .chr{color:var(--fg)}
 .lv3 .chr:focus,.lv3 .chl .chr.playing:focus{background:var(--fg);border-color:var(--fg);color:#111;box-shadow:0 0 0 2px var(--fg),0 6px 18px rgba(0,0,0,.45)}
-.lv3 .chr:focus .tx b,.lv3 .chr:focus .tx div,.lv3 .chr:focus .tx span{color:#111}.lv3 .chr:focus .tx div{color:#444}.lv3 .chr:focus .no{color:#666}
+.lv3 .chr:focus .tx b,.lv3 .chr:focus .tx div,.lv3 .chr:focus .tx span{color:#000}.lv3 .chr:focus .tx b{font-weight:800}.lv3 .chr:focus .tx div{color:#333}.lv3 .chr:focus .no{color:#333}
 .lv3 .chl .chr.playing:not(:focus) .tx b{color:#fff}.lv3 .chl .chr.playing:not(:focus) .tx div{color:rgba(255,255,255,.75)}
 .lv3 .lbar h3{display:flex;align-items:baseline;gap:.4rem}
 .lv3 .linfo{background:linear-gradient(160deg,rgba(229,9,20,.2),rgba(120,50,190,.08) 55%,rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.07);border-radius:.9rem;padding:.9rem 1rem;flex:1}
@@ -2639,7 +2639,18 @@ function navMove(dir){
     else{ok=qy<cy-2&&q.bottom<=r.bottom-4;main=Math.max(0,r.top-q.bottom);cross=Math.abs(qx-cx)}
     const ov=H?(q.top<r.bottom-2&&q.bottom>r.top+2):(q.left<r.right&&q.right>r.left);return{el,ok,main,cross,ov}}).filter(o=>o.ok);
   if(!c.length){if(dir==='up'&&APP.view==='home'&&cur.closest('#rows')&&(APP.hero||[]).length&&PS('hero')){showHero(APP.heroI||0,'1');$('#rows').scrollTo({top:0})}return}
-  if(H){const ov=c.filter(o=>o.ov);if(ov.length)c=ov}
+  // Links/Rechts: zuerst in die Spalte daneben (Kategorien, Einstellungs-Menü …), dort auf den aktiven Eintrag –
+  // erst wenn es keine gibt, weiter zur Menüleiste
+  if(H&&!inRail){const main0=$('#main')||document.body;const cols=new Map();
+    for(const o of c){if(o.el.closest('.rail'))continue;let p=o.el.parentElement,col=null;
+      while(p&&p!==main0&&p!==document.body){const pr=p.getBoundingClientRect();if(dir==='left'?pr.right<=r.left+4:pr.left>=r.right-4)col=p;else break;p=p.parentElement}
+      if(col){if(!cols.has(col))cols.set(col,[]);cols.get(col).push(o)}}
+    let best=null,bg=1e9;for(const [col,os] of cols){if(os.length<3)continue;const pr=col.getBoundingClientRect();const gap=dir==='left'?r.left-pr.right:pr.left-r.right;if(gap<bg){bg=gap;best=os}}
+    if(best){const vis=best.filter(o=>{const q=o.el.getBoundingClientRect();return q.bottom>0&&q.top<innerHeight});const pool0=vis.length?vis:best;
+      const fOn=()=>pool0.find(o=>o.el.classList.contains('on')),fPl=()=>pool0.find(o=>o.el.classList.contains('playing')),fOv=()=>pool0.filter(o=>o.ov).sort((x,y)=>x.main-y.main)[0];
+      const pick=(dir==='left'?(fOn()||fPl()||fOv()):(fPl()||fOv()||fOn()))||pool0.slice().sort((x,y)=>x.cross-y.cross)[0];
+      APP.kbd=true;pick.el.focus({preventScroll:true});ensureVisible(pick.el);return}}
+  if(H){const ovM=c.filter(o=>o.ov&&!o.el.closest('.rail'));const ov=c.filter(o=>o.ov);if(!inRail&&ovM.length)c=ovM;else if(ov.length)c=ov}
   // Hoch/Runter bleibt in der Spalte (Kategorien, Senderliste, Einstellungen), solange es dort weitergeht
   if(!H){const col=cur.closest('.cats,.chl,.spanel,.ap');if(col){const inCol=c.filter(o=>col.contains(o.el));if(inCol.length)c=inCol}}
   const mn=Math.min(...c.map(o=>o.main));const band=c.filter(o=>o.main<=mn+(H?40:24));band.sort((a,b)=>a.cross-b.cross||a.main-b.main);
