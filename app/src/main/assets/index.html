@@ -2668,7 +2668,9 @@ function navMove(dir){
   // Hoch/Runter bleibt in der Spalte (Kategorien, Senderliste, Einstellungen), solange es dort weitergeht
   if(!H){const col=cur.closest('.cats,.chl,.spanel,.ap');if(col){const inCol=c.filter(o=>col.contains(o.el));if(inCol.length)c=inCol}}
   const mn=Math.min(...c.map(o=>o.main));const band=c.filter(o=>o.main<=mn+(H?40:24));band.sort((a,b)=>a.cross-b.cross||a.main-b.main);
-  APP.kbd=true;band[0].el.focus({preventScroll:true});ensureVisible(band[0].el);
+  // in die Menüleiste: immer auf den Bereich, in dem man gerade ist (z. B. Startseite)
+  let tg=band[0].el;if(!inRail&&tg.closest('.rail')){const on=$('.rail .nav.on');if(on)tg=on}
+  APP.kbd=true;tg.focus({preventScroll:true});ensureVisible(tg);
 }
 function pickDir(cur,dir,els){const r=cur.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;const c=[];
   for(const el of els){if(el===cur||el.disabled)continue;const q=el.getBoundingClientRect();if(!q.width)continue;const qy=q.top+q.height/2,qx=q.left+q.width/2;
