@@ -2580,10 +2580,15 @@ function ensureVisible(el){
   if(rows&&row){rows.scrollTo({top:row.offsetTop});return}
   const sc=el.closest('.ap,.ddm')||scrollParent(el)||el.closest('.rows,.main,.modal,.scr,.cats');if(sc){const r=el.getBoundingClientRect(),s=sc.getBoundingClientRect();const pad=Math.min(80,s.height*.18);if(r.top<s.top+pad*.7)sc.scrollBy({top:r.top-s.top-pad});else if(r.bottom>s.bottom-pad*.5)sc.scrollBy({top:r.bottom-s.bottom+pad})}
 }
+// Springt der Fokus ohne Tastendruck plötzlich in die Menüleiste (z. B. wenn Android die Oberfläche neu fokussiert), zurück an die alte Stelle
+addEventListener('focus',()=>{APP._wf=Date.now()});
+document.addEventListener('focusin',e=>{const el=e.target;
+  if(el.closest&&el.closest('.rail')&&Date.now()-(APP.lastKey||0)>500&&!APP._mm&&APP._lf&&APP._lf.isConnected&&!APP._lf.closest('.rail')&&document.contains(APP._lf)){const lf=APP._lf;setTimeout(()=>{if(document.activeElement===el)lf.focus({preventScroll:true})},0);return}
+  if(!el.closest||!el.closest('.ddm'))APP._lf=el;},true);
 document.addEventListener('focusin',e=>{const el=e.target;clearTimeout(APP._cpT);if(el.classList&&el.classList.contains('card')&&el.dataset.why==='cont'&&window.NFK&&NFK.vMini&&NFK.vOpen&&!P.el&&PS('contPrev')!==0){const it=APP.byId.get(el.dataset.id);if(it&&!(APP.pip&&APP.pip.vod&&APP.pip.card===el))APP._cpT=setTimeout(()=>{if(document.activeElement!==el||P.el)return;TR.stop();const go=()=>P.open(it,{preview:true,card:el});if(it.type==='series'&&!it._seasons)loadSeasons(it).then(()=>{if(document.activeElement===el&&!P.el)go()}).catch(()=>{});else go()},2000)}if(APP._gl&&el.closest&&el.closest('#vgrid')&&APP._gn<APP._gl.length){const cs=el.parentElement.children;let i=0;for(;i<cs.length;i++)if(cs[i]===el)break;if(cs.length-i<30)gridMore(60)}{const mn=$('#main.home');if(mn){const inRows=!!el.closest('#rows')&&!!el.closest('.row');if(mn.classList.contains('browse')!==inRows)mn.classList.toggle('browse',inRows)}}if(el.classList.contains('dot')&&el.closest('#spot')&&+el.dataset.i!==APP.heroI){showHero(+el.dataset.i,'d'+el.dataset.i);return}if($('#spot')&&el.closest('#rows')&&el.dataset.id){clearTimeout(APP._sp);APP._sp=setTimeout(()=>setSpot(el.dataset.id,el.dataset.why),document.documentElement.classList.contains('lite')?170:110)}});
 document.addEventListener('mouseover',e=>{const el=e.target.closest('.f');if(!el||el===document.activeElement||el.tagName==='INPUT')return;if(APP._mm){el.focus({preventScroll:true})}});
 document.addEventListener('mousemove',()=>{APP._mm=true;APP.lastKey=Date.now();APP.kbd=false;if(P.el)P.wake()},{passive:true});
-function goBack(){
+function goBack(){APP.lastKey=Date.now();
   if(APP.trFull){trFullStop();return true}
   {const a=$('.ddm');if(a){const bt=a._btn;a.remove();bt&&bt.isConnected&&bt.focus({preventScroll:true});return true}}
   {const a=$('.talert')||$('.uplert');if(a){popClose(a);return true}}

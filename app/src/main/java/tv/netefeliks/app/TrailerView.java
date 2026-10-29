@@ -141,7 +141,7 @@ class TrailerView {
     private void keepAppFocus() {
         final View top = root.getChildAt(root.getChildCount() - 1);
         if (top == null || top == box) return;
-        top.requestFocus();
+        if (!top.hasFocus()) top.requestFocus();
         top.postDelayed(new Runnable() { @Override public void run() { if (!top.hasFocus()) top.requestFocus(); } }, 800);
         top.postDelayed(new Runnable() { @Override public void run() { if (!top.hasFocus()) top.requestFocus(); } }, 2500);
     }
