@@ -1,3 +1,6 @@
+Neu: App-Sprache Deutsch · English · فارسی – in Einstellungen → Profil und schon bei der Anmeldung; Titel und Sendernamen bleiben im Original
+Wunschsprachen: einzelne Sprachen lassen sich jetzt entfernen (Einstellungen → Sprache & Synchron) und neue hinzufügen; danach „Playlist neu einordnen“, um entfernte Länder aus der App zu räumen
+Arabische Fassungen werden als Bildquelle nur noch genommen, wenn es keine andere gibt (oft eingebrannte arabische Untertitel) – außer Arabisch ist deine Sprache 1
 Filme/Serien: Genre-Reihen (z. B. Animation) zeigen jetzt auch Titel aus allen anderen Sprachen
 Filme & Serien: jetzt wird der komplette Bestand eingelesen – auch Titel aus Ländern/Sprachen, die nicht im Profil stehen (nur Live-Sender bleiben auf deine Länder beschränkt)
 Suche findet alle Filme und Serien deines Anbieters; Titel mit Fassung in deiner Sprache stehen oben
