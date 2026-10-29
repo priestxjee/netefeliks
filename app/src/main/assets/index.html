@@ -453,6 +453,10 @@ html.trlfull,html.trlfull body{background:transparent!important}html.trlfull #ap
 .trfh{position:fixed;left:2rem;top:1.6rem;z-index:90;background:rgba(0,0,0,.55);color:#fff;border-radius:.5rem;padding:.45rem .8rem;font-size:.9rem;opacity:0;transition:opacity .4s}.trfh.on{opacity:1}.trfh span{color:var(--red,#e50914);font-weight:800;margin-right:.6rem;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem}
 .trfw{position:fixed;inset:0;z-index:89;background:#000}.trfw video,.trfw iframe{width:100%;height:100%;border:0;object-fit:contain}
 .ccw{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center;max-width:40rem;margin:1rem auto 0}
+.card.w[data-why="cont"]{transition:flex-basis .22s ease,transform .16s ease}
+.card.w[data-why="cont"]:focus{flex-basis:22rem!important;transform:none}
+html.lite:not(.pz-l) .main.home.browse .card.w[data-why="cont"]:focus{flex-basis:21rem!important}
+.card.cprev{background:transparent!important}.card.cprev>img,.card.cprev>.art{visibility:hidden}.card.cprev .cap{background:linear-gradient(0deg,rgba(0,0,0,.75),transparent)}
 .card.allc{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#2a1414,#120d0d);border:2px dashed rgba(255,255,255,.18);color:var(--fg);text-align:center}
 .card.allc span{display:flex;flex-direction:column;gap:.35rem;align-items:center}
 .card.allc b{font-size:1.05rem}.card.allc small{color:var(--mute)}.card.allc i{font-style:normal;font-size:1.8rem;color:var(--red,#e50914)}
@@ -1208,9 +1212,14 @@ const META={mem:new Map(),
 // Webseiten im Hintergrund holen: in der Fire-TV-App lädt und durchsucht Android die Seite (blockiert die Bedienung nicht)
 const NET={seq:0,cb:new Map(),
   native:()=>!!(window.NFK&&NFK.grab),
-  grab(url,o={}){if(NET.native())return new Promise((res,rej)=>{const id='g'+(++NET.seq);const t=setTimeout(()=>{NET.cb.delete(id);rej(new Error('timeout'))},30000);
+  // Erst über die App-Oberfläche selbst laden (sieht für Server aus wie ein normaler Browser – wird seltener blockiert), sonst über Android
+  grab(url,o={}){if(NET.native()&&!o.nativeOnly)return NET.wfetch(url,o).catch(e=>{o._we=e&&e.message||'web';return NET.grab(url,{...o,nativeOnly:1}).catch(e2=>{throw new Error(String(e2&&e2.message||e2)+(o._we?' / Browser: '+o._we:''))})});
+    if(NET.native())return new Promise((res,rej)=>{const id='g'+(++NET.seq);const t=setTimeout(()=>{NET.cb.delete(id);rej(new Error('timeout'))},30000);
       NET.cb.set(id,d=>{clearTimeout(t);d.err?rej(new Error(d.err)):res(d)});NFK.grab(id,url,JSON.stringify(o))});
     return fetch(url,{headers:o.h||{}}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(t=>NET.apply(t,o))},
+  async wfetch(url,o){const ac=window.AbortController?new AbortController():null;const tm=setTimeout(()=>ac&&ac.abort(),20000);
+    try{const r=await fetch(url,{method:o.post?'POST':'GET',headers:o.h||{},body:o.post||undefined,signal:ac?ac.signal:undefined,referrerPolicy:'no-referrer'});if(!r.ok)throw new Error('HTTP '+r.status);
+      let t=await r.text();if(o.max&&t.length>o.max)t=t.slice(0,o.max);return NET.apply(t,o)}finally{clearTimeout(tm)}},
   apply(body,o){const r={status:200};if(o.head)r.body=body.split('\n').slice(0,o.head).join('\n');else if(o.body)r.body=body.slice(0,o.max||4e6);
     if(o.rules)r.r=o.rules.map(ru=>{const re=new RegExp(ru.re,'g');const out=[];let m;while(out.length<(ru.max||1)&&(m=re.exec(body))){out.push(ru.g?ru.g.map(i=>(m[i]||'').slice(0,ru.cut||2e5)):[m[0]]);if(!m[0])re.lastIndex++}return out});return r}};
 window.nfkG=(id,json)=>{const f=NET.cb.get(id);if(!f)return;NET.cb.delete(id);let d;try{d=JSON.parse(json)}catch(e){d={err:'parse'}}f(d)};
@@ -1470,7 +1479,7 @@ const TRL={mem:new Map(),cache:LS.get('nfk.trl2',{})||{},
   // Apple-Suche (iTunes Search API): Film → Trailer, Serie → Vorschau der ersten Folge
   async itunes(it){const m=META.cache[it.id]||{};const tv=it.type==='series';const ts=uniq([SUBS.clean(it.title),m.engTitle&&SUBS.clean(m.engTitle),m.oname&&SUBS.clean(m.oname)].filter(t=>t&&/[a-z0-9]/i.test(t)));
     for(const cc of['DE','US'])for(const t of ts){const g=await NET.grab(`https://itunes.apple.com/search?term=${encodeURIComponent(t)}&country=${cc}&media=${tv?'tvShow':'movie'}&entity=${tv?'tvEpisode':'movie'}&limit=25`,{body:true,max:3e6});
-      let d={};try{d=JSON.parse(g.body||'{}')}catch(e){}const res=(d.results||[]).filter(r=>r.previewUrl);const nt=cmpT(t);
+      let d={};try{d=JSON.parse(g.body||'{}')}catch(e){TRL.log('Apple: Antwort unlesbar ('+String(g.body||'').slice(0,40)+')')}const all=d.results||[];const res=all.filter(r=>r.previewUrl);const nt=cmpT(t);if(all.length&&!res.length)TRL.log(`Apple ${cc}: ${all.length} Treffer, aber ohne Trailer`);
       const ok=r=>{const nm=cmpT(tv?(r.artistName||''):(r.trackName||''));const y=+String(r.releaseDate||'').slice(0,4);return nm&&(nm===nt||(nt.length>=4&&(nm.startsWith(nt)||nt.startsWith(nm))))&&(tv||!it.year||!y||Math.abs(y-it.year)<=1)};
       const cand=res.filter(ok).sort((a,b)=>tv?((+a.trackNumber||99)-(+b.trackNumber||99)):0);const r=cand[0];
       TRL.log(`Apple ${cc} „${t}“: ${r?'Trailer gefunden':res.length?res.length+' Treffer, keiner passt':'nichts gefunden'}`);if(r)return r.previewUrl.replace(/^http:/,'https:')}
@@ -1516,7 +1525,7 @@ const TRL={mem:new Map(),cache:LS.get('nfk.trl2',{})||{},
     TRL.mem.set(it.id,{t:Date.now(),p});p.then(r=>{if(!r)TRL.mem.delete(it.id)});return p}};
 const TR={t:null,f:null,tok:0,
   settle(it,box){if(box&&APP.modal&&!APP.modal.el.contains(box))return;clearTimeout(TR.t);TR.stop();if(!it||it.type==='live'||!box||!PS('trailer'))return;const tok=++TR.tok;const t0=Date.now();const wait=(+PS('trailerDelay')||2)*1000;
-    TRL.find(it).then(src=>{if(!src||tok!==TR.tok)return;const go=()=>{if(tok!==TR.tok||!box.isConnected||P.el)return;if(Date.now()-(APP.lastKey||0)<700){TR.t=setTimeout(go,700);return}TR.start(src,box)};TR.t=setTimeout(go,Math.max(0,wait-(Date.now()-t0)))}).catch(()=>{})},
+    TRL.find(it).then(src=>{if(!src||tok!==TR.tok)return;const go=()=>{if(tok!==TR.tok||!box.isConnected||P.el||APP.pip)return;if(Date.now()-(APP.lastKey||0)<700){TR.t=setTimeout(go,700);return}TR.start(src,box)};TR.t=setTimeout(go,Math.max(0,wait-(Date.now()-t0)))}).catch(()=>{})},
   start(src,box){if(!box||!box.isConnected)return;const mute=!PS('trailerSound');
     if(src.mp4&&window.NFK&&NFK.tOpen){TRL.log('Starte Trailer ('+Math.round(box.getBoundingClientRect().width)+'×'+Math.round(box.getBoundingClientRect().height)+')');const r=box.getBoundingClientRect();const d=window.devicePixelRatio||1;const f={nat:true,box,on:false};TR.f=f;
       NFK.tOpen(JSON.stringify({url:src.mp4,x:Math.round(r.left*d),y:Math.round(r.top*d),w:Math.round(r.width*d),h:Math.round(r.height*d),fx:r.left/innerWidth,fy:r.top/innerHeight,fw:r.width/innerWidth,fh:r.height/innerHeight,mute}));return}
@@ -1975,7 +1984,7 @@ const P={
   open(it,o={}){
     const fromPip=!!(o.fromPip&&APP.pip&&APP.pip.it===it);if(APP.pip&&!fromPip)pipStop(true);
     // Bild aus anderer Fassung + Ton, der erst noch geladen werden muss (Abo mit 1 Verbindung): vorher fragen
-    if(it.type==='movie'&&!o.ep&&!o.noAsk&&!it.demo&&PS('player')!=='web'&&window.NFK&&NFK.vOpen){const pl=playPlan(it);if(pl.aud&&!mixDirect()&&!prepared(it,pl.l)){askMix(it,pl);return}}
+    if(it.type==='movie'&&!o.ep&&!o.noAsk&&!o.preview&&!it.demo&&PS('player')!=='web'&&window.NFK&&NFK.vOpen){const pl=playPlan(it);if(pl.aud&&!mixDirect()&&!prepared(it,pl.l)){askMix(it,pl);return}}
     P.close(true);P.it=it;P.o=o;P.start=Date.now();const pr=getProg()[it.id];
     if(it.type==='live')pushRecentCh(it.id);
     let ep=o.ep||null;if(it.type==='series'&&!ep){const S=it._seasons;if(pr&&pr.ep&&S&&S[pr.ep.s])ep=S[pr.ep.s].find(e=>+e.n===+pr.ep.n);if(!ep&&S){const k=Object.keys(S).sort((a,b)=>a-b)[0];ep=S[k][0];ep._s=k}}
@@ -1996,8 +2005,11 @@ const P={
       if(it.type==='live'){const list=(o.alts&&o.alts.length>1)?o.alts:chanList(it);cfg.chans=list.slice(0,600).map(c=>({id:c.id,title:c.title,items:vItems(c,sortedVersions(c))}));cfg.chanIndex=Math.max(0,list.indexOf(it))}
       P.native=1;NFK.play(JSON.stringify(cfg));return}
     P.native=0;P.engine=P.demo?'demo':natE?'nat':'web';P.cur=null;P.tried=new Set();P.mix=-1;P.subWant=it.type==='live'?'off':SUBS.pref(it);P.subFile=null;P.subTried=0;P.subRes=null;
-    P.epA='';if(!ep&&it.type==='movie'&&o.fixed){P.ver=Math.max(0,P.vers.indexOf(o.fixed))}else if((!ep&&it.type==='movie')||(ep&&it.type==='series')){const pl=playPlan(it);P.ver=Math.max(0,P.vers.indexOf(pl.pic));
+    P.epA=fromPip&&APP.pip&&APP.pip.vod?(P.epA||''):'';if(!ep&&it.type==='movie'&&o.fixed){P.ver=Math.max(0,P.vers.indexOf(o.fixed))}else if((!ep&&it.type==='movie')||(ep&&it.type==='series')){const pl=playPlan(it);P.ver=Math.max(0,P.vers.indexOf(pl.pic));
       if(pl.aud&&(P.engine==='nat'||P.engine==='demo')&&(P.engine==='demo'||mixDirect()||prepared(it,pl.l)))P.mix=P.vers.indexOf(pl.aud)}
+    // Weiterschauen-Vorschau: läuft klein in der Karte weiter (OK = Vollbild, ohne Neustart)
+    if(o.preview){if(P.engine!=='nat'||!o.card)return;APP.pip={it,ep,vod:1,card:o.card};P.it=it;P.ep=ep;P.startPos=startAt;P.pos=startAt;const s0=ep?ep.src:P.vers[P.ver].src;
+      document.documentElement.classList.add('pip');o.card.classList.add('cprev');if(ep&&P.mix>-1)P.reload();else P.load(s0.url,s0.alt);setTimeout(cprevSync,60);return}
     if(P.engine==='nat'){el.classList.add('nat');document.documentElement.classList.add('vidmode')}
     if(P.mix>-1)sub=(sub?sub+' · ':'')+mixLabel();
     el.innerHTML=`${P.demo?`<div class="sim">${it.type==='live'?`<div class="simlogo">${logoHTML(it)}</div>`:artHTML(ep?{...it,title:ep.title}:it,true)}<span class="lab">Demo-Wiedergabe${it.type==='live'?'':' · 60× schneller, damit du den Verlauf siehst'}</span></div>`:P.engine==='nat'?'<div class="pspin"><div class="spin"></div></div>':'<video id="vid" playsinline autoplay></video>'}
@@ -2022,10 +2034,10 @@ const P={
     v.onerror=()=>{if(alt&&!P.triedAlt){P.triedAlt=1;P.load(alt)}else P.err()};
     if(/\.m3u8(\?|$)/i.test(url)&&window.Hls&&Hls.isSupported()){P.hls=new Hls({maxBufferLength:30});P.hls.loadSource(url);P.hls.attachMedia(v);P.hls.on(Hls.Events.MANIFEST_PARSED,()=>P.audio());P.hls.on(Hls.Events.AUDIO_TRACKS_UPDATED,()=>P.audio());P.hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal){if(alt&&!P.triedAlt){P.triedAlt=1;P.load(alt)}else P.err()}})}else v.src=url;
     v.addEventListener('loadedmetadata',()=>{if(P.startPos>5&&isFinite(v.duration))v.currentTime=P.startPos;P.audio()},{once:true});webAsp(v,aspOf(P.it));v.play().catch(()=>{})},
-  reload(){if(!P.el)return;P.startPos=P.pos;const it=P.it,ep=P.ep,pic=P.vers[P.ver];if(P.demo||!pic)return;
+  reload(){if(!P.el&&!(APP.pip&&APP.pip.vod))return;P.startPos=P.pos;const it=P.it,ep=P.ep,pic=P.vers[P.ver];if(P.demo||!pic)return;
     if(!ep){if(P.engine==='nat')P.load(pic.src.url,pic.src.alt);return}
     const tk=P.rk=(P.rk||0)+1;const au=P.mix>-1?P.vers[P.mix]:null;
-    Promise.all([epFind(it,pic,ep),au?epFind(it,au,ep):null]).then(([pe,ae])=>{if(P.rk!==tk||P.ep!==ep||!P.el)return;
+    Promise.all([epFind(it,pic,ep),au?epFind(it,au,ep):null]).then(([pe,ae])=>{if(P.rk!==tk||P.ep!==ep||!(P.el||(APP.pip&&APP.pip.vod)))return;
       if(!pe){toast('Diese Folge gibt es in dieser Fassung nicht');pe=ep}
       if(au&&!ae){P.mix=-1;toast('Folge gibt es nicht auf '+langName(au.lang)+' – Ton der Bild-Fassung')}
       P.epA=ae&&ae.src?ae.src.url:'';const t=$('.pt p',P.el);if(t&&P.ep)t.textContent=`Staffel ${P.ep._s||'?'} · Folge ${P.ep.n}: ${P.ep.title}`+(P.mix>-1?' · '+mixLabel():'');
@@ -2168,7 +2180,10 @@ const TL={cache:LS.get('nfk.tl',{})||{},busy:new Set(),
       TL.busy.add(el);TL.get(t,tl).then(o=>{if(el.isConnected&&el.textContent.trim()===t){el.textContent=o;el._tdone=o}}).catch(()=>{el._tdone=t}).finally(()=>TL.busy.delete(el))}}};
 new MutationObserver(()=>{clearTimeout(TL._mt);TL._mt=setTimeout(TL.fix,180)}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 // ---------- Live als Mini-Fenster weiterlaufen lassen ----------
-function pipStop(keepNative){if(!APP.pip)return;try{NFK.vMini('');if(!keepNative)NFK.vCmd('stop',0)}catch(e){}APP.pip=null;document.documentElement.classList.remove('pip');const pb=$('#pipbox');if(pb&&!keepNative)pb.innerHTML='<span class="pipidle"><span>▶</span>Sender auswählen und OK drücken</span>';$$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'))}
+// Vorschau-Fenster genau auf die Karte legen; Fokus weg = Vorschau beenden (Fortschritt wird gespeichert)
+function cprevSync(){const p=APP.pip;if(!p||!p.vod||P.el)return;const c=p.card;if(!c||!c.isConnected||document.activeElement!==c){pipStop();return}const r=c.getBoundingClientRect(),W=innerWidth,H=innerHeight;
+  if(r.width<10||r.bottom<0||r.top>H){pipStop();return}NFK.vMini(JSON.stringify({x:0,y:0,w:1,h:1,fx:r.left/W,fy:r.top/H,fw:r.width/W,fh:r.height/H}))}
+function pipStop(keepNative){if(!APP.pip)return;if(APP.pip.vod){try{const st=JSON.parse(NFK.vState()||'{}');if(st.pos>3000&&st.dur>0){P.it=APP.pip.it;P.ep=APP.pip.ep;P.pos=st.pos/1000;P.dur=st.dur/1000;P.save()}}catch(e){}if(APP.pip.card)APP.pip.card.classList.remove('cprev');if(!P.el){P.it=null;P.ep=null}}try{NFK.vMini('');if(!keepNative)NFK.vCmd('stop',0)}catch(e){}APP.pip=null;document.documentElement.classList.remove('pip');const pb=$('#pipbox');if(pb&&!keepNative)pb.innerHTML='<span class="pipidle"><span>▶</span>Sender auswählen und OK drücken</span>';$$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'))}
 // Sender in der Liste ausgewählt: erst im Mini-Fenster abspielen (nochmal OK = Vollbild)
 function pipPlay(it,btn){const v=curVer(it);if(!v||!v.src||!v.src.url){P.open(it);return}pushRecentCh(it.id);
   const pref=(prof().countries||[]).flatMap(c=>(LANG[c]||[]).slice(1));APP.pip={it};document.documentElement.classList.add('pip');
@@ -2179,7 +2194,7 @@ function pipPlay(it,btn){const v=curVer(it);if(!v||!v.src||!v.src.url){P.open(it
   toast('Nochmal OK = Vollbild')}
 // Mini-Fenster folgt dem Rahmen auch beim Scrollen
 {let pq=0;const f=()=>{if(pq||!APP.pip||P.el)return;pq=requestAnimationFrame(()=>{pq=0;pipSync()})};document.addEventListener('scroll',f,true);addEventListener('resize',f);document.addEventListener('focusin',f)}
-function pipSync(){if(!APP.pip||P.el)return;const b=APP.view==='live'&&$('#pipbox');if(!b){pipStop();return}document.documentElement.classList.add('pip');const r=b.getBoundingClientRect(),d=window.devicePixelRatio||1;
+function pipSync(){if(!APP.pip||P.el)return;if(APP.pip.vod){cprevSync();return}const b=APP.view==='live'&&$('#pipbox');if(!b){pipStop();return}document.documentElement.classList.add('pip');const r=b.getBoundingClientRect(),d=window.devicePixelRatio||1;
   const W=innerWidth,H=innerHeight;NFK.vMini(JSON.stringify({x:Math.round(r.left*d)+2,y:Math.round(r.top*d)+2,w:Math.round(r.width*d)-4,h:Math.round(r.height*d)-4,fx:(r.left+2)/W,fy:(r.top+2)/H,fw:(r.width-4)/W,fh:(r.height-4)/H}))}
 // ---------- Weitermachen nach einem Neustart der Oberfläche ----------
 const NOW={save(){try{LS.set('nfk.now',{t:Date.now(),pid:APP.pid,v:APP.view,a:APP.args,play:P.el&&P.it&&!P.demo?{id:P.it.id,ep:P.ep?P.ep.id:null}:null})}catch(e){}}};
@@ -2357,7 +2372,7 @@ document.addEventListener('click',e=>{
    case'nav':if(b.dataset.v!==APP.view||b.dataset.sec){APP.hist=[];go(b.dataset.v,b.dataset.sec?{sec:b.dataset.sec}:{},false)}break;
    case'open':openDetails(id);break;
    case'play':if(!it)break;if(it.type==='live'&&APP.view==='live'&&!P.el&&b.closest('.chl')&&window.NFK&&NFK.vMini&&NFK.vOpen&&PS('livePip')!==0){if(APP.pip&&APP.pip.it===it)P.open(it,{fromPip:1});else pipPlay(it,b);break}if(it.type==='series')loadSeasons(it).then(()=>P.open(it,{from:b.dataset.from==='0'?0:undefined})).catch(()=>toast('Folgen konnten nicht geladen werden'));else P.open(it,{from:b.dataset.from==='0'?0:undefined});break;
-   case'resume':if(!it)break;if(it.type==='series')loadSeasons(it).then(()=>P.open(it));else P.open(it);break;
+   case'resume':if(!it)break;if(APP.pip&&APP.pip.vod&&APP.pip.it===it){P.open(it,{fromPip:1});break}if(it.type==='series')loadSeasons(it).then(()=>P.open(it));else P.open(it);break;
    case'list':toggleList(it);b.classList.toggle('on',inList(id));b.innerHTML=(inList(id)?I.star:I.list)+(inList(id)?'Favorit':'Zu Favoriten');break;
    case'rate':{const v=setRating(it,+b.dataset.v);$$('[data-act="rate"]',APP.modal&&APP.modal.el).forEach(x=>x.classList.toggle('on',+x.dataset.v===v));toast(v>0?'Mehr davon – Empfehlungen angepasst':v<0?'Verstanden – zeigen wir dir seltener':'Bewertung entfernt');break}
    case'season':renderEps(it,APP.modal.el,b.dataset.s);$(`[data-act="season"][data-s="${b.dataset.s}"]`,APP.modal.el).focus();break;
@@ -2550,13 +2565,14 @@ function pickDir(cur,dir,els){const r=cur.getBoundingClientRect(),cx=r.left+r.wi
   if(!c.length)return null;const mn=Math.min(...c.map(o=>o.main));const band=c.filter(o=>o.main<=mn+24);band.sort((a,b)=>a.cross-b.cross||a.main-b.main);return band[0].el}
 function scrollParent(el){for(let p=el.parentElement;p&&p!==document.body&&p!==document.documentElement;p=p.parentElement){if(p.scrollHeight>p.clientHeight+4){const o=getComputedStyle(p).overflowY;if(o==='auto'||o==='scroll')return p}}return null}
 function ensureVisible(el){
+  {const hc=el.closest('.lchips,.stabs');if(hc){const r=el.getBoundingClientRect(),t=hc.getBoundingClientRect();if(r.left<t.left+8)hc.scrollBy({left:r.left-t.left-40});else if(r.right>t.right-8)hc.scrollBy({left:r.right-t.right+40})}}
   const tr=el.closest('.track');if(tr){const r=el.getBoundingClientRect(),t=tr.getBoundingClientRect();const pad=parseFloat(getComputedStyle(tr).paddingLeft)||32;
     if(r.left<t.left+pad)tr.scrollBy({left:r.left-t.left-pad});else if(r.right>t.right-24)tr.scrollBy({left:r.right-t.right+pad})}
   const rows=el.closest('.rows');const row=el.closest('.row');
   if(rows&&row){rows.scrollTo({top:row.offsetTop});return}
   const sc=el.closest('.ap,.ddm')||scrollParent(el)||el.closest('.rows,.main,.modal,.scr,.cats');if(sc){const r=el.getBoundingClientRect(),s=sc.getBoundingClientRect();const pad=Math.min(80,s.height*.18);if(r.top<s.top+pad*.7)sc.scrollBy({top:r.top-s.top-pad});else if(r.bottom>s.bottom-pad*.5)sc.scrollBy({top:r.bottom-s.bottom+pad})}
 }
-document.addEventListener('focusin',e=>{const el=e.target;if(APP._gl&&el.closest&&el.closest('#vgrid')&&APP._gn<APP._gl.length){const cs=el.parentElement.children;let i=0;for(;i<cs.length;i++)if(cs[i]===el)break;if(cs.length-i<30)gridMore(60)}{const mn=$('#main.home');if(mn){const inRows=!!el.closest('#rows')&&!!el.closest('.row');if(mn.classList.contains('browse')!==inRows)mn.classList.toggle('browse',inRows)}}if(el.classList.contains('dot')&&el.closest('#spot')&&+el.dataset.i!==APP.heroI){showHero(+el.dataset.i,'d'+el.dataset.i);return}if($('#spot')&&el.closest('#rows')&&el.dataset.id){clearTimeout(APP._sp);APP._sp=setTimeout(()=>setSpot(el.dataset.id,el.dataset.why),document.documentElement.classList.contains('lite')?170:110)}});
+document.addEventListener('focusin',e=>{const el=e.target;clearTimeout(APP._cpT);if(el.classList&&el.classList.contains('card')&&el.dataset.why==='cont'&&window.NFK&&NFK.vMini&&NFK.vOpen&&!P.el&&PS('contPrev')!==0){const it=APP.byId.get(el.dataset.id);if(it&&!(APP.pip&&APP.pip.vod&&APP.pip.card===el))APP._cpT=setTimeout(()=>{if(document.activeElement!==el||P.el)return;TR.stop();const go=()=>P.open(it,{preview:true,card:el});if(it.type==='series'&&!it._seasons)loadSeasons(it).then(()=>{if(document.activeElement===el&&!P.el)go()}).catch(()=>{});else go()},2000)}if(APP._gl&&el.closest&&el.closest('#vgrid')&&APP._gn<APP._gl.length){const cs=el.parentElement.children;let i=0;for(;i<cs.length;i++)if(cs[i]===el)break;if(cs.length-i<30)gridMore(60)}{const mn=$('#main.home');if(mn){const inRows=!!el.closest('#rows')&&!!el.closest('.row');if(mn.classList.contains('browse')!==inRows)mn.classList.toggle('browse',inRows)}}if(el.classList.contains('dot')&&el.closest('#spot')&&+el.dataset.i!==APP.heroI){showHero(+el.dataset.i,'d'+el.dataset.i);return}if($('#spot')&&el.closest('#rows')&&el.dataset.id){clearTimeout(APP._sp);APP._sp=setTimeout(()=>setSpot(el.dataset.id,el.dataset.why),document.documentElement.classList.contains('lite')?170:110)}});
 document.addEventListener('mouseover',e=>{const el=e.target.closest('.f');if(!el||el===document.activeElement||el.tagName==='INPUT')return;if(APP._mm){el.focus({preventScroll:true})}});
 document.addEventListener('mousemove',()=>{APP._mm=true;APP.lastKey=Date.now();APP.kbd=false;if(P.el)P.wake()},{passive:true});
 function goBack(){

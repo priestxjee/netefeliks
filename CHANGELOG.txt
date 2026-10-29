@@ -1,3 +1,6 @@
+Weiterschauen wie bei Netflix: Karte wird größer, nach 2 s läuft die Folge/der Film klein weiter, OK = Vollbild ohne Neustart
+Live: Kategorien-Leiste scrollt mit, man sieht immer die Auswahl
+Trailer & Bewertungen: Anfragen laufen jetzt zuerst wie ein normaler Browser (weniger Sperren)
 Einlesen braucht viel weniger Speicher: nur deine Länder werden geladen, Katalog wird in Stücken verarbeitet und gespeichert; nach einem Abbruch geht es mit Länderauswahl weiter statt zurück zur Anmeldung
 Einlesen: Liste wird Stück für Stück verarbeitet (nie komplett im Speicher); klappt das nicht, automatisch zweiter Versuch; Fehler werden mit Hinweis angezeigt
 Einlesen der Playlist braucht deutlich weniger Arbeitsspeicher (Daten wandern ohne Kopie in den Hintergrund) – kein Neustart mehr beim ersten Einlesen
