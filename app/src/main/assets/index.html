@@ -246,6 +246,13 @@ h2.big{font-size:2.4rem;margin:0 0 .4rem;font-weight:800;letter-spacing:-.01em;t
 .pf:focus .av{transform:scale(1.07);box-shadow:0 0 0 4px var(--fg)}
 .pf:focus{color:var(--fg)}
 .av.sm{width:2.4rem;height:2.4rem;font-size:1.3rem;border-radius:.3rem}
+.av.emo>span{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;font-size:.95em;line-height:1}
+.av.emo{background-image:radial-gradient(120% 120% at 30% 15%,rgba(255,255,255,.28),rgba(0,0,0,.25))!important}
+.avs{display:flex;flex-wrap:wrap;gap:.5rem;max-width:34rem}
+.avo{width:3.1rem;height:3.1rem;border-radius:.6rem;border:2px solid transparent;background:rgba(255,255,255,.07);font-size:1.7rem;line-height:1;display:grid;place-items:center;cursor:pointer;font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;color:var(--fg)}
+.avo b{font:700 1rem var(--f-body)}
+.avo.on{border-color:var(--red);background:rgba(229,9,20,.22)}
+.avo:focus{outline:0;border-color:var(--fg);transform:scale(1.12);background:rgba(255,255,255,.18)}
 .colors{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
 .sw{width:3rem;height:3rem;border-radius:.4rem;border:0;cursor:pointer}
 .sw.on{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--fg)}
@@ -577,7 +584,12 @@ html.lite .lv3 .lt h2::before{box-shadow:none}
 /* Intro */
 .intro{position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#2a0507 0%,#0b0606 55%,#000 100%);display:grid;place-items:center;overflow:hidden;cursor:pointer}
 .intro::before{content:"";position:absolute;left:50%;top:50%;width:70vmin;height:70vmin;margin:-35vmin 0 0 -35vmin;border-radius:50%;background:radial-gradient(circle,rgba(229,9,20,.55),transparent 65%);opacity:0;transform:scale(.4);animation:iglow 1.6s .55s ease-out both}
-.intro .stage{display:flex;flex-direction:column;align-items:center;gap:1.6rem;animation:izoom .55s 2.55s cubic-bezier(.5,0,.75,0) both}
+.intro .stage{display:flex;flex-direction:column;align-items:center;gap:1.6rem;will-change:transform,opacity}
+.intro.go .stage{animation:izoom .45s cubic-bezier(.5,0,.75,0) both}
+.intro .r1,.intro .r2,.intro .pl,.intro .sh,.intro .iw span,.intro::before{will-change:transform,opacity}
+.intro .iload{position:absolute;left:50%;bottom:20vh;width:11rem;height:3px;margin-left:-5.5rem;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .4s}
+.intro.wait .iload{opacity:1}.intro .iload i{display:block;width:40%;height:100%;background:var(--red,#e50914);animation:islide 1.1s ease-in-out infinite;will-change:transform}
+@keyframes islide{from{transform:translateX(-110%)}to{transform:translateX(280%)}}
 .intro .ilogo{position:relative;width:8.5rem;height:8.5rem;border-radius:50%;overflow:hidden}
 .intro .ilogo i{position:absolute;display:block}
 .intro .r1{inset:0;border-radius:50%;border:.55rem solid #e50914;box-shadow:inset 0 0 1.2rem rgba(229,9,20,.6);transform:scale(0);animation:iring .5s .18s cubic-bezier(.2,.9,.3,1.25) both}
@@ -1002,7 +1014,7 @@ const CACHE={
     await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put({sig:CACHE.sig(),t:Date.now(),items,csig:APP.sig||''},'catalog');t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}},
   async load(){try{const d=await CACHE.db();const v=await new Promise((res,rej)=>{const r=d.transaction('kv').objectStore('kv').get('catalog');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
     if(!v||v.sig!==CACHE.sig())return false;let items;
-    if(v.parts){items=[];for(let i=0;i<v.parts;i++){let s=await CACHE.get('c'+v.gen+'_'+i);if(!s)return false;const a=JSON.parse(s);s=null;for(let k=0;k<a.length;k++)items.push(a[k])}}else items=JSON.parse(v.items);if(!items.length)return false;restoreItems(items);CACHE.t=v.t;APP.sig=v.csig||'';APP.xst=v.xst||{};for(const c in APP.xst)if(!APP.stats[c])APP.stats[c]=APP.xst[c];return true}catch(e){return false}}};
+    if(v.parts){items=[];for(let i=0;i<v.parts;i++){if(i)await new Promise(r=>setTimeout(r,0));let s=await CACHE.get('c'+v.gen+'_'+i);if(!s)return false;const a=JSON.parse(s);s=null;for(let k=0;k<a.length;k++)items.push(a[k])}}else items=JSON.parse(v.items);if(!items.length)return false;restoreItems(items);CACHE.t=v.t;APP.sig=v.csig||'';APP.xst=v.xst||{};for(const c in APP.xst)if(!APP.stats[c])APP.stats[c]=APP.xst[c];return true}catch(e){return false}}};
 function restoreItems(items){APP.items=items;APP.byId=new Map(items.map(i=>[i.id,i]));APP.catVer++;
   const st={};for(const it of items)for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}APP.stats=st;APP._pool=null}
 // Hintergrund-Aktualisierung: holt die Playlist neu, ohne die Bedienung zu stören
@@ -1211,7 +1223,7 @@ const R={
     R._c={key,t};return t},
   score(it,t){const f=R.feats(it);let s=0;for(const k in f)if(t[k])s+=t[k]*f[k];s/=(it._fn*t._n);
     const q=it.rating?clamp((it.rating-4)/5,0,1):.45;const fresh=it.added?Math.exp(-(Date.now()-it.added)/(864e5*45)):0;
-    let v=.7*s+.2*q+.1*fresh;const rt=getRating(it.id);if(rt<0)v-=2;if(rt>0)v+=.05;
+    let v=.7*s+.2*q+.1*fresh+((it.type==='movie'?BOX.has(it):it.type==='series'&&SERBOX.has(it))?.06:0);const rt=getRating(it.id);if(rt<0)v-=2;if(rt>0)v+=.05;
     const pr=getProg()[it.id];if(pr&&pr.done)v*=.4;return v},
   match(v){return Math.round(clamp(62+v*52,55,99))},
   sim(a,b){const fa=R.feats(a),fb=R.feats(b);let s=0;for(const k in fa)if(fb[k])s+=fa[k]*fb[k];return s/(a._fn*b._fn)},
@@ -1342,7 +1354,7 @@ function teamCard(h,i){const ch=h.chans[0];const parts=h.title.split(':');const 
 function teamZoneHTML(){const hits=findTeamGames();APP.teamHits=hits;if(!hits.length)return'';const p=prof();
   return`<h3 class="pad">Dein Team<small>${esc(p.teams.map(t=>t.n).join(', '))} · bester Stream automatisch gewählt</small></h3><div class="track pad">${hits.map(teamCard).join('')}</div>`}
 let _tzT=null;
-function refreshTeamZones(){if(!((prof()||{}).teams||[]).length)return;clearTimeout(_tzT);_tzT=setTimeout(()=>{$$('#teamzone').forEach(z=>{if(z.contains(document.activeElement))return;z.innerHTML=teamZoneHTML()});checkTeamAlert()},2500)}
+function refreshTeamZones(){if(!((prof()||{}).teams||[]).length)return;clearTimeout(_tzT);_tzT=setTimeout(()=>{$$('#teamzone').forEach(z=>{if(z.contains(document.activeElement)||(APP.view==='home'&&!homeLive()))return;z.innerHTML=teamZoneHTML()});checkTeamAlert()},2500)}
 function checkTeamAlert(){if(!prof()||!PS('teamAlert')||$('.uplert'))return;APP.alerted=APP.alerted||new Set(LS.get('nfk.al.'+APP.pid,[]));if($('.talert'))return;const day=new Date().toDateString();const h=findTeamGames().find(x=>x.live&&!APP.alerted.has(x.team.n+'|'+day));if(!h)return;
   APP.alerted.add(h.team.n+'|'+day);LS.set('nfk.al.'+APP.pid,[...APP.alerted].slice(-60));if(P.el&&h.chans.includes(P.it))return;showAlert(h)}
 function showAlert(h){$$('.talert').forEach(x=>x.remove());APP.alertHit=h;const ch=h.chans[0];const d=document.createElement('div');d.className='talert';
@@ -1352,7 +1364,7 @@ function showAlert(h){$$('.talert').forEach(x=>x.remove());APP.alertHit=h;const 
 function popOpen(d,act){d._back=document.activeElement;document.body.appendChild(d);const b=$(`[data-act="${act}"]`,d);b.focus({preventScroll:true});setTimeout(()=>{if(d.isConnected&&!d.contains(document.activeElement))b.focus({preventScroll:true})},80)}
 function popClose(d){const back=d._back;d.remove();if(back&&back.isConnected)back.focus({preventScroll:true});else(focusables()[0]||document.body).focus()}
 let _tw=null;
-function startTeamWatch(){EPG.prefetch();TREND.load();setTimeout(()=>TOP.load(),20000);setTimeout(checkTeamAlert,6000);setTimeout(()=>UPD.check(),2500);if(_tw)return;_tw=setInterval(()=>{EPG.prefetch();refreshTeamZones()},60000);setInterval(()=>{UPD.check();TOP.load()},30*6e4);
+function startTeamWatch(){EPG.prefetch();TREND.load();setTimeout(()=>TOP.load(),20000);setTimeout(()=>BOX.load(),40000);setTimeout(checkTeamAlert,6000);setTimeout(()=>UPD.check(),2500);if(_tw)return;_tw=setInterval(()=>{EPG.prefetch();refreshTeamZones()},60000);setInterval(()=>{UPD.check();TOP.load()},30*6e4);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-(UPD.last||0)>2*6e4)UPD.check()})}
 // ---------- Updates (nur in der Fire-TV-App) ----------
 const manual0=()=>false; // während eines Films kein Fenster – der Hinweis kommt danach
@@ -1457,10 +1469,12 @@ document.addEventListener('error',e=>{const el=e.target;if(!(el instanceof HTMLI
 // ---------- Seitenleiste ----------
 const NAV=[['search','Suche',I.search],['home','Startseite',I.home],['live','Live-TV',I.live],['sport','Sport',I.sport],['movies','Filme',I.movie],['series','Serien',I.series],['settings','Einstellungen',I.gear]];
 function railHTML(){const p=prof();return`<nav class="rail"><div class="brand"><i>N</i><b>NETEFELIKS</b></div>${NAV.map(([k,l,ic])=>`<button class="nav f${APP.view===k?' on':''}${k==='settings'&&UPD.info?' upd':''}" data-act="nav" data-v="${k}"${k==='settings'&&UPD.info?' data-sec="update"':''}>${ic}<span>${l}${k==='settings'&&UPD.info?' · Update!':''}</span></button>`).join('')}
-  <div class="who"><button class="nav f" data-act="profiles"><span class="av sm" style="background:${p.color}"><span>${esc(p.name[0]||'?')}</span></span><span>${esc(p.name)} · wechseln</span></button></div></nav>`}
+  <div class="who"><button class="nav f" data-act="profiles">${avHTML(p,'sm')}<span>${esc(p.name)} · wechseln</span></button></div></nav>`}
 
 // ---------- Navigation zwischen Ansichten ----------
 function go(v,args={},push=true){if(push&&APP.view&&(APP.view!==v||JSON.stringify(APP.args)!==JSON.stringify(args)))APP.hist.push({v:APP.view,a:APP.args,f:document.activeElement&&document.activeElement.dataset.id});APP.view=v;APP.args=args;renderApp()}
+// Live-Spiele auf der Startseite: nur wenn gewünscht (Standard: nur mit Lieblingsteams, nie bei „kein Interesse an Sport“)
+function homeLive(){const p=prof();if(!p)return false;const v=p.set&&p.set.homeLive;if(v!==undefined)return!!v;return!p.noSport&&!!(p.teams&&p.teams.length)}
 function renderApp(focusSel){
   TR.stop();clearTimeout(heroT);applyLook();setTimeout(NOW.save,0);
   $('#app').innerHTML=railHTML()+`<main class="main${['home','movies','series'].includes(APP.view)||(APP.view==='mylist'&&getList().length)?' home':''}" id="main"></main>`;
@@ -1484,15 +1498,15 @@ VIEWS.home=(el)=>{
   if(ROW('top'))html+=rowHTML('Top-Empfehlungen für '+esc(p.name),top,{why:'top',sub:t._ev?'basiert auf '+t._ev+' Aktionen':'basiert auf deinen Lieblingsgenres'});
   const seen=[];for(const e of evs().slice().reverse()){if(!['finish','progress','like','play'].includes(e.k))continue;const it=APP.byId.get(e.id);if(it&&it.type!=='live'&&!seen.includes(it)&&getRating(it.id)>=0)seen.push(it);if(seen.length>=2)break}
   if(ROW('because'))for(const a of seen){const sim=vod.filter(x=>x!==a).map(x=>({x,s:R.sim(a,x)+.08*(x.rating||6)/10})).sort((p1,p2)=>p2.s-p1.s).slice(0,20).map(o=>o.x);html+=rowHTML(`Weil du „<span dir="auto">${esc(a.title)}</span>“ geschaut hast`,sim,{why:'b:'+a.id})}
-  const sp=lv.filter(c=>c.sport).map(c=>({c,e:EPG.get(c)})).filter(o=>!o.e||/–|UFC|NBA|F1|:|لیگ/.test(o.e.cur&&o.e.cur.title||'')).map(o=>o.c);
-  const top10=((TOP.top('movie')||{}).l||[]).concat((TOP.top('series')||{}).l||[]).filter((x,i)=>i<2)||[];const nl30=Date.now()-30*864e5;const top10x=topN(vod,i=>(i.pop||0)/10+(i.rating||0)+(i.added>nl30?2:0),10);
+  const top10=((TOP.top('movie')||{}).l||[]).concat((TOP.top('series')||{}).l||[]).filter((x,i)=>i<2)||[];
   if(ROW('top10')){html+=top10Row('movie');html+=top10Row('series')}
+  if(ROW('top10'))html+=boxRow('home');
   if(ROW('new')){const np=newPopular(vod);if(np.length>3)html+=rowHTML('Neu & beliebt',np,{why:'new'})}
   if(ROW('new'))html+=rowHTML('Neu auf Netefeliks',topN(vod,i=>i.added||0,24),{why:'new'});
   if(ROW('pop'))for(const c of p.countries){const cv=vod.filter(i=>i.langs.includes(c));if(cv.length<4)continue;html+=rowHTML('Beliebt: '+esc(CBY[c].name)+' '+(CBY[c].flag||''),topN(cv,i=>(i.rating||0)+(i.pop||0)/40,24),{why:'pop'})}
   const tg=ROW('genre')?R.topGenres(t,3):[];for(const[g]of tg){const gi=scored.filter(x=>x.it.genres.includes(g)&&okR(x.it)).slice(0,24).map(x=>x.it);html+=rowHTML(esc(g)+' – ausgewählt für dich',gi,{why:'g:'+g})}
   const ml=getList().map(id=>APP.byId.get(id)).filter(Boolean);if(ROW('list'))html+=rowHTML('★ Deine Favoriten',ml,{why:'list'});
-  const tz=teamZoneHTML();el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><section class="row tz" id="teamzone">${tz}</section>${html||'<p class="empty pad">Für deine Länderauswahl wurden keine Inhalte gefunden. Ändere die Länder in den Einstellungen.</p>'}</div>`;
+  const hl=homeLive();const tz=hl?teamZoneHTML():'';if(!hl)APP.teamHits=[];el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><section class="row tz" id="teamzone">${tz}</section>${html||'<p class="empty pad">Für deine Länderauswahl wurden keine Inhalte gefunden. Ändere die Länder in den Einstellungen.</p>'}</div>`;
   setTimeout(()=>trlPrefetch(APP.hero||[]),1500);APP.hero=hot.length>=3?hot.slice(0,6):uniq([...top.slice(0,2),...vod.filter(i=>QR[i.q]>=4).sort((a,b)=>b.added-a.added).slice(0,2),...top10.slice(0,2),...top.slice(2,8)]).slice(0,6);
   const lh=(APP.teamHits||[]).find(h=>h.live);if(lh)setSpot(lh.chans[0].id,'team');else if(APP.hero.length&&PS('hero')){showHero(0);const pb=$('#spot [data-hb="1"]');if(pb)pb.setAttribute('data-autofocus','')}else if(cont[0])setSpot(cont[0].id,'cont');else if(top[0])setSpot(top[0].id,'top');
 };
@@ -1629,6 +1643,52 @@ const TOP={data:LS.get('nfk.top2',null),busy:0,
     // nicht genug Chart-Titel in deinem Abo: mit den beliebtesten aktuellen Titeln auf 10 auffüllen
     if(out.length>=3&&out.length<10){const yr=new Date().getFullYear();const pl=pool(ty);for(const it of[...localTop(pl.filter(x=>(x.year||0)>=yr-1)),...localTop(pl)]){if(out.length>=10)break;if(!out.includes(it)){out.push(it);src.push('beliebt bei dir')}}}
     const v=out.length>=3?{l:out,src}:(TREND.top(ty)?{l:TREND.top(ty),src:[]}:null);TOP._m[ty]={k:key,v};return v}};
+// ---------- Kassenschlager: weltweit erfolgreichste Kinofilme je Jahr (Box Office), abgeglichen mit deinem Abo ----------
+// Vergangene Jahre ändern sich nicht mehr; das laufende Jahr wird wöchentlich von Box Office Mojo geholt. „|“ trennt andere Titel (z. B. deutsch).
+const BOXO=[
+[2025,['Ne Zha 2','Zootopia 2|Zoomania 2','Lilo & Stitch','Avatar: Fire and Ash|Avatar: Fire and Ash','Jurassic World Rebirth|Jurassic World: Die Wiedergeburt','A Minecraft Movie|Ein Minecraft Film','How to Train Your Dragon|Drachenzähmen leicht gemacht','F1|F1: Der Film','Superman','Mission: Impossible – The Final Reckoning','Demon Slayer: Infinity Castle','The Fantastic Four: First Steps|Die Fantastischen Vier: Erste Schritte','Wicked: For Good']],
+[2024,['Inside Out 2|Alles steht Kopf 2','Deadpool & Wolverine','Moana 2|Vaiana 2','Despicable Me 4|Ich – Einfach unverbesserlich 4','Wicked','Mufasa: The Lion King|Mufasa: Der König der Löwen','Dune: Part Two|Dune: Teil Zwei','Godzilla x Kong: The New Empire','Kung Fu Panda 4','Venom: The Last Dance','Gladiator II','Beetlejuice Beetlejuice']],
+[2023,['Barbie','The Super Mario Bros. Movie|Der Super Mario Bros. Film','Oppenheimer','Guardians of the Galaxy Vol. 3','Fast X','Spider-Man: Across the Spider-Verse','The Little Mermaid|Arielle, die Meerjungfrau','Mission: Impossible – Dead Reckoning Part One','Elemental','Ant-Man and the Wasp: Quantumania','Wonka']],
+[2022,['Avatar: The Way of Water|Avatar: The Way of Water','Top Gun: Maverick','Jurassic World Dominion|Jurassic World: Ein neues Zeitalter','Doctor Strange in the Multiverse of Madness','Minions: The Rise of Gru|Minions: Auf der Suche nach dem Mini-Boss','Black Panther: Wakanda Forever','The Batman','Thor: Love and Thunder','Puss in Boots: The Last Wish|Der gestiefelte Kater: Der letzte Wunsch','Uncharted']],
+[2021,['Spider-Man: No Way Home','Shang-Chi and the Legend of the Ten Rings','Venom: Let There Be Carnage','F9|Fast & Furious 9','Dune','No Time to Die|Keine Zeit zu sterben','Godzilla vs. Kong','Eternals','Sing 2|Sing – Die Show deines Lebens','Free Guy']],
+[2020,['Bad Boys for Life','Tenet','Sonic the Hedgehog|Sonic the Hedgehog','Demon Slayer: Mugen Train|Demon Slayer: Mugen Train','Dolittle|Die fantastische Reise des Dr. Dolittle','Birds of Prey','The Croods: A New Age|Die Croods – Alles auf Anfang','Onward|Onward: Keine halben Sachen','The Invisible Man|Der Unsichtbare','Wonder Woman 1984']],
+[2019,['Avengers: Endgame','The Lion King|Der König der Löwen','Frozen II|Die Eiskönigin 2','Spider-Man: Far From Home','Captain Marvel','Joker','Star Wars: The Rise of Skywalker|Star Wars: Der Aufstieg Skywalkers','Toy Story 4','Aladdin','Jumanji: The Next Level']],
+[2018,['Avengers: Infinity War','Black Panther','Jurassic World: Fallen Kingdom|Jurassic World: Das gefallene Königreich','Incredibles 2|Die Unglaublichen 2','Aquaman','Bohemian Rhapsody','Venom','Mission: Impossible – Fallout','Deadpool 2','Fantastic Beasts: The Crimes of Grindelwald|Phantastische Tierwesen: Grindelwalds Verbrechen']],
+[2017,['Star Wars: The Last Jedi|Star Wars: Die letzten Jedi','Beauty and the Beast|Die Schöne und das Biest','The Fate of the Furious|Fast & Furious 8','Despicable Me 3|Ich – Einfach unverbesserlich 3','Jumanji: Welcome to the Jungle|Jumanji: Willkommen im Dschungel','Spider-Man: Homecoming','Guardians of the Galaxy Vol. 2','Thor: Ragnarok','Wonder Woman','Coco|Coco – Lebendiger als das Leben!']],
+[2016,['Captain America: Civil War','Rogue One: A Star Wars Story','Finding Dory|Findet Dorie','Zootopia|Zoomania','The Jungle Book|The Jungle Book','The Secret Life of Pets|Pets','Batman v Superman: Dawn of Justice','Fantastic Beasts and Where to Find Them|Phantastische Tierwesen und wo sie zu finden sind','Deadpool','Suicide Squad']],
+[2015,['Star Wars: The Force Awakens|Star Wars: Das Erwachen der Macht','Jurassic World','Furious 7|Fast & Furious 7','Avengers: Age of Ultron','Minions','Spectre|James Bond 007: Spectre','Inside Out|Alles steht Kopf','Mission: Impossible – Rogue Nation','The Hunger Games: Mockingjay – Part 2|Die Tribute von Panem – Mockingjay Teil 2','The Martian|Der Marsianer']],
+[2014,['Transformers: Age of Extinction|Transformers: Ära des Untergangs','The Hobbit: The Battle of the Five Armies|Der Hobbit: Die Schlacht der fünf Heere','Guardians of the Galaxy','Maleficent|Maleficent – Die dunkle Fee','The Hunger Games: Mockingjay – Part 1|Die Tribute von Panem – Mockingjay Teil 1','X-Men: Days of Future Past|X-Men: Zukunft ist Vergangenheit','Captain America: The Winter Soldier|The Return of the First Avenger','Dawn of the Planet of the Apes|Planet der Affen: Revolution','The Amazing Spider-Man 2|The Amazing Spider-Man 2: Rise of Electro','Interstellar']],
+[2013,['Frozen|Die Eiskönigin – Völlig unverfroren','Iron Man 3','Despicable Me 2|Ich – Einfach unverbesserlich 2','The Hobbit: The Desolation of Smaug|Der Hobbit: Smaugs Einöde','The Hunger Games: Catching Fire|Die Tribute von Panem – Catching Fire','Fast & Furious 6','Monsters University|Die Monster Uni','Gravity','Man of Steel','Thor: The Dark World|Thor: The Dark Kingdom']],
+[2012,['The Avengers|Marvel’s The Avengers','Skyfall|James Bond 007: Skyfall','The Dark Knight Rises','The Hobbit: An Unexpected Journey|Der Hobbit: Eine unerwartete Reise','Ice Age: Continental Drift|Ice Age 4 – Voll verschoben','The Twilight Saga: Breaking Dawn – Part 2|Breaking Dawn – Biss zum Ende der Nacht Teil 2','The Amazing Spider-Man','Madagascar 3: Europe’s Most Wanted|Madagascar 3: Flucht durch Europa','The Hunger Games|Die Tribute von Panem – The Hunger Games','Men in Black 3']],
+[2011,['Harry Potter and the Deathly Hallows – Part 2|Harry Potter und die Heiligtümer des Todes – Teil 2','Transformers: Dark of the Moon|Transformers 3','Pirates of the Caribbean: On Stranger Tides|Pirates of the Caribbean – Fremde Gezeiten','The Twilight Saga: Breaking Dawn – Part 1|Breaking Dawn – Biss zum Ende der Nacht Teil 1','Mission: Impossible – Ghost Protocol|Mission: Impossible – Phantom Protokoll','Kung Fu Panda 2','Fast Five|Fast & Furious Five','The Hangover Part II|Hangover 2','The Smurfs|Die Schlümpfe','Cars 2']],
+[2010,['Toy Story 3','Alice in Wonderland','Harry Potter and the Deathly Hallows – Part 1|Harry Potter und die Heiligtümer des Todes – Teil 1','Inception','Shrek Forever After|Für immer Shrek','The Twilight Saga: Eclipse|Eclipse – Biss zum Abendrot','Iron Man 2','Tangled|Rapunzel – Neu verföhnt','Despicable Me|Ich – Einfach unverbesserlich','How to Train Your Dragon|Drachenzähmen leicht gemacht']]];
+const BOX={data:LS.get('nfk.box',null),busy:0,_m:null,
+  async load(){if(BOX.busy||!APP.cfg||APP.cfg.mode==='demo')return;const yr=new Date().getFullYear();const d=BOX.data;if(d&&d.y===yr&&Date.now()-d.t<7*864e5)return;BOX.busy=1;
+    try{await waitIdle(4000);const dec=t=>t.replace(/&amp;/g,'&').replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(+n)).trim();
+      const g=await NET.grab(`https://www.boxofficemojo.com/year/world/${yr}/`,{rules:[{re:String.raw`mojo-field-type-release_group[^>]*>\s*<a[^>]*>([^<]+)</a>`,max:15,g:[1]}]});
+      const l=((g.r&&g.r[0])||[]).map(x=>dec(x[0])).filter(Boolean);if(l.length>=3){BOX.data={t:Date.now(),y:yr,l};LS.set('nfk.box',BOX.data);BOX._m=null}}catch(e){}finally{BOX.busy=0}},
+  years(){const yr=new Date().getFullYear();const out=BOXO.filter(([y])=>y<yr);const d=BOX.data;if(d&&d.l&&d.l.length)out.unshift([d.y,d.l]);else{const c=BOXO.find(([y])=>y===yr);if(c)out.unshift(c)}return out.filter(([y])=>y>=yr-15)},
+  // passende Titel aus deinem Abo, neuestes Jahr zuerst (je Jahr in Kassen-Reihenfolge)
+  list(){const key=APP.catVer+'|'+(APP._pool&&APP._pool.key)+'|'+(BOX.data&&BOX.data.t);if(BOX._m&&BOX._m.k===key)return BOX._m.v;
+    const idx=new Map();const add=(k,it)=>{if(!k)return;const a=idx.get(k);if(a)a.push(it);else idx.set(k,[it])};
+    for(const it of pool('movie')){add(mkey(it.title),it);const m=META.cache[it.id];if(m&&m.engTitle)add(mkey(m.engTitle),it)}
+    const out=[];const seen=new Set();
+    for(const[y,ts]of BOX.years())ts.forEach((t,r)=>{let c=[];for(const a of t.split('|'))c=c.concat(idx.get(mkey(a))||[]);c=c.filter(it=>!seen.has(it)&&(!it.year||Math.abs(it.year-y)<=1));
+      if(!c.length)return;c.sort((a,b)=>QR[b.q]-QR[a.q]);seen.add(c[0]);out.push(c[0])});
+    BOX.ids=new Set(out.map(i=>i.id));BOX._m={k:key,v:out};return out},
+  has(it){BOX.list();return BOX.ids.has(it.id)}};
+// Meistgesehene Serien der letzten ~20 Jahre (weltweit, grob nach Beliebtheit). „@Jahr“ = Startjahr, damit kurze Titel eindeutig sind
+const SERTOP=['Game of Thrones@2011','Stranger Things@2016','Breaking Bad@2008','Squid Game@2021','Wednesday@2022','The Walking Dead@2010','Money Heist|Haus des Geldes|La casa de papel@2017','The Last of Us@2023','House of the Dragon@2022','The Boys@2019','The Witcher@2019','Bridgerton@2020','The Crown@2016','Peaky Blinders@2013','Dark@2017','The Mandalorian@2019','Better Call Saul@2015','Ozark@2017','Narcos@2015','The Big Bang Theory@2007','Grey’s Anatomy|Greys Anatomy|Grey\'s Anatomy@2005','How I Met Your Mother@2005','The Office@2005','Modern Family@2009','Vikings@2013','Prison Break@2005','Dexter@2006','Sherlock@2010','Lost@2004','Suits@2011','Succession@2018','Chernobyl@2019','Black Mirror@2011','Westworld@2016','True Detective@2014','Lupin@2021','Yellowstone@2018','Arcane@2021','Shōgun|Shogun@2024','Fallout@2024','Severance@2022','The Bear@2022','Reacher@2022','Ted Lasso@2020','Euphoria@2019','Sex Education@2019','You@2018','Emily in Paris@2020','Outer Banks@2020','The Umbrella Academy@2019','13 Reasons Why|Tote Mädchen lügen nicht@2017','Dahmer – Monster: The Jeffrey Dahmer Story|Dahmer@2022','Adolescence@2025','Andor@2022','The Penguin@2024','One Piece@2023','Rick and Morty@2013','Mr. Robot@2015','Homeland@2011','Fargo@2014','The Handmaid’s Tale|The Handmaids Tale@2017','Ginny & Georgia@2021','Shahrzad|شهرزاد@2015','Paytakht|پایتخت@2011','Shahgoosh|Shah Gosh|شاه‌گوش|شاه گوش@2024','Mafia Nights|شب‌های مافیا|شب های مافیا@2020','Hayula|هیولا@2019','Gando|گاندو@2019','Mokhtarnameh|مختارنامه@2009','Joker|جوکر@2021'];
+const SERBOX={_m:null,list(){const key=APP.catVer+'|'+(APP._pool&&APP._pool.key);if(SERBOX._m&&SERBOX._m.k===key)return SERBOX._m.v;
+    const idx=new Map();const add=(k,it)=>{if(!k)return;const a=idx.get(k);if(a)a.push(it);else idx.set(k,[it])};
+    for(const it of pool('series')){add(mkey(it.title),it);const m=META.cache[it.id];if(m&&m.engTitle)add(mkey(m.engTitle),it)}
+    const out=[],seen=new Set();for(const e of SERTOP){const[n,y0]=e.split('@');const y=+y0||0;let c=[];for(const a of n.split('|'))c=c.concat(idx.get(mkey(a))||[]);
+      c=c.filter(it=>!seen.has(it)&&(!y||!it.year||Math.abs(it.year-y)<=1));if(!c.length)continue;c.sort((a,b)=>QR[b.q]-QR[a.q]);seen.add(c[0]);out.push(c[0])}
+    SERBOX.ids=new Set(out.map(i=>i.id));SERBOX._m={k:key,v:out};return out},
+  has(it){SERBOX.list();return SERBOX.ids.has(it.id)}};
+function serTopRow(){const l=SERBOX.list();if(l.length<4)return'';return rowHTML('Die meistgesehenen Serien der letzten 20 Jahre',l.slice(0,50),{why:'top',sub:'weltweite Erfolgsserien · bei dir verfügbar'})}
+function boxRow(where){const l=BOX.list();if(l.length<4)return'';const y0=new Date().getFullYear()-15;
+  return rowHTML('Die größten Kinohits seit '+y0,l.slice(0,where==='home'?30:60),{why:'top',sub:'weltweit meistbesuchte Filme je Jahr (Box Office) · bei dir verfügbar'})}
 function top10Row(ty){const t=TOP.top(ty);if(!t)return`<section class="row" data-top10="${ty}" hidden></section>`;const d=TOP.data||{};const st=d.t?new Date(d.t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'';
   const sub=t.demo?'Beispiel im Demo-Katalog':`meistgesucht weltweit (IMDb${d.nfx&&d.nfx[ty]&&d.nfx[ty].length?' & Netflix-Wochencharts':''}) · bei dir verfügbar${st?' · Stand '+st:''}`;
   return`<section class="row" data-top10="${ty}"><h3 class="pad">Top 10 ${ty==='movie'?'Filme':'Serien'} diese Woche<small>${sub}</small></h3><div class="track pad">${t.l.map((it,i)=>`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(it,{why:'top'})}</div>`).join('')}</div></section>`}
@@ -1781,6 +1841,7 @@ function vodView(type){return(el,a)=>{
     body+=top10Row(type);
     {const np=newPopular(list);if(np.length>3)body+=rowHTML('Neu & beliebt',np,{why:'new'})}
     body+=rowHTML('Für dich ausgewählt',R.mmr(list.map(i=>({it:i,s:sc.get(i)})),24).map(x=>x.it),{why:'top'});
+    body+=type==='movie'?boxRow('movies'):serTopRow();
     const order=uniq([...R.topGenres(t,20).map(x=>x[0]),...genres]).filter(x=>gc[x]>=3).slice(0,10);
     // Kategorien deines Anbieters, nach Ländern (die größten pro Land)
     {const GM=ddOf(type,items).gm;for(const cc of p.countries){const gm=GM[cc]||[];
@@ -1863,6 +1924,7 @@ VIEWS.settings=(el,a)=>{
   let body='';
   if(sec==='profil')body=`<h3>Profil</h3>
     ${optRow('Name','Wird beim Start unter „Wer schaut gerade?“ angezeigt.',`<div style="display:flex;gap:.6rem;flex-wrap:wrap"><input class="in f" id="pname" value="${esc(p.name)}" maxlength="18" style="max-width:16rem"><button class="btn sm f" data-act="pname">Speichern</button></div>`)}
+    ${optRow('Avatar','Bild für dein Profil – oder einfach der Anfangsbuchstabe.',avPick(p.avatar,'pavatar'))}
     ${optRow('Farbe','',`<div class="colors">${COLORS.map(x=>`<button class="sw f${x===p.color?' on':''}" data-act="pcolor" data-c="${x}" style="background:${x}" aria-label="Farbe ${x}"></button>`).join('')}</div>`)}
     ${optRow('Kinderprofil','Blendet Horror, Thriller, Krimi und Erwachseneninhalte aus.',tgl('kids',PS('kids')))}
     ${optRow('Profile','',`<div class="bar-row"><button class="btn sm f" data-act="profiles">Profil wechseln</button><button class="btn sm f" data-act="padd">Neues Profil</button><button class="btn sm f" data-act="delprof">Dieses Profil löschen</button></div>`)}`;
@@ -1912,7 +1974,9 @@ VIEWS.settings=(el,a)=>{
     ${optRow('Spul-Schritt','Links/rechts auf der Fernbedienung.',chs('seek',PS('seek'),[[10,'10 s'],[15,'15 s'],[30,'30 s']]))}`;
   else if(sec==='sport')body=`<h3>Sport & Teams</h3>
     ${optRow('Lieblingsteams','Spiele stehen ganz oben auf Startseite, Live-TV und Sport.',`<div style="display:flex;flex-direction:column;gap:.6rem"><div class="chips">${(p.teams||[]).map(t=>`<span class="chip on" style="cursor:default">${esc(t.n)}</span>`).join('')||'<span class="hint">Noch keine Teams.</span>'}</div><div><button class="btn sm f" data-act="editteams">Teams bearbeiten</button></div></div>`)}
-    ${optRow('Hinweis bei Anpfiff','Kleines Fenster, sobald dein Team live spielt.',tgl('teamAlert',PS('teamAlert')))}`;
+    ${optRow('Live-Spiele auf der Startseite','Zeigt oben auf der Startseite, wenn dein Team gerade spielt. Aus = Startseite nur mit Filmen und Serien.',tgl('homeLive',homeLive()))}
+    ${optRow('Hinweis bei Anpfiff','Kleines Fenster, sobald dein Team live spielt.',tgl('teamAlert',PS('teamAlert')))}
+    ${optRow('Kein Interesse an Sport','Keine Teams, keine Sport-Hinweise und keine Live-Spiele auf der Startseite.',`<button class="btn sm f" data-act="tnone2">${p.noSport?'Ist eingestellt':'So einstellen'}</button>`)}`;
   else if(sec==='live')body=`<h3>Live-TV</h3>
     ${optRow('Startkategorie','',chs('liveStart',PS('liveStart'),[['__all','Erstes Land'],['__fav','Favoriten'],['__recent','Zuletzt gesehen'],...p.countries.map(k=>['__c:'+k,esc(CBY[k].name)])]))}
     ${optRow('Mini-Fenster','Beim Verlassen eines Senders läuft er klein in Live-TV weiter, bis du einen neuen wählst.',tgl('livePip',PS('livePip')))}
@@ -1938,7 +2002,7 @@ VIEWS.settings=(el,a)=>{
     ${window.NFK&&NFK.backupSave?optRow('Daten sichern','Speichert Login, Profile, Favoriten, Fortschritt und Einstellungen als Datei auf dem Fire TV (Download-Ordner). Sie bleibt auch nach dem Deinstallieren erhalten – nach einer Neuinstallation einfach wiederherstellen.',`<button class="btn sm f" data-act="bksave">Jetzt sichern</button><button class="btn sm f" data-act="bkload">Wiederherstellen</button>`):''}
     ${optRow('Abmelden','Entfernt die Zugangsdaten von diesem Gerät.',`<button class="btn sm f" data-act="logout">Abmelden</button>`)}
     <p class="hint" style="margin-top:1.2rem">Filmdaten, Bilder und Trailer-Verweise: Dieses Produkt nutzt die TMDB-API, ist aber nicht von TMDB unterstützt oder zertifiziert.</p>`;
-  el.innerHTML=`<div class="pad vh"><h2 class="vtitle">Einstellungen</h2><p class="vsub"><span class="av sm" style="background:${p.color};display:inline-grid;vertical-align:middle;margin-right:.5rem"><span>${esc(p.name[0])}</span></span>Profil ${esc(p.name)} – alles hier gilt nur für dieses Profil.</p>
+  el.innerHTML=`<div class="pad vh"><h2 class="vtitle">Einstellungen</h2><p class="vsub">${avHTML(p,'sm','display:inline-grid;vertical-align:middle;margin-right:.5rem')}Profil ${esc(p.name)} – alles hier gilt nur für dieses Profil.</p>
    <div class="live-w setw"><div class="cats">${SECS.map(([k,l])=>`<button class="cat f${k===sec?' on':''}" data-act="sec" data-s="${k}"${k===sec?' data-autofocus':''}><span>${l}</span></button>`).join('')}</div><div class="spanel">${body}</div></div></div>`;
 };
 // ---------- Details ----------
@@ -2254,7 +2318,7 @@ new MutationObserver(()=>{clearTimeout(TL._mt);TL._mt=setTimeout(TL.fix,180)}).o
 // Vorschau-Fenster genau auf die Karte legen; Fokus weg = Vorschau beenden (Fortschritt wird gespeichert)
 function cprevSync(){const p=APP.pip;if(!p||!p.vod||P.el)return;const c=p.card;if(!c||!c.isConnected||document.activeElement!==c){TRL.log('Vorschau beendet ('+(!c||!c.isConnected?'Karte neu gezeichnet':'Fokus weg')+')');pipStop();return}const r=c.getBoundingClientRect(),W=innerWidth,H=innerHeight;
   if(r.width<10||r.bottom<0||r.top>H){pipStop();return}NFK.vMini(JSON.stringify({x:0,y:0,w:1,h:1,fx:r.left/W,fy:r.top/H,fw:r.width/W,fh:r.height/H}))}
-function pipStop(keepNative){if(!APP.pip)return;if(APP.pip.vod){try{const st=JSON.parse(NFK.vState()||'{}');if(st.pos>3000&&st.dur>0){P.it=APP.pip.it;P.ep=APP.pip.ep;P.pos=st.pos/1000;P.dur=st.dur/1000;P.save()}}catch(e){}if(APP.pip.card)APP.pip.card.classList.remove('cprev');if(!P.el){P.it=null;P.ep=null}}try{NFK.vMini('');if(!keepNative)NFK.vCmd('stop',0)}catch(e){}APP.pip=null;document.documentElement.classList.remove('pip');const pb=$('#pipbox');if(pb&&!keepNative)pb.innerHTML='<span class="pipidle"><span>▶</span>Sender auswählen und OK drücken</span>';$$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'))}
+function pipStop(keepNative){if(!APP.pip)return;if(APP.pip.vod){try{const st=JSON.parse(NFK.vState()||'{}');if(st.pos>3000&&st.dur>0){P.it=APP.pip.it;P.ep=APP.pip.ep;P.pos=st.pos/1000;P.dur=st.dur/1000;P.save()}}catch(e){}if(APP.pip.card)APP.pip.card.classList.remove('cprev');if(!P.el){P.it=null;P.ep=null}}try{if(!keepNative&&!APP.pip.vod)NFK.vCmd('stop',0);else{NFK.vMini('');if(!keepNative)NFK.vCmd('stop',0)}}catch(e){}APP.pip=null;document.documentElement.classList.remove('pip');const pb=$('#pipbox');if(pb&&!keepNative)pb.innerHTML='<span class="pipidle"><span>▶</span>Sender auswählen und OK drücken</span>';$$('.chl .chr.playing').forEach(x=>x.classList.remove('playing'))}
 // Sender in der Liste ausgewählt: erst im Mini-Fenster abspielen (nochmal OK = Vollbild)
 function pipPlay(it,btn){let v=curVer(it);if(!v||!v.src||!v.src.url){P.open(it);return}pushRecentCh(it.id);
   // 4K/8K im kleinen Fenster überfordert den Stick – dort die beste Full-HD-Fassung, im Vollbild dann wieder 4K
@@ -2380,8 +2444,17 @@ function vLogin(err,tab){
     if(tab==='xt'){const server=$('#srv').value.trim(),user=$('#usr').value.trim(),pass=$('#pwd').value;if(!server||!user||!pass)return vLogin('Bitte Server-URL, Benutzername und Passwort ausfüllen.',tab);APP.cfg={...(APP.cfg||{}),mode:'xtream',server:normServer(server),user,pass}}
     else{const u=$('#m3u').value.trim();if(!/^https?:\/\//i.test(u))return vLogin('Der Link muss mit http:// oder https:// beginnen.',tab);const m=u.match(/^(https?:\/\/[^/]+)\/get\.php\?(.*)$/i);
       if(m){const q=new URLSearchParams(m[2]);APP.cfg={...(APP.cfg||{}),mode:'xtream',server:m[1],user:q.get('username'),pass:q.get('password'),m3u:u}}else APP.cfg={...(APP.cfg||{}),mode:'m3u',m3u:u}}
-    startScan(tab)});
+    if(!(APP.profiles||[]).length)preScan(tab);else startScan(tab)});
 }
+// Erste Anmeldung: nur die Kategorien des Servers abrufen (Sekunden), dann zuerst die Fragen – danach wird nur das Gewählte eingelesen
+async function preScan(tab){const c=APP.cfg;APP.preTab=tab;
+  screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.6rem">NETEFELIKS</h1><div class="spin" style="margin:2rem auto"></div><p class="pm">Verbinde mit deinem Server…</p></div>`);
+  const st={};const add=(k,t)=>{st[k]=st[k]||{live:0,movie:0,series:0,cats:1};st[k][t]++};
+  if(c.mode==='xtream'){try{const auth=await XT.api(c,'');if(!auth||!auth.user_info||String(auth.user_info.auth)==='0')throw new Error('AUTH');
+      const[lc,vc,sc]=await Promise.all([XT.api(c,'get_live_categories'),XT.api(c,'get_vod_categories'),XT.api(c,'get_series_categories')]);
+      for(const[a,t]of[[lc,'live'],[vc,'movie'],[sc,'series']])for(const x of a||[])add(detectCountry(x.category_name||'',''),t)}
+    catch(e){const m=String(e&&e.message||e);return vLogin(m==='AUTH'?'Benutzername oder Passwort stimmen nicht – oder das Abo ist abgelaufen.':'Der Server ist nicht erreichbar. Prüfe die Adresse (inkl. Port) und versuche es nochmal.'+`<br><small style="opacity:.7">Technischer Hinweis: ${esc(m.slice(0,160))}</small>`,tab)}}
+  LS.set('nfk.cfg',c);APP.preStats=Object.keys(st).length?st:null;draft=null;vCountries({fresh:true,pre:true})}
 async function startScan(tab){
   if(APP.cfg)LS.set('nfk.cfg',APP.cfg);
   const m3u=APP.cfg&&APP.cfg.mode==='m3u';
@@ -2419,27 +2492,30 @@ function resumeAfterCrash(){const n=LS.get('nfk.now',null);if(!n||!n.pid||!APP.p
   return true}
 let draft=null;
 function vCountries(o={}){
-  const p=o.edit?prof():null;draft=draft&&o.keep?draft:{countries:p?p.countries.slice():[],genres:p?(p.genres||[]).slice():[],other:p?!!p.other:false,name:p?p.name:'',color:p?p.color:null,edit:!!o.edit};
-  const st=APP.stats;const keys=Object.keys(st).filter(k=>k!=='XX').sort((a,b)=>{const t=x=>st[x].live+st[x].movie+st[x].series;return t(b)-t(a)});
-  const card=k=>{const c=CBY[k],s=st[k];return`<button class="cc f${draft.countries.includes(k)?' on':''}" data-act="cpick" data-k="${k}" data-n="${draft.countries.indexOf(k)+1}"><span class="fl${c.flag?'':' txt'}">${c.flag||k}</span><b>${esc(c.name)}</b><span class="n"><span>${nf(s.live)} Sender</span> · <span>${nf(s.movie)} Filme</span> · <span>${nf(s.series)} Serien</span>${s.sport?`<br><span>davon ${nf(s.sport)} Sportsender</span>`:''}</span></button>`};
+  const p=o.edit?prof():null;draft=draft&&o.keep?draft:{countries:p?p.countries.slice():[],genres:p?(p.genres||[]).slice():[],other:p?!!p.other:false,name:p?p.name:'',color:p?p.color:null,avatar:p?p.avatar||'':'',edit:!!o.edit,pre:!!o.pre};
+  const pre=!!draft.pre;const PRI=['DE','IR','EN','TR','AR','FR','ES','IT','NL','PL','RU','AF','KU','IN','PT'];
+  const st=pre?(APP.preStats||Object.fromEntries(CTRY.map(([k])=>[k,{live:0,movie:0,series:0}]))):APP.stats;
+  const keys=Object.keys(st).filter(k=>k!=='XX'&&CBY[k]).sort((a,b)=>{const t=x=>st[x].live+st[x].movie+st[x].series;const pa=PRI.indexOf(a),pb=PRI.indexOf(b);return t(b)-t(a)||(pa<0?99:pa)-(pb<0?99:pb)});
+  const card=k=>{const c=CBY[k],s=st[k];const n=pre?(s.live+s.movie+s.series?`<span>${nf(s.live)} Live</span> · <span>${nf(s.movie)} Film</span> · <span>${nf(s.series)} Serien</span> <span style="opacity:.7">Kategorien</span>`:''):`<span>${nf(s.live)} Sender</span> · <span>${nf(s.movie)} Filme</span> · <span>${nf(s.series)} Serien</span>${s.sport?`<br><span>davon ${nf(s.sport)} Sportsender</span>`:''}`;
+    return`<button class="cc f${draft.countries.includes(k)?' on':''}" data-act="cpick" data-k="${k}" data-n="${draft.countries.indexOf(k)+1}"><span class="fl${c.flag?'':' txt'}">${c.flag||k}</span><b>${esc(c.name)}</b><span class="n">${n}</span></button>`};
   screen(`<div class="wrap"><div class="steps"><i class="on"></i><i></i><i></i><i></i></div><h2 class="big">Welche Länder interessieren dich?</h2>
-   <p class="vsub" style="font-size:1.1rem">Wir haben dein Abo durchsucht: <b style="color:var(--fg)">${nf(APP.items.length)} Titel aus ${keys.length} Ländern</b>. Das Profil zeigt später nur Sender, Filme und Serien aus deiner Auswahl. <b style="color:var(--fg)">Die Reihenfolge ist deine Wunschsprache:</b> Gibt es einen Film in mehreren Sprachen, startet er in Sprache 1 in bester Qualität.</p>
-   <div class="ccs">${keys.map(card).join('')}${st.XX?`<button class="cc f${draft.other?' on':''}" data-act="cother"><span class="fl txt">?</span><b>Ohne Länderangabe</b><span class="n">${nf(st.XX.live)} Sender · ${nf(st.XX.movie)} Filme · ${nf(st.XX.series)} Serien – z. B. 24/7-Kanäle</span></button>`:''}</div>
+   <p class="vsub" style="font-size:1.1rem">${pre?`Dein Abo hat Inhalte aus <b style="color:var(--fg)">${keys.length} Ländern</b>. Wähle, was dich interessiert – danach lädt die App nur genau das (schneller und braucht weniger Speicher).`:`Wir haben dein Abo durchsucht: <b style="color:var(--fg)">${nf(APP.items.length)} Titel aus ${keys.length} Ländern</b>.`} Das Profil zeigt später nur Sender, Filme und Serien aus deiner Auswahl. <b style="color:var(--fg)">Die Reihenfolge ist deine Wunschsprache:</b> Gibt es einen Film in mehreren Sprachen, startet er in Sprache 1 in bester Qualität.</p>
+   <div class="ccs">${keys.map(card).join('')}${st.XX?`<button class="cc f${draft.other?' on':''}" data-act="cother"><span class="fl txt">?</span><b>Ohne Länderangabe</b><span class="n">${pre?nf(st.XX.live+st.XX.movie+st.XX.series)+' Kategorien':nf(st.XX.live)+' Sender · '+nf(st.XX.movie)+' Filme · '+nf(st.XX.series)+' Serien'} – z. B. 24/7-Kanäle</span></button>`:''}</div>
    <div class="bar-row"><button class="btn pri f" data-act="cnext">Weiter</button>${o.edit?'<button class="btn f" data-act="cancel">Abbrechen</button>':''}<span class="hint" id="csel">${draft.countries.length} ausgewählt</span></div></div>`);
 }
 function vGenres(){
-  const cs=new Set(draft.countries);if(draft.other)cs.add('XX');const gc={};APP.items.filter(i=>i.type!=='live'&&cs.has(i.country)).forEach(i=>i.genres.forEach(g=>gc[g]=(gc[g]||0)+1));const gs=Object.keys(gc).sort((a,b)=>gc[b]-gc[a]);
+  const cs=new Set(draft.countries);if(draft.other)cs.add('XX');const gc={};if(draft.pre)GEN.forEach(([g])=>gc[g]=0);else APP.items.filter(i=>i.type!=='live'&&cs.has(i.country)).forEach(i=>i.genres.forEach(g=>gc[g]=(gc[g]||0)+1));const gs=draft.pre?GEN.map(([g])=>g):Object.keys(gc).sort((a,b)=>gc[b]-gc[a]);
   screen(`<div class="wrap"><div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div><h2 class="big">Was schaust du gern?</h2><p class="vsub" style="font-size:1.1rem">Damit die Empfehlungen ab dem ersten Abend passen. Danach lernt die App aus dem, was du wirklich schaust.</p>
-   <div class="chips" style="margin:1.6rem 0;gap:.8rem">${gs.map(g=>`<button class="chip f${draft.genres.includes(g)?' on':''}" data-act="gpick" data-g="${esc(g)}" style="font-size:1.1rem;padding:.7rem 1.3rem">${esc(g)} <span style="opacity:.6;font-weight:500">${nf(gc[g])}</span></button>`).join('')||'<p class="hint">Dein Server liefert keine Genre-Infos in den Kategorien. Kein Problem – die App lernt aus deinem Verhalten.</p>'}</div>
+   <div class="chips" style="margin:1.6rem 0;gap:.8rem">${gs.map(g=>`<button class="chip f${draft.genres.includes(g)?' on':''}" data-act="gpick" data-g="${esc(g)}" style="font-size:1.1rem;padding:.7rem 1.3rem">${esc(g)}${gc[g]?` <span style="opacity:.6;font-weight:500">${nf(gc[g])}</span>`:''}</button>`).join('')||'<p class="hint">Dein Server liefert keine Genre-Infos in den Kategorien. Kein Problem – die App lernt aus deinem Verhalten.</p>'}</div>
    <div class="bar-row"><button class="btn pri f" data-act="gnext" data-autofocus>${draft.edit?'Speichern':'Weiter'}</button><button class="btn f" data-act="gback">Zurück</button></div></div>`);
 }
 function vTeams(){
   draft.teams=draft.teams||[];
   screen(`<div class="wrap"><div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><h2 class="big">Deine Lieblingsteams</h2>
    <p class="vsub" style="font-size:1.1rem">Spielt dein Team, steht der Stream ganz oben – auf der Startseite, bei Live-TV und Sport. Die App liest dafür das Programm aller Sportsender und wählt automatisch den besten: in deiner Wunschsprache, in bester Qualität.</p>
-   <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin:1.2rem 0"><input class="in f" id="ts" placeholder="Team suchen, z. B. Real Madrid, Persepolis …" style="max-width:30rem" autocomplete="off"></div>
+   <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin:1.2rem 0"><input class="in f" id="ts" placeholder="Team suchen, z. B. Real Madrid, Persepolis …" style="max-width:30rem" autocomplete="off"><button class="btn f" data-act="tnone">Kein Interesse an Sport</button>${draft.onlyTeams?'':'<button class="btn pri f" data-act="tnext">Weiter</button>'}</div>
    <div id="tsel"></div><div id="tlist"></div>
-   <div class="bar-row" style="margin-top:1.6rem"><button class="btn pri f" data-act="tnext" data-autofocus>${draft.onlyTeams?'Speichern':'Weiter'}</button><button class="btn f" data-act="tback">${draft.onlyTeams?'Abbrechen':'Zurück'}</button><span class="hint">Überspringen geht auch – Teams kannst du später in den Einstellungen wählen.</span></div></div>`);
+   <div class="bar-row" style="margin-top:1.6rem"><button class="btn pri f" data-act="tnext" data-autofocus>${draft.onlyTeams?'Speichern':'Weiter'}</button><button class="btn f" data-act="tback">${draft.onlyTeams?'Abbrechen':'Zurück'}</button><span class="hint">Teams kannst du später in den Einstellungen ändern.</span></div></div>`);
   const draw=()=>{const q=normT($('#ts').value.trim());const sel=draft.teams.map(t=>t.n);
     $('#tsel').innerHTML=draft.teams.length?`<label class="lb">Ausgewählt</label><div class="chips" style="margin-bottom:1.4rem">${draft.teams.map(t=>`<button class="chip on f" data-act="tpick" data-n="${esc(t.n)}">${esc(t.n)} ✕</button>`).join('')}</div>`:'';
     let html='';for(const g of TEAMS){const ts=g.teams.filter(t=>!q||t.al.some(a=>normT(a).includes(q)));if(!ts.length)continue;
@@ -2448,17 +2524,21 @@ function vTeams(){
     $('#tlist').innerHTML=html||'<p class="hint">Kein Team gefunden.</p>'};
   APP._tdraw=draw;let dt;$('#ts').addEventListener('input',()=>{clearTimeout(dt);dt=setTimeout(draw,150)});draw();
 }
+const AVATARS=['','🦁','🐯','🦊','🐼','🐨','🐻','🐸','🐵','🐧','🦉','🦄','🐙','🐬','🐱','🐶','🐰','🐲','👾','🤖','👽','🦸','🧙','🥷','👑','🚀','⚽','🎮','🎧','🎬','🍿','🌙','🌸','🔥','💎','🌍'];
+function avHTML(p,cls='',st=''){const a=p&&p.avatar;return`<span class="av${cls?' '+cls:''}${a?' emo':''}" style="background:${p?p.color:'#555'};${st}"><span>${a?a:esc((p&&p.name||'?')[0]||'?')}</span></span>`}
+function avPick(cur,act){return`<div class="avs">${AVATARS.map(a=>`<button class="avo f${a===(cur||'')?' on':''}" data-act="${act}" data-a="${a}" aria-label="${a?'Avatar '+a:'Anfangsbuchstabe'}">${a||'<b>Aa</b>'}</button>`).join('')}</div>`}
 const COLORS=['#e3262d','#2f7de1','#e8a33d','#2fb37a','#9b59d0','#e2558f','#18a6b8','#7a8794'];
 function vName(){
   draft.color=draft.color||COLORS[APP.profiles.length%COLORS.length];
   screen(`<div class="wrap" style="max-width:40rem"><div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><h2 class="big">Wie heißt das Profil?</h2><p class="vsub" style="font-size:1.1rem">Jedes Profil hat eigene Länder, eigenen Verlauf und eigene Empfehlungen.</p>
    <div style="display:flex;flex-direction:column;gap:1.2rem;margin-top:1.4rem"><div><label class="lb" for="pn">Name</label><input class="in f" id="pn" value="${esc(draft.name)}" maxlength="18" placeholder="z. B. Zaki" data-autofocus></div>
+   <div><label class="lb">Avatar</label>${avPick(draft.avatar,'avsel')}</div>
    <div><label class="lb">Farbe</label><div class="colors">${COLORS.map(c=>`<button class="sw f${c===draft.color?' on':''}" data-act="color" data-c="${c}" style="background:${c}" aria-label="Farbe ${c}"></button>`).join('')}</div></div>
    <div class="bar-row"><button class="btn pri f" data-act="pdone">Profil erstellen</button><button class="btn f" data-act="nback">Zurück</button></div></div></div>`);
 }
 function vProfiles(){
   screen(`<div class="wrap" style="text-align:center;padding-top:12vh"><h1 class="wordmark" style="font-size:3.4rem">NETEFELIKS</h1><h2 class="big" style="margin-top:2.4rem">Wer schaut gerade?</h2>
-   <div class="pfs">${APP.profiles.map((p,i)=>`<button class="pf f" data-act="psel" data-id="${p.id}"${p.id===APP.pid||(!APP.pid&&!i)?' data-autofocus':''}><span class="av" style="background:${p.color}"><span>${esc(p.name[0]||'?')}</span></span>${esc(p.name)}</button>`).join('')}
+   <div class="pfs">${APP.profiles.map((p,i)=>`<button class="pf f" data-act="psel" data-id="${p.id}"${p.id===APP.pid||(!APP.pid&&!i)?' data-autofocus':''}>${avHTML(p)}${esc(p.name)}</button>`).join('')}
    ${APP.profiles.length<6?'<button class="pf f" data-act="padd"><span class="av add"><span>+</span></span>Profil hinzufügen</button>':''}</div></div>`);
 }
 
@@ -2528,7 +2608,9 @@ document.addEventListener('click',e=>{
    case'gnext':if(draft.edit&&draft.onlyGenres){const p=prof();p.genres=draft.genres;saveProfiles();APP.ver++;draft=null;APP.view='settings';renderApp();toast('Lieblingsgenres gespeichert')}else vTeams();break;
    case'tpick':{const n=b.dataset.n;const all=TEAMS.flatMap(g=>g.teams);const t=all.find(x=>x.n===n)||draft.teams.find(x=>x.n===n);draft.teams=draft.teams.some(x=>x.n===n)?draft.teams.filter(x=>x.n!==n):[...draft.teams,t];APP._tdraw();const f=$(`#tlist [data-n="${CSS.escape(n)}"]`)||$('#ts');f&&f.focus({preventScroll:true});break}
    case'tcustom':{const raw=$('#ts').value.trim();draft.teams.push({n:raw,al:[raw],lg:'Fußball'});$('#ts').value='';APP._tdraw();break}
-   case'tnext':if(draft.onlyTeams){const p=prof();p.teams=draft.teams;saveProfiles();EPG._fk=null;draft=null;APP.view='settings';APP.args={sec:'sport'};renderApp();toast('Lieblingsteams gespeichert');startTeamWatch()}else vName();break;
+   case'tnone2':{const p=prof();p.teams=[];p.noSport=1;p.set=Object.assign({},p.set||{},{homeLive:0,teamAlert:0});saveProfiles();APP.teamHits=[];renderApp('[data-act="tnone2"]');toast('Okay – Startseite ohne Sport');break}
+   case'tnone':draft.teams=[];draft.noSport=1;if(draft.onlyTeams){const p=prof();p.teams=[];p.noSport=1;p.set=Object.assign({},p.set||{},{homeLive:0,teamAlert:0});saveProfiles();draft=null;APP.view='settings';APP.args={sec:'sport'};renderApp();toast('Okay – keine Sport-Hinweise auf der Startseite')}else vName();break;
+   case'tnext':if(draft&&draft.teams&&draft.teams.length)draft.noSport=0;if(draft.onlyTeams){const p=prof();if(draft.teams.length)p.noSport=0;p.teams=draft.teams;saveProfiles();EPG._fk=null;draft=null;APP.view='settings';APP.args={sec:'sport'};renderApp();toast('Lieblingsteams gespeichert');startTeamWatch()}else vName();break;
    case'tback':if(draft.onlyTeams){draft=null;renderApp()}else vGenres();break;
    case'editteams':{const p=prof();draft={countries:p.countries,other:p.other,genres:p.genres,teams:(p.teams||[]).slice(),edit:true,onlyTeams:true};vTeams();break}
    case'tplay':{const h=(APP.teamHits||[])[+b.dataset.k];if(!h)break;P.open(h.chans[0],{alts:h.chans});if(!h.live)toast('Anstoß um '+hhmm(h.start)+' – der Sender läuft schon');break}
@@ -2615,8 +2697,12 @@ document.addEventListener('click',e=>{
    case'alt':{const a=P.o.alts;const n=a[(a.indexOf(P.it)+1)%a.length];P.open(n,{alts:a});toast(n.title+' · '+langName(n.country)+(n.q?' · '+n.q:''));break}
    case'gback':if(draft.onlyGenres){draft=null;renderApp()}else vCountries({keep:true,edit:draft.edit});break;
    case'color':draft.color=b.dataset.c;$$('.sw').forEach(x=>x.classList.toggle('on',x===b));break;
+   case'avsel':draft.avatar=b.dataset.a;$$('.avo').forEach(x=>x.classList.toggle('on',x===b));break;
+   case'pavatar':{const p=prof();p.avatar=b.dataset.a;saveProfiles();renderApp(`.avo[data-a="${b.dataset.a}"]`);break}
    case'nback':draft.name=$('#pn').value;vTeams();break;
-   case'pdone':{const name=$('#pn').value.trim()||('Profil '+(APP.profiles.length+1));const p={id:'p'+Date.now().toString(36),name,color:draft.color,countries:draft.countries,genres:draft.genres,teams:draft.teams||[],other:draft.other,created:Date.now()};APP.profiles.push(p);saveProfiles();APP.pid=p.id;LS.set('nfk.pid',p.id);draft=null;APP.view='home';APP.args={};renderApp();toast('Willkommen, '+name);startTeamWatch();break}
+   case'pdone':{const name=$('#pn').value.trim()||('Profil '+(APP.profiles.length+1));const p={id:'p'+Date.now().toString(36),name,color:draft.color,avatar:draft.avatar||'',countries:draft.countries,genres:draft.genres,teams:draft.teams||[],other:draft.other,noSport:draft.noSport?1:0,created:Date.now()};if(draft.noSport)p.set={homeLive:0,teamAlert:0};APP.profiles.push(p);saveProfiles();APP.pid=p.id;LS.set('nfk.pid',p.id);const pre=draft.pre;draft=null;
+     if(pre){startScan(APP.preTab).then(()=>{if(APP.items.length){startBg();if(APP.cfg.mode!=='demo')BW.auto()}});break}
+     APP.view='home';APP.args={};renderApp();toast('Willkommen, '+name);startTeamWatch();break}
    case'editctry':draft=null;vCountries({edit:true});break;
    case'editgen':{const p=prof();draft={countries:p.countries,other:p.other,genres:(p.genres||[]).slice(),edit:true,onlyGenres:true};vGenres();break}
    case'resettaste':if(b.dataset.sure){['ev','pr','rt'].forEach(k=>LS.del('nfk.'+k+'.'+APP.pid));_pc=_rc=null;APP.ver++;renderApp();toast('Verlauf gelöscht')}else{b.dataset.sure=1;b.textContent='Wirklich löschen?'}break;
@@ -2713,7 +2799,7 @@ function goBack(){APP.lastKey=Date.now();
 }
 window.nfkBack=goBack; // wird von der Fire-TV-App bei der Zurück-Taste aufgerufen; false = App verlassen
 document.addEventListener('keydown',e=>{
-  APP._mm=false;APP.lastKey=Date.now();if(INTRO.el){INTRO.skip();e.preventDefault();return}const k=e.key,kc=e.keyCode;const inInput=e.target.tagName==='INPUT';
+  APP._mm=false;APP.lastKey=Date.now();if(INTRO.el){INTRO.skip();if(!INTRO._res)INTRO.el.classList.add('wait');e.preventDefault();return}const k=e.key,kc=e.keyCode;const inInput=e.target.tagName==='INPUT';
   const isBack=k==='Escape'||k==='GoBack'||k==='BrowserBack'||kc===4||kc===10009||kc===461||(k==='Backspace'&&!inInput);
   const wasIdle=!!(P.el&&P.el.classList.contains('idle')&&!$('.ap'));
   {const d0={ArrowUp:-1,ArrowDown:1}[k];if(d0&&P.el&&!$('.ap')&&!$('.pmn.on')&&P.it&&P.it.type==='live'&&(wasIdle||P.el.classList.contains('zap'))){e.preventDefault();P.chan(d0);return}}
@@ -2743,10 +2829,18 @@ const INTRO={el:null,
   set(k,v){const c=INTRO.cfg();c[k]=v;LS.set('nfk.intro',c)},
   play(force){const c=INTRO.cfg();if((!c.on&&!force)||/recovered/.test(location.hash))return Promise.resolve();
     return new Promise(res=>{$$('.intro').forEach(x=>x.remove());const d=document.createElement('div');d.className='intro';
-      d.innerHTML=`<div class="stage"><div class="ilogo"><i class="r1"></i><i class="r2"></i><i class="pl"></i><span class="sh"></span></div><div class="iw">${'NETEFELIKS'.split('').map((ch,i)=>`<span style="animation-delay:${1.02+i*.045}s">${ch}</span>`).join('')}</div></div>`;
-      d.addEventListener('click',()=>INTRO.skip());document.body.appendChild(d);INTRO.el=d;INTRO._res=res;if(c.sound)INTRO.sound();INTRO._t=setTimeout(()=>INTRO.skip(),3200)})},
-  skip(){const d=INTRO.el;if(!d)return;INTRO.el=null;clearTimeout(INTRO._t);d.classList.add('out');setTimeout(()=>d.remove(),400);
-    try{if(INTRO._ac&&INTRO._g)INTRO._g.gain.setTargetAtTime(0,INTRO._ac.currentTime,.15)}catch(e){}const r=INTRO._res;INTRO._res=null;r&&r()},
+      d.innerHTML=`<div class="stage"><div class="ilogo"><i class="r1"></i><i class="r2"></i><i class="pl"></i><span class="sh"></span></div><div class="iw">${'NETEFELIKS'.split('').map((ch,i)=>`<span style="animation-delay:${1.02+i*.045}s">${ch}</span>`).join('')}</div></div><div class="iload"><i></i></div>`;
+      d.addEventListener('click',()=>INTRO.skip());document.body.appendChild(d);INTRO.el=d;INTRO._res=res;
+      // Ton erst nach den ersten Bildern vorbereiten, damit die Animation sauber startet
+      if(c.sound)setTimeout(()=>{if(INTRO.el===d)INTRO.sound()},60);
+      // Animation fertig: App darf weitermachen; Intro bleibt (mit Ladebalken), bis die Oberfläche bereit ist
+      INTRO._t=setTimeout(()=>{d.classList.add('wait');INTRO.skip()},2650);
+      clearTimeout(INTRO._safe);INTRO._safe=setTimeout(()=>INTRO.done(),force?3100:15000)})},
+  // Taste/Klick oder Animation zu Ende: App läuft weiter (das Bild wechselt erst mit done())
+  skip(){clearTimeout(INTRO._t);const r=INTRO._res;INTRO._res=null;r&&r()},
+  done(){const d=INTRO.el;if(!d)return;INTRO.el=null;clearTimeout(INTRO._t);clearTimeout(INTRO._safe);const r=INTRO._res;INTRO._res=null;r&&r();
+    d.classList.remove('wait');d.classList.add('go');setTimeout(()=>d.classList.add('out'),250);setTimeout(()=>d.remove(),650);
+    try{if(INTRO._ac&&INTRO._g)INTRO._g.gain.setTargetAtTime(0,INTRO._ac.currentTime,.15)}catch(e){}},
   sound(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=new AC();INTRO._ac=ac;if(ac.state==='suspended')ac.resume();const t=ac.currentTime+.06;
     const out=ac.createGain();out.gain.value=.5;INTRO._g=out;out.connect(ac.destination);
     // Hall
@@ -2773,12 +2867,14 @@ function vCrash(){screen(`<div class="scan"><h1 class="wordmark" style="font-siz
 (async function boot(){
   try{const cr=window.NFK&&NFK.lastCrash&&NFK.lastCrash();if(cr){LS.set('nfk.appcrash',{t:Date.now(),x:String(cr).slice(0,1500)});NFK.clearCrash();setTimeout(()=>toast('Die App war abgestürzt – Details unter Einstellungen → Abo & App'),5000)}}catch(e){}
   const intro=INTRO.play();const crashed=/recovered/.test(location.hash);const sc0=+LS.get('nfk.scanning',0)||0;const scanCrash=!!sc0&&Date.now()-sc0<30*6e4;LS.del('nfk.scanning');
-  if(!APP.cfg){await intro;vLogin();return}
+  // die ersten Intro-Bilder ungestört zeichnen lassen, dann erst schwere Arbeit
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(r,120))));
+  if(!APP.cfg){await intro;vLogin();INTRO.done();return}
   // Gespeicherte Playlist sofort nutzen (lädt während des Intros), frische Daten kommen im Hintergrund
   if(crashed){const n=LS.get('nfk.now',{})||{};const l=LS.get('nfk.crashes',[])||[];l.push({t:Date.now(),why:(location.hash.split('-')[1]||'?'),v:n.v||'',play:!!n.play});LS.set('nfk.crashes',l.slice(-10))}
-  if(APP.cfg.mode!=='demo'&&await CACHE.load()){await intro;if(!(crashed&&resumeAfterCrash()))afterLoad();startBg();BW.auto();if(crashed)setTimeout(()=>toast('Kurz neu geladen – es geht weiter, wo du warst'),800);return}
-  await intro;if(scanCrash){vCrash();return}
-  await startScan();startBg();if(APP.cfg.mode!=='demo')BW.auto();
+  if(APP.cfg.mode!=='demo'&&await CACHE.load()){await intro;if(!(crashed&&resumeAfterCrash()))afterLoad();requestAnimationFrame(()=>INTRO.done());startBg();BW.auto();if(crashed)setTimeout(()=>toast('Kurz neu geladen – es geht weiter, wo du warst'),800);return}
+  await intro;if(scanCrash){vCrash();INTRO.done();return}
+  setTimeout(()=>INTRO.done(),50);await startScan();startBg();if(APP.cfg.mode!=='demo')BW.auto();
 })();
 </script>
 

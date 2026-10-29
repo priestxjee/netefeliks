@@ -1,3 +1,11 @@
+Erste Anmeldung: zuerst die Fragen (Länder, Genres, Teams, Name), danach wird nur das Gewählte eingelesen – schneller und braucht weniger Speicher
+Neu: „Kein Interesse an Sport“ – keine Teams, keine Sport-Hinweise, Startseite nur mit Filmen und Serien; Live-Spiele auf der Startseite in Einstellungen → Sport ein-/ausschaltbar (Standard: nur mit Lieblingsteams)
+Neu: Avatare für Profile (Tiere, Figuren, Symbole) – bei der Profil-Erstellung und in Einstellungen → Profil
+Intro läuft flüssiger: Animation hat Vorrang, die App lädt erst danach; dauert das Laden länger, bleibt das Logo mit Ladebalken statt eines leeren Bildschirms
+Neu: „Die größten Kinohits seit …“ – weltweit erfolgreichste Kinofilme der letzten 15 Jahre (Box Office), auf Startseite und bei Filmen; laufendes Jahr aktuell von Box Office Mojo
+Neu: „Die meistgesehenen Serien der letzten 20 Jahre“ bei Serien
+Empfehlungen: Kinohits und Erfolgsserien werden leicht bevorzugt
+Aufgeräumt: unnötige Berechnungen auf der Startseite entfernt; Live verlassen stoppt den Sender direkt
 Steuerung: Links/Rechts zwischen Filter-Chips und Knöpfen in einer Zeile bleibt in der Zeile (z. B. Musik: Deutschland → Iran), erst am Anfang der Zeile geht es in die Kategorien
 Menüleiste: nach links landet man immer auf dem Bereich, in dem man gerade ist (z. B. Startseite), nicht auf dem Eintrag, der zufällig auf gleicher Höhe liegt
 Live: neue Kategorie „♪ Musik“ – alle Musiksender (MTV, Deluxe Music, PMC, Avang, Radio Javan …) und Radiosender aus deinen Ländern, filterbar nach Land und „Radio“
