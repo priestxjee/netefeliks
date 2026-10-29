@@ -371,6 +371,12 @@ h2.big{font-size:2.4rem;margin:0 0 .4rem;font-weight:800;letter-spacing:-.01em;t
 .scrub:focus .tr b{transform:translate(-50%,-50%) scale(1.5);background:#fff}
 .ptime{display:flex;justify-content:space-between;color:#ddd;font-variant-numeric:tabular-nums;font-size:.95rem;margin:.2rem 0 1rem}
 .pbtns{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center}
+.pmw{position:relative}
+.pmb{width:3.3rem!important;height:3.3rem!important}.pmb svg{width:1.75rem;height:1.75rem;stroke-width:2.4}
+.pmn{display:none;position:absolute;right:0;bottom:calc(100% + .7rem);min-width:15rem;flex-direction:column;gap:.35rem;padding:.6rem;background:rgba(18,14,14,.96);border:1px solid rgba(255,255,255,.1);border-radius:.8rem;box-shadow:0 12px 40px rgba(0,0,0,.6);animation:appin .15s ease-out}
+.pmn.on{display:flex}
+.pmn .btn{width:100%;justify-content:flex-start;text-align:left}
+.player.zap .pt{opacity:1}.player.zap .pc{opacity:0}
 .pbtns .sp{flex:1}
 .player.nat{background:transparent}
 html.vidmode,html.vidmode body{background:transparent!important}
@@ -2021,6 +2027,7 @@ function renderEps(it,m,sel){const S=it._seasons;const keys=Object.keys(S).sort(
 function closeModal(){if(!APP.modal)return;TR.stop();const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;if(APP.view==='home'||APP.view==='mylist'){const fid=b&&b.dataset&&b.dataset.id;renderApp(fid?`#main [data-id="${fid}"]`:null)}else if(b&&b.isConnected)b.focus({preventScroll:true})}
 
 // ---------- Player ----------
+function pmClose(focus){const m=$('#pmn');if(m)m.classList.remove('on');if(focus){const b=$('#pmb');b&&b.focus({preventScroll:true})}}
 const P={
   open(it,o={}){
     const fromPip=!!(o.fromPip&&APP.pip&&APP.pip.it===it);if(APP.pip&&!fromPip)pipStop(true);
@@ -2058,12 +2065,13 @@ const P={
      <div class="pt"><h2 dir="auto">${esc(title)}</h2><p dir="auto">${esc(sub)}</p></div>
      <div class="pc">${it.type==='live'?'':`<button class="scrub f" id="scrub" aria-label="Spulen (links/rechts)"><div class="tr"><i id="pf"></i><b id="pk"></b></div></button><div class="ptime"><span id="tc">0:00</span><span id="tr">-0:00</span></div>`}
       <div class="pbtns">${it.type==='live'?`<button class="btn ic f" data-act="ch" data-d="-1" aria-label="Vorheriger Sender">${I.chUp}</button><button class="btn ic f" data-act="ch" data-d="1" aria-label="Nächster Sender">${I.chDn}</button><span class="live">LIVE</span>${o.alts&&o.alts.length>1?`<button class="btn sm f" data-act="alt">Andere Übertragung (${o.alts.length-1})</button>`:''}`:`<button class="btn ic f" data-act="seek" data-d="-10" aria-label="10 Sekunden zurück">${I.back10}</button><button class="btn ic f" data-act="pp" id="ppb" data-autofocus aria-label="Pause">${I.pause}</button><button class="btn ic f" data-act="seek" data-d="30" aria-label="30 Sekunden vor">${I.fwd10}</button>`}
-       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}${(!ep||it.type==='series')&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}${P.engine==='nat'||P.engine==='web'?`<button class="btn sm f" data-act="aspcyc" id="aspb" aria-label="Bildformat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 10V9h2M17 14v1h-2"/></svg>${esc(ASP[aspOf(it)][1])}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Ton & Untertitel</button><button class="btn sm f" data-act="pclose"${it.type==='live'?' data-autofocus':''}>${I.close}Schließen</button></div></div>`;
+       <span class="sp"></span>${ep?`<button class="btn sm f" data-act="nextep">${I.next}Nächste Folge</button>`:''}<div class="pmw"><button class="btn ic f pmb" data-act="pmenu" id="pmb" aria-label="Einstellungen"${it.type==='live'?' data-autofocus':''}>${I.gear}</button><div class="pmn" id="pmn">${(!ep||it.type==='series')&&P.vers.length>1&&uniq(P.vers.map(v=>v.q)).length>1?`<button class="btn sm f" data-act="qpanel" id="qb">${I.hd}${esc(qName(P.vers[P.ver].q))}</button>`:''}${P.engine==='nat'||P.engine==='web'?`<button class="btn sm f" data-act="aspcyc" id="aspb" aria-label="Bildformat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 10V9h2M17 14v1h-2"/></svg>${esc(ASP[aspOf(it)][1])}</button>`:''}<button class="btn sm f" data-act="apanel" id="apb">${I.audio}Ton & Untertitel</button><button class="btn sm f" data-act="pclose">${I.close}Schließen</button></div></div></div></div>`;
+    if(o.zap){el.classList.add('idle','zap');clearTimeout(P.zapT);P.zapT=setTimeout(()=>{if(P.el===el)el.classList.remove('zap')},3500)}
     document.body.appendChild(el);P.el=el;P.playing=true;
     {const s0=ep?ep.src:P.vers[P.ver].src;if(fromPip&&P.engine==='nat'){const wasPrev=APP.pip&&APP.pip.vod&&APP.pip.full!=null;const capped=APP.pip&&!APP.pip.vod&&APP.pip.capped;P.cur=capped?{url:APP.pip.capped.url,alt:''}:{url:s0.url,alt:s0.alt||''};if(APP.pip&&APP.pip.card)APP.pip.card.classList.remove('cprev');APP.pip=null;pipToFull(capped?s0:null);
       if(wasPrev){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos>0)P.pos=st.pos/1000;P.reload()}}else if(!P.demo){if(ep&&P.mix>-1)P.reload();else P.load(s0.url,s0.alt)}}
     P.tick=setInterval(()=>{if(P.engine==='nat'){let st={};try{st=JSON.parse(NFK.vState()||'{}')}catch(e){}if(st.pos!=null&&P.skT!=null&&(!P.skDone||(Math.abs(st.pos/1000-P.skT)>2.5&&Date.now()<P.skUntil))){st.pos=null}else if(P.skT!=null&&P.skDone){P.skT=null}if(st.pos!=null){P.pos=st.pos/1000;if(st.dur>0)P.dur=st.dur/1000;P.playing=!!st.playing;P.el.classList.toggle('buf',!!st.buf||(!st.playing&&!st.dur));if(st.bw>0)P.bwMax=Math.max(P.bwMax||0,st.bw);P.rebuf(!!st.buf)}}
-      if(P.demo&&P.playing&&P.dur){P.pos=Math.min(P.dur,P.pos+.25*60);if(P.pos>=P.dur){P.ended();return}}P.ui();if(Date.now()-P.last>3500&&P.skT==null&&!$('.ap'))P.el.classList.add('idle')},250);
+      if(P.demo&&P.playing&&P.dur){P.pos=Math.min(P.dur,P.pos+.25*60);if(P.pos>=P.dur){P.ended();return}}P.ui();if(Date.now()-P.last>3500&&P.skT==null&&!$('.ap')&&!$('.pmn.on'))P.el.classList.add('idle')},250);
     P.saveT=setInterval(()=>{P.save();NOW.save()},5000);setTimeout(NOW.save,0);P.last=Date.now();P.ui();
     requestAnimationFrame(()=>{const f=$('[data-autofocus]',el);f&&f.focus()});
   },
@@ -2149,7 +2157,7 @@ const P={
       if(P._bt.length>=3&&PS('quality')==='auto'&&P.mix<0&&!P.ep){const v=P.vers[P.ver];const lo=P.vers.map((x,i)=>[x,i]).filter(([x])=>x.lang===v.lang&&QR[x.q]<QR[v.q]).sort((a,b)=>QR[b[0].q]-QR[a[0].q])[0];
         if(lo){P._bt=[];BW.note([1,2.5,5,10,25,60][QR[lo[0].q]]/.8,'Ruckeln');toast('Internet gerade langsam – wechsle auf '+qName(lo[0].q));P.switchTo(lo[1],true)}}}
     P._wb=b},
-  wake(){if(!P.el)return;P.last=Date.now();P.el.classList.remove('idle')},
+  wake(){if(!P.el)return;P.last=Date.now();P.el.classList.remove('idle','zap')},
   pp(){P.playing=!P.playing;if(P.engine==='nat')NFK.vCmd(P.playing?'play':'pause',0);if(P.v)P.playing?P.v.play():P.v.pause();P.ui()},
   // Spulen: Tastendrücke sammeln (Ziel wächst), erst nach kurzer Pause wirklich springen – kein Hin-und-Her mehr.
   // Gedrückt halten / schnell drücken = immer größere Schritte (bis 4 Min. pro Druck).
@@ -2172,7 +2180,7 @@ const P={
     P.el.remove();P.el=null;P.v=null;P.triedAlt=0;if(UPD.info&&!UPD.shownAfter){UPD.shownAfter=1;setTimeout(()=>UPD.show(),800)}
     if(!silent&&pip&&it&&pipBack(it))return;
     if(!silent){if(APP.modal){const id=APP.modal.el.querySelector('[data-id]').dataset.id;const b=APP.modal.back;APP.modal.el.remove();APP.modal=null;openDetails(id).then(()=>{if(APP.modal)APP.modal.back=b})}else renderApp(it?(APP.pip?`#chl [data-id="${it.id}"]`:`#main [data-id="${it.id}"]`):null)}},
-  chan(d){const it=P.it;const list=chanList(it);const i=list.indexOf(it);const n=list[(i+d+list.length)%list.length];if(n&&n!==it){P.open(n);toast(n.title)}},
+  chan(d){const it=P.it;const list=chanList(it);const i=list.indexOf(it);const n=list[(i+d+list.length)%list.length];if(n&&n!==it){P.open(n,{zap:1})}},
 };
 
 // ---------- Untertitel: eingebettete Spuren oder online (OpenSubtitles, ohne Schlüssel) ----------
@@ -2518,9 +2526,10 @@ document.addEventListener('click',e=>{
    case'pother':{const p=prof();p.other=!p.other;saveProfiles();APP._pool=null;const kp=LS.get('nfk.keepc',null);if(p.other&&kp&&!kp.xx){toast('Sender ohne Länderangabe werden jetzt geladen …');startScan().then(()=>startBg());break}renderApp('[data-act="pother"]');break}
    case'pname':{const p=prof();const n=$('#pname').value.trim();if(n){p.name=n;saveProfiles();renderApp('[data-act="pname"]');toast('Name gespeichert')}break}
    case'pcolor':{const p=prof();p.color=b.dataset.c;saveProfiles();renderApp(`[data-act="pcolor"][data-c="${b.dataset.c}"]`);break}
-   case'apanel':P.panel();break;
+   case'apanel':pmClose();P.panel();break;
+   case'pmenu':{const m=$('#pmn');if(!m)break;if(m.classList.toggle('on')){const f=$('.f',m);f&&f.focus({preventScroll:true})}else b.focus();break}
    case'aptab':{const t=b.dataset.t;const nav=b.classList.contains('apnav');P.apTab=t;P.panel(true,nav?'nav':'tab');break}
-   case'qpanel':P.panel(false,'q');break;
+   case'qpanel':pmClose();P.panel(false,'q');break;
    case'pipfull':if(APP.pip)P.open(APP.pip.it,{fromPip:1});else if(APP._lfoc&&window.NFK&&NFK.vMini)pipPlay(APP._lfoc);else if(APP._lfoc)P.open(APP._lfoc);break;
    case'iset':{const k=b.dataset.k;INTRO.set(k,INTRO.cfg()[k]?0:1);renderApp(`[data-act="iset"][data-k="${k}"]`);toast('Gespeichert');break}
    case'iplay':INTRO.play(true);break;
@@ -2532,7 +2541,7 @@ document.addEventListener('click',e=>{
    case'crclr':LS.del('nfk.crashes');renderApp('[data-act="updcheck"]');break;
    case'rescan':startScan().then(()=>startBg());break;
    case'bwtest':{const l=$('#bwl');if(l)l.textContent='Messe …';BW.test().then(m=>{toast('Internet-Tempo: '+String(m).replace('.',',')+' Mbit/s');const e=$('#bwl');if(e)e.textContent=BW.label()}).catch(e=>{toast(e.message);const x=$('#bwl');if(x)x.textContent=BW.label()});break}
-   case'apclose':{const a=$('.ap');if(a)a.remove();const b2=$('#apb');b2&&b2.focus();break}
+   case'apclose':{const a=$('.ap');if(a)a.remove();const b2=$('#pmb')||$('#apb');b2&&b2.focus();break}
    case'apver':P.switchTo(+b.dataset.i);setTimeout(()=>P.panel(true),400);break;
    case'apaud':{if(P.engine==='nat')NFK.vSelect('audio',+b.dataset.g,+b.dataset.t);else P.setTrack(+b.dataset.g);toast('Tonspur: '+b.textContent.trim());setTimeout(()=>P.panel(true),500);break}
    case'apsubo':{const l=b.dataset.l;toast('Suche '+langName(l)+'-Untertitel …');SUBS.search(P.it,P.ep,l).then(r=>{P.subRes=r;P.subResL=l;P.panel(true,r.length?'sf':'')}).catch(e=>toast('Suche nicht möglich: '+e.message));break}
@@ -2655,7 +2664,8 @@ function goBack(){APP.lastKey=Date.now();
   if(APP.trFull){trFullStop();return true}
   {const a=$('.ddm');if(a){const bt=a._btn;a.remove();bt&&bt.isConnected&&bt.focus({preventScroll:true});return true}}
   {const a=$('.talert')||$('.uplert');if(a){popClose(a);return true}}
-  {const a=$('.ap');if(a){a.remove();const b2=$('#apb');b2&&b2.focus();return true}}
+  {const a=$('.ap');if(a){a.remove();const b2=$('#pmb')||$('#apb');b2&&b2.focus();return true}}
+  {const m=$('.pmn.on');if(m){pmClose(true);return true}}
   if(P.el){if(!P.el.classList.contains('idle')&&P.it&&!P.demo){P.el.classList.add('idle');P.last=0;const sc=$('#scrub',P.el)||$('[data-autofocus]',P.el);if(sc)sc.focus({preventScroll:true});return true}P.close();return true}if(APP.modal){closeModal();return true}
   if($('.scr')){if(APP.cfg&&APP.items.length&&prof()&&!$('.login')&&!$('.pfs')){renderApp();return true}return false}
   // Aus einer geöffneten Kategorie zurück zur Übersicht (Fokus wieder auf „Alle anzeigen“)
@@ -2670,7 +2680,9 @@ window.nfkBack=goBack; // wird von der Fire-TV-App bei der Zurück-Taste aufgeru
 document.addEventListener('keydown',e=>{
   APP._mm=false;APP.lastKey=Date.now();if(INTRO.el){INTRO.skip();e.preventDefault();return}const k=e.key,kc=e.keyCode;const inInput=e.target.tagName==='INPUT';
   const isBack=k==='Escape'||k==='GoBack'||k==='BrowserBack'||kc===4||kc===10009||kc===461||(k==='Backspace'&&!inInput);
-  const wasIdle=!!(P.el&&P.el.classList.contains('idle')&&!$('.ap'));if(P.el&&!isBack)P.wake();
+  const wasIdle=!!(P.el&&P.el.classList.contains('idle')&&!$('.ap'));
+  {const d0={ArrowUp:-1,ArrowDown:1}[k];if(d0&&P.el&&!$('.ap')&&!$('.pmn.on')&&P.it&&P.it.type==='live'&&(wasIdle||P.el.classList.contains('zap'))){e.preventDefault();P.chan(d0);return}}
+  if(P.el&&!isBack)P.wake();
   // OK bei ausgeblendeter Leiste: nur Leiste zeigen (nicht gleich den fokussierten Knopf auslösen)
   if(wasIdle&&(k==='Enter'||kc===23||kc===66)){e.preventDefault();return}
   const dir={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[k];
@@ -2681,7 +2693,7 @@ document.addEventListener('keydown',e=>{
   if(dir){
     if(inInput&&(dir==='left'||dir==='right'))return;
     if(P.el&&!$('.ap')&&document.activeElement&&document.activeElement.id==='scrub'&&(dir==='left'||dir==='right')){e.preventDefault();P.seek(dir==='left'?-10:30);return}
-    if(P.el&&!$('.ap')&&P.it&&P.it.type==='live'&&(dir==='up'||dir==='down')){e.preventDefault();P.chan(dir==='up'?-1:1);return}
+    if(P.el&&!$('.ap')&&!$('.pmn.on')&&P.it&&P.it.type==='live'&&(dir==='up'||dir==='down')){e.preventDefault();P.chan(dir==='up'?-1:1);return}
     e.preventDefault();navMove(dir);return}
   if((k==='ContextMenu'||kc===82||k==='Menu')&&P.el&&!$('.ap')&&(P.engine==='nat'||P.engine==='web')){e.preventDefault();const b=$('#aspb');if(b)b.click();P.wake();return}
   if((k==='ContextMenu'||kc===82||k==='Menu')&&!inInput&&!P.el){const el=document.activeElement;const id=el&&el.dataset&&el.dataset.id;const it=id&&APP.byId.get(id);
