@@ -1,3 +1,4 @@
+Live: Vollbild aus dem Mini-Fenster öffnet den Sender jetzt frisch im Vollbild (genau wie beim Senderwechsel) – kein schwarzes Bild mehr, dafür ca. 1 Sekunde Laden
 Live-Vollbild: ▲/▼ wechselt nur den Sender – keine Leiste und kein weißes Namensfeld mehr, nur der Name oben links für 3 Sekunden
 Player: Qualität, Bildformat, Ton & Untertitel und Schließen stecken jetzt in einem Zahnrad-Menü unten rechts; Zurück schließt das Menü
 Live: erster Sender nach dem Öffnen von Live-TV zeigt im Vollbild jetzt ein Bild (das große Bild wird erst fertig aufgebaut, bevor es ins Mini-Fenster wechselt; notfalls wird im Vollbild frisch geöffnet)

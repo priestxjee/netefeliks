@@ -2260,6 +2260,10 @@ const natV=()=>window.NFK&&NFK.nativeVersion?NFK.nativeVersion():0;
 function pipSync(anim){if(!APP.pip||P.el)return;if(APP.pip.vod){cprevSync();return}const rc=APP.view==='live'&&pipRect(anim&&natV()>=28?{anim:1}:null);if(!rc){pipStop();return}document.documentElement.classList.add('pip');NFK.vMini(JSON.stringify(rc))}
 // Wächter: das Live-Bild darf nie im Vollbild hinter der Liste weiterlaufen (kostet viel Leistung)
 setInterval(()=>{if(APP.pip&&!APP.pip.vod&&!P.el&&APP.view==='live'&&window.NFK&&NFK.vMini)pipSync()},1500);
+// Live: Mini-Fenster → Vollbild wie beim Senderwechsel – Sender frisch im Vollbild öffnen
+// (das laufende Bild vom Mini-Fenster auf die große Fläche umzuleiten, ergibt auf manchen Fire-TV-Geräten nur Ton)
+function pipFullLive(it){const h=document.documentElement;h.classList.add('vidin');clearTimeout(APP._pfl);
+  APP._pfl=setTimeout(()=>{pipStop();P.open(it);h.classList.remove('vidin','pip')},170)}
 // Mini-Fenster → Vollbild: Liste blendet aus, das Bild wächst aus dem Fenster heraus
 function pipToFull(upg){const h=document.documentElement;h.classList.add('vidin');const fin=()=>{h.classList.remove('vidin','pip');if(P.el)h.classList.add('vidmode');if(upg&&P.el)P.load(upg.url,upg.alt)};
   if(natV()>=28){NFK.vMini(JSON.stringify({full:1,anim:1}));setTimeout(fin,230)}else setTimeout(()=>{NFK.vMini('');fin()},170);
@@ -2449,7 +2453,7 @@ document.addEventListener('click',e=>{
   switch(a){
    case'nav':if(b.dataset.v!==APP.view||b.dataset.sec){APP.hist=[];go(b.dataset.v,b.dataset.sec?{sec:b.dataset.sec}:{},false)}break;
    case'open':openDetails(id);break;
-   case'play':if(!it)break;if(it.type==='live'&&APP.view==='live'&&!P.el&&b.closest('.chl')&&window.NFK&&NFK.vMini&&NFK.vOpen&&PS('livePip')!==0){if(APP.pip&&APP.pip.it===it)P.open(it,{fromPip:1});else pipPlay(it,b);break}if(it.type==='series')loadSeasons(it).then(()=>P.open(it,{from:b.dataset.from==='0'?0:undefined})).catch(()=>toast('Folgen konnten nicht geladen werden'));else P.open(it,{from:b.dataset.from==='0'?0:undefined});break;
+   case'play':if(!it)break;if(it.type==='live'&&APP.view==='live'&&!P.el&&b.closest('.chl')&&window.NFK&&NFK.vMini&&NFK.vOpen&&PS('livePip')!==0){if(APP.pip&&APP.pip.it===it)pipFullLive(it);else pipPlay(it,b);break}if(it.type==='series')loadSeasons(it).then(()=>P.open(it,{from:b.dataset.from==='0'?0:undefined})).catch(()=>toast('Folgen konnten nicht geladen werden'));else P.open(it,{from:b.dataset.from==='0'?0:undefined});break;
    case'resume':if(!it)break;if(APP.pip&&APP.pip.vod&&APP.pip.it===it){P.open(it,{fromPip:1});break}if(it.type==='series')loadSeasons(it).then(()=>P.open(it));else P.open(it);break;
    case'list':toggleList(it);b.classList.toggle('on',inList(id));b.innerHTML=(inList(id)?I.star:I.list)+(inList(id)?'Favorit':'Zu Favoriten');break;
    case'rate':{const v=setRating(it,+b.dataset.v);$$('[data-act="rate"]',APP.modal&&APP.modal.el).forEach(x=>x.classList.toggle('on',+x.dataset.v===v));toast(v>0?'Mehr davon – Empfehlungen angepasst':v<0?'Verstanden – zeigen wir dir seltener':'Bewertung entfernt');break}
@@ -2530,7 +2534,7 @@ document.addEventListener('click',e=>{
    case'pmenu':{const m=$('#pmn');if(!m)break;if(m.classList.toggle('on')){const f=$('.f',m);f&&f.focus({preventScroll:true})}else b.focus();break}
    case'aptab':{const t=b.dataset.t;const nav=b.classList.contains('apnav');P.apTab=t;P.panel(true,nav?'nav':'tab');break}
    case'qpanel':pmClose();P.panel(false,'q');break;
-   case'pipfull':if(APP.pip)P.open(APP.pip.it,{fromPip:1});else if(APP._lfoc&&window.NFK&&NFK.vMini)pipPlay(APP._lfoc);else if(APP._lfoc)P.open(APP._lfoc);break;
+   case'pipfull':if(APP.pip&&!APP.pip.vod)pipFullLive(APP.pip.it);else if(APP.pip)P.open(APP.pip.it,{fromPip:1});else if(APP._lfoc&&window.NFK&&NFK.vMini)pipPlay(APP._lfoc);else if(APP._lfoc)P.open(APP._lfoc);break;
    case'iset':{const k=b.dataset.k;INTRO.set(k,INTRO.cfg()[k]?0:1);renderApp(`[data-act="iset"][data-k="${k}"]`);toast('Gespeichert');break}
    case'iplay':INTRO.play(true);break;
    case'trtest':{const it=(APP.hero||[]).find(x=>!x.demo&&x.type==='movie')||pool('movie').find(x=>!x.demo);const pre=$('#trdiag');if(!it){if(pre)pre.textContent='Kein Film gefunden (Demo?)';break}
