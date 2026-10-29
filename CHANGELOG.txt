@@ -1,3 +1,4 @@
+Filme/Serien: Genre-Reihen (z. B. Animation) zeigen jetzt auch Titel aus allen anderen Sprachen
 Filme & Serien: jetzt wird der komplette Bestand eingelesen – auch Titel aus Ländern/Sprachen, die nicht im Profil stehen (nur Live-Sender bleiben auf deine Länder beschränkt)
 Suche findet alle Filme und Serien deines Anbieters; Titel mit Fassung in deiner Sprache stehen oben
 Synchron: gibt es einen Titel auch in deiner Sprache, wird automatisch diese Fassung abgespielt; Titel ohne deine Sprache zeigen oben rechts ein Sprach-Kennzeichen (z. B. 🇬🇧 EN)
