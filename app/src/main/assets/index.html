@@ -732,6 +732,14 @@ html.nomotion .intro .lgw img{animation:none!important;opacity:1!important;clip-
 .hero.dhero+.dbody{position:relative;z-index:3;margin-top:-31%}
 .hero.dhero+.dbody .meta,.hero.dhero+.dbody .plot,.hero.dhero+.dbody .side{text-shadow:0 1px 8px rgba(0,0,0,.65)}
 .hero.dhero .ht .s-title{text-shadow:0 2px 18px rgba(0,0,0,.7)}
+
+/* Daumen hoch/runter immer zusammen, in eigener Zeile unter den Knöpfen */
+.acts .rategrp{display:flex;gap:.7rem;flex-basis:100%}
+/* Fokus auf der eigenen Auswahl (aktive Kategorie, laufender Sender) sieht aus wie jeder andere Fokus */
+.cat.on:focus,.lv3 .cat.on:focus{background:var(--fg)!important;color:#111!important;box-shadow:none!important}
+.cat.on:focus em,.lv3 .cat.on:focus em{color:#444!important}
+.lv3 .chl .chr.playing:focus{background:var(--fg)!important;border-color:var(--fg)!important;color:#111!important;box-shadow:0 0 0 2px var(--fg),0 6px 18px rgba(0,0,0,.45)!important}
+.lv3 .chl .chr.playing:focus .tx b{color:#000!important}.lv3 .chl .chr.playing:focus .tx div{color:#333!important}
 </style>
 
 </head><body>
@@ -2101,8 +2109,8 @@ async function openDetails(id){
       ${pr&&!pr.done&&!pr.ep?`<button class="btn f" data-act="play" data-id="${it.id}" data-from="0">Von Anfang an</button>`:''}
       ${it.demo?'':`<button class="btn f" data-act="trfull" data-id="${it.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5z" fill="currentColor"/></svg>Trailer</button>`}
       <button class="btn f${inList(it.id)?' on':''}" data-act="list" data-id="${it.id}">${inList(it.id)?I.star:I.list}${inList(it.id)?'Favorit':'Zu Favoriten'}</button>
-      <button class="btn ic f${rt>0?' on':''}" data-act="rate" data-v="1" data-id="${it.id}" title="Gefällt mir" aria-label="Gefällt mir">${I.up}</button>
-      <button class="btn ic f${rt<0?' on':''}" data-act="rate" data-v="-1" data-id="${it.id}" title="Nichts für mich" aria-label="Nichts für mich">${I.down}</button>
+      <span class="rategrp"><button class="btn ic f${rt>0?' on':''}" data-act="rate" data-v="1" data-id="${it.id}" title="Gefällt mir" aria-label="Gefällt mir">${I.up}</button>
+      <button class="btn ic f${rt<0?' on':''}" data-act="rate" data-v="-1" data-id="${it.id}" title="Nichts für mich" aria-label="Nichts für mich">${I.down}</button></span>
       </div><div id="d-lang" style="margin:-.3rem 0 1rem">${langChips(it)}</div>
      <div id="d-r" style="margin-bottom:1.1rem">${ratingsHTML(it,META.cache[it.id])}</div>
      <p class="plot" dir="auto" id="d-p" data-tp="1">${esc(it.plot||(META.cache[it.id]||{}).plot||'Beschreibung wird geladen …')}</p>

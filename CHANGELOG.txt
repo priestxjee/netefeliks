@@ -1,3 +1,5 @@
+Fokus auf der eigenen Auswahl (aktive Kategorie, laufender Sender) jetzt genauso weiß wie überall – vorher dunkler Hintergrund mit schwarzer Schrift
+Details: Daumen hoch und runter stehen zusammen unter den Knöpfen
 Details: das Szenenbild wird jetzt ganz gezeigt (16:9), Titel, Knöpfe und Beschreibung liegen auf dem unteren Teil des Bildes
 Vorschau beim Durchblättern zeigt immer Jahr und Filmlänge (werden notfalls nachgeladen) und kurz die Besetzung
 Neues Intro mit dem Tivinator-Logo: das TV erscheint, der Play-Knopf fällt drehend auf seinen Platz (mit Ton), danach erscheint der Schriftzug
