@@ -1944,7 +1944,7 @@ VIEWS.settings=(el,a)=>{
     ${SUBST.map(([k,lab,o])=>optRow(lab,'',chs(k,PS(k),o.map(x=>[x[0],k==='subFont'?`<span style='font-family:${x[2]}'>${x[1]}</span>`:k==='subColor'?`<i class="sw" style="background:${x[2]}"></i>${x[1]}`:x[1]])))).join('')}
     ${optRow('Audio-Synchronisation','Lässt sich während des Films unter „Sprache & Audio“ einstellen und wird pro Titel gemerkt.',`<button class="btn sm f" data-act="syncreset">Alle Anpassungen zurücksetzen</button>`)}
     ${optRow('Länder & Sprachen ändern','',`<button class="btn sm f" data-act="editctry">Länder bearbeiten</button>`)}`;
-  else if(sec==='inhalte'){const gc={};pool('vod').forEach(i=>i.genres.forEach(g=>gc[g]=1));APP._pool=null;const all=uniq([...Object.keys(gc),...PS('hideGenres')]).sort();
+  else if(sec==='inhalte'){const gc={};for(const i of APP.items)if(i.type!=='live')i.genres.forEach(g=>gc[g]=1);APP._pool=null;const all=uniq([...Object.keys(gc),...PS('hideGenres')]).sort();
     body=`<h3>Inhalte & Jugendschutz</h3>
     ${optRow('Sender und Titel ohne Länderangabe','Z. B. 24/7-Kanäle, die keinem Land zugeordnet sind.',`<button class="tgl f${p.other?' on':''}" data-act="pother"><i></i><span>${p.other?'An':'Aus'}</span></button>`)}
     ${optRow('Erwachseneninhalte anzeigen','Kategorien wie „XXX“ oder „18+“ sind sonst ausgeblendet.',tgl('adult',PS('adult')))}
