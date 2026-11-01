@@ -2632,12 +2632,24 @@ function bestPic(it){return it.versions.slice().sort((a,b)=>arPen(a)-arPen(b)||q
 function audioVer(it,lang){return it.versions.filter(v=>v.lang===lang).sort((a,b)=>QR[a.q]-QR[b.q])[0]}
 // Browser-Player (LG): Ton aus einer anderen Fassung als zweiter, unsichtbarer Player – läuft synchron zum Bild
 function webMixStop(){clearInterval(P.aSyncT);P.aSyncT=null;P._mixHold=0;const a=P.aEl;P.aEl=null;if(a){try{a.pause();a.removeAttribute('src');a.load();a.remove()}catch(e){}}if(P.v)P.v.muted=false}
+// Schafft das Gerät zwei Fassungen gleichzeitig nicht (schwarzes Bild/kein Fortschritt), auf die Fassung in der Ton-Sprache wechseln
+function webMixFail(why){const au=P.mix>-1?P.vers[P.mix]:null;webMixStop();if(!au){P.mix=-1;return}LS.set('tvn.nomix',{t:Date.now(),why:why||''});
+  const own=P.vers.filter(x=>x.lang===au.lang).sort((a,b)=>(QR[b.q]||0)-(QR[a.q]||0))[0]||au;P.mix=-1;if(P.it)P.it._mixA=null;P.startPos=P.pos;P.ver=P.vers.indexOf(own);
+  const t=$('.pt p',P.el);if(t&&!P.ep)t.textContent='';const qb=$('#qb');if(qb)qb.innerHTML=I.hd+esc(qName(own.q));
+  toast('Bild und Ton aus zwei Fassungen schafft dieser Fernseher nicht – ich spiele die '+langName(own.lang)+'-Fassung ('+qName(own.q)+')');
+  if(P.ep)P.reload();else P.load(own.src.url,own.src.alt)}
 function webMix(v){const au=P.mix>-1&&P.vers[P.mix]?P.vers[P.mix]:null;const url=au?(P.ep?P.epA||'':au.src.url):'';if(!url){v.muted=false;return}
+  // schon einmal gescheitert: gleich die Fassung in der Ton-Sprache nehmen (kein schwarzes Bild mehr)
+  if(window.TVN_WEBOS&&LS.get('tvn.nomix',null)){setTimeout(()=>{if(P.v===v&&P.mix>-1)webMixFail('gemerkt')},0);return}
   const a=document.createElement('audio');a.preload='auto';a.style.display='none';a.src=url;(P.el||document.body).appendChild(a);P.aEl=a;v.muted=true;
-  const want=()=>Math.max(0,v.currentTime-(P.sync()||0)/1000);
+  const want=()=>Math.max(0,v.currentTime-(P.sync()||0)/1000);const t0=Date.now();let lastT=-1,lastMove=Date.now(),started=false;
   a.addEventListener('loadedmetadata',()=>{try{a.currentTime=want()}catch(e){}},{once:true});
-  a.onerror=()=>{if(P.aEl!==a)return;webMixStop();P.mix=-1;if(P.it)P.it._mixA=null;const t=$('.pt p',P.el);if(t&&!P.ep)t.textContent='';toast('Ton aus der anderen Fassung lässt sich hier nicht abspielen – Ton der Bild-Fassung')};
+  a.onerror=()=>{if(P.aEl!==a)return;webMixFail('Tonfehler')};
   P.aSyncT=setInterval(()=>{if(P.aEl!==a||P.v!==v)return;
+    // Wächter: nach 12 s noch kein Bild/Ton oder 12 s Stillstand trotz Wiedergabe → abbrechen
+    if(v.currentTime!==lastT){lastT=v.currentTime;lastMove=Date.now();if(v.currentTime>0.5&&v.videoWidth)started=true}
+    const wantPlay=P._mixHold||!v.paused;
+    if((!started&&Date.now()-t0>12000)||(started&&wantPlay&&Date.now()-lastMove>12000)){webMixFail(started?'Stillstand':'kein Start');return}
     if(a.readyState<3&&!v.paused&&v.currentTime>0){v.pause();P._mixHold=1;return}
     if(P._mixHold&&a.readyState>=3){P._mixHold=0;v.play().catch(()=>{})}
     if(v.paused||v.readyState<3){if(!a.paused)a.pause();return}
