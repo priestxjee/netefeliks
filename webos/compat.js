@@ -174,55 +174,44 @@
     (document.head || document.documentElement).appendChild(st);
   })();
 
-  /* ---------- Updates ---------- */
-  var pending = 0;
-  function db(cb) {
-    try {
-      var rq = indexedDB.open('tvn-web', 1);
-      rq.onupgradeneeded = function () { rq.result.createObjectStore('f'); };
-      rq.onsuccess = function () { cb(rq.result); };
-    } catch (e) {}
-  }
-  function stored(cb) {
-    db(function (d) {
-      try { var g = d.transaction('f', 'readonly').objectStore('f').get('app'); g.onsuccess = function () { cb(g.result && g.result.v || 0); }; g.onerror = function () { cb(0); }; }
-      catch (e) { cb(0); }
+  /* ---------- Updates (direkt am Fernseher, wie in der Fire-TV-App) ----------
+     Die App fragt über UPD (index.html) nach; „Jetzt updaten“ lädt die neue Oberfläche von GitHub,
+     speichert sie auf dem Fernseher und startet neu. Profile und Login bleiben erhalten. */
+  function savePage(v, html) {
+    return new Promise(function (res, rej) {
+      try {
+        var rq = indexedDB.open('tvn-web', 1);
+        rq.onupgradeneeded = function () { rq.result.createObjectStore('f'); };
+        rq.onerror = function () { rej(new Error('Speicher nicht verfügbar')); };
+        rq.onsuccess = function () {
+          try {
+            var tx = rq.result.transaction('f', 'readwrite');
+            tx.oncomplete = function () { res(); };
+            tx.onerror = tx.onabort = function () { rej(new Error('Speichern fehlgeschlagen')); };
+            tx.objectStore('f').put({ v: v, html: html }, 'app');
+          } catch (e) { rej(e); }
+        };
+      } catch (e) { rej(e); }
     });
   }
-  function check() {
-    if (!REPO || REPO.indexOf('/') < 0) return;
-    var base = 'https://github.com/' + REPO + '/releases/latest/download/';
-    fetch(base + 'version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
-      var nv = +j.version || 0;
-      if (nv <= VERSION) return;
-      stored(function (have) {
-        if (have >= nv) { pending = nv; return; }
-        fetch(base + 'webos.html?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (html) {
-          if (html.length < 100000 || html.indexOf('TVN_WEBOS') < 0) return;
-          db(function (d) {
-            try {
-              var tx = d.transaction('f', 'readwrite');
-              tx.objectStore('f').put({ v: nv, html: html }, 'app');
-              tx.oncomplete = function () {
-                pending = nv;
-                try { window.toast && window.toast('Update geladen – wird beim nächsten Öffnen von Tivinator aktiv'); } catch (e) {}
-              };
-            } catch (e) {}
-          });
-        }).catch(function () {});
-      });
-    }).catch(function () {});
-  }
-  // Kommt die App aus dem Hintergrund zurück und es liegt ein Update bereit (kein Video läuft): neu laden
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && pending && !document.getElementById('player')) location.reload();
-  });
+  window.TVN_UPD = {
+    ver: function () { return VERSION; },
+    run: function (v, st) {
+      var base = 'https://github.com/' + REPO + '/releases/latest/download/';
+      return fetch(base + 'webos.html?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('Download fehlgeschlagen (' + r.status + ')'); return r.text(); })
+        .then(function (html) {
+          if (html.length < 100000 || html.indexOf('TVN_WEBOS') < 0 || html.indexOf('</html>') < 0) throw new Error('Datei unvollständig');
+          if (st) st.textContent = 'Wird installiert…';
+          return savePage(+v || VERSION + 1, html);
+        })
+        .then(function () { setTimeout(function () { location.reload(); }, 300); });
+    }
+  };
 
   function boot() {
     wrapBack();
     try { startAspect(); } catch (e) {}
-    setTimeout(check, 20000);
-    setInterval(check, 6 * 3600 * 1000);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else setTimeout(boot, 0);

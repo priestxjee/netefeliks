@@ -1,3 +1,4 @@
+LG: Updates direkt am Fernseher – „Update verfügbar – Jetzt updaten“ und Einstellungen → „Nach Updates suchen“ wie auf dem Fire TV
 LG: Bild und Ton aus verschiedenen Fassungen kombinierbar (z. B. 4K-Bild mit deutschem Ton); spürbar flüssiger
 Schneller und flüssiger: Startseite, Filme und Serien bauen zuerst nur die oberen Reihen, der Rest kommt unauffällig nach; Zurück, Film öffnen und Film beenden reagieren deutlich schneller; Top-10-Abgleich läuft im Hintergrund statt beim Öffnen
 Neu: Tivinator gibt es jetzt auch für LG-Fernseher (webOS) – Anleitung auf GitHub
