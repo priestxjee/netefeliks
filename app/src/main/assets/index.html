@@ -1815,8 +1815,13 @@ const TMATCH={_i:{},
   vars(t){const k=mkey(t);if(!k)return[];const o=new Set([k]);const na=k.replace(/^(the|a|an|der|die|das|ein|eine|le|la|les|el|los|il)\s+/,'');o.add(na);
     const ns=na.replace(/\s+(staffel|season|saison|temporada|sezon|fasl|teil|part|vol|volume|chapter|kapitel)\s*\d+.*$/,'').replace(/\s+s\d{1,2}(\s+e\d+)?$/,'').replace(/\s+(19|20)\d\d$/,'');if(ns)o.add(ns);
     const pre=String(t).split(/\s*[:：–—]\s*|\s+-\s+/)[0];if(pre&&pre.length<String(t).length){const pk=mkey(pre).replace(/^(the|a|an|der|die|das)\s+/,'');if(pk.length>=4)o.add('~'+pk)}
+    // ohne Beiwerk der Anbieter: Länderkürzel, Qualität, Dienst-Kürzel (NF, AMZ …), Jahreszahl – auf beiden Seiten gleich entfernt
+    const nz=TMATCH.strip(k);if(nz&&nz!==k&&nz.length>=3)o.add('='+nz);else if(nz)o.add('='+nz);
     return[...o]},
-  toks(k){return k.replace(/^~/,'').split(' ').filter(w=>w.length>1&&!/^(the|a|an|der|die|das|and|und|of|von|in|im|le|la|de|el)$/.test(w))},
+  _nz:null,
+  strip(k){if(!TMATCH._nz){TMATCH._nz=new Set([...Object.keys(CMAP).map(x=>x.toLowerCase()).filter(x=>x.length<=3&&!/^(in|it|no|at|be|me|my|us|ma|so)$/.test(x)),'4k','8k','uhd','fhd','hd','sd','hevc','h265','x265','h264','1080p','720p','2160p','multi','sub','subs','dual','dub','dubbed','omu','ger','deu','eng','vip','gold','premium','raw','backup','nf','nfx','netflix','amz','amazon','prime','dsnp','disney','atvp','hbo','wow','paramount','prmt','neu','serie','series','staffel','season','saison','komplett','complete'])}
+    return k.replace(/^[~=]/,'').split(' ').filter(w=>w&&!TMATCH._nz.has(w)&&!/^(19|20)\d\d$/.test(w)&&!/^s\d{1,2}(e\d+)?$/.test(w)).join(' ').replace(/^(the|a|an|der|die|das|ein|eine|le|la|les|el|los|il)\s+/,'')},
+  toks(k){return k.replace(/^[~=]/,'').split(' ').filter(w=>w.length>1&&!/^(the|a|an|der|die|das|and|und|of|von|in|im|le|la|de|el)$/.test(w))},
   idx(ty){const k=APP.catVer+'|'+(APP._pool&&APP._pool.key)+'|'+Math.floor(Date.now()/6e5);const c=TMATCH._i[ty];if(c&&c.k===k)return c;
     const ex=new Map(),pre=new Map(),tok=new Map();const add=(m,k,it)=>{let a=m.get(k);if(!a)m.set(k,a=[]);if(!a.includes(it))a.push(it)};
     for(const it of poolAll(ty)){const ts=[it.title];const m=META.cache[it.id];if(m&&m.engTitle)ts.push(m.engTitle);if(m&&m.imdbId)add(ex,'#'+m.imdbId,it);
@@ -1827,13 +1832,14 @@ const TMATCH={_i:{},
     const best=c=>{c=uniq(c);if(!c.length)return null;const mine=c.filter(mineL);if(mine.length)c=mine;return c.sort((a,b)=>(e.y?Math.abs((a.year||e.y)-e.y)-Math.abs((b.year||e.y)-e.y):0)||QR[b.q]-QR[a.q])[0]};
     // 1) IMDb-Nummer  2) gleiche Schreibweise  3) Haupttitel vor dem Doppelpunkt  4) fast gleiche Wörter
     if(e.imdb){const c=free(I.ex.get('#'+e.imdb));if(c.length)return best(c)}
-    let c=[];for(const t of titles)for(const v of TMATCH.vars(t)){if(v[0]==='~')continue;c.push(...free(I.ex.get(v)),...free(I.pre.get(v)))}
+    let c=[];for(const t of titles)for(const v of TMATCH.vars(t)){if(v[0]==='~'||v[0]==='=')continue;c.push(...free(I.ex.get(v)),...free(I.pre.get(v)))}
+    if(!c.length)for(const t of titles)for(const v of TMATCH.vars(t))if(v[0]==='=')c.push(...free(I.ex.get(v)),...free(I.pre.get(v.slice(1))))
     let r=best(c.filter(it=>yOk(it,1)))||best(c.filter(it=>yOk(it,2)));if(r)return r;
     c=[];for(const t of titles)for(const v of TMATCH.vars(t))if(v[0]==='~'){const k=v.slice(1);c.push(...free(I.ex.get(k)),...free(I.pre.get(k)))}
     r=best(c.filter(it=>yOk(it,1)));if(r)return r;
-    for(const t of titles){const tk=TMATCH.toks(mkey(t));if(!tk.length||tk.join('').length<5)continue;const rare=tk.slice().sort((x,y)=>(I.tok.get(x)||[]).length-(I.tok.get(y)||[]).length)[0];
+    for(const t of titles){const tk=TMATCH.toks(TMATCH.strip(mkey(t)));if(!tk.length||tk.join('').length<5)continue;const rare=tk.slice().sort((x,y)=>(I.tok.get(x)||[]).length-(I.tok.get(y)||[]).length)[0];
       const cand=free(I.tok.get(rare)).filter(it=>yOk(it,1));const S=new Set(tk);
-      const sc=cand.map(it=>{const u=new Set(TMATCH.toks(mkey(it.title)));let n=0;for(const w of S)if(u.has(w))n++;return{it,j:n/(S.size+u.size-n)}}).filter(o=>o.j>=.75).sort((x,y)=>y.j-x.j);
+      const sc=cand.map(it=>{const u=new Set(TMATCH.toks(TMATCH.strip(mkey(it.title))));let n=0;for(const w of S)if(u.has(w))n++;return{it,j:n/(S.size+u.size-n)}}).filter(o=>o.j>=.75).sort((x,y)=>y.j-x.j);
       if(sc.length)return best(sc.filter(o=>o.j===sc[0].j).map(o=>o.it))}
     return null}};
 function chartRow(pk,ty){const l=CH.list(pk,ty);if(l.length<3)return`<section class="row" data-chart="${pk}|${ty}" hidden></section>`;
