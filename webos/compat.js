@@ -50,6 +50,34 @@
       });
     };
   }
+  // Katalog-Speicher über den Dienst (Dateien auf dem Fernseher statt Browser-Speicher)
+  function kvBase() {
+    return (PROXY ? Promise.resolve(PROXY) : proxyWait).then(function (p) {
+      if (!p) throw new Error('Dienst nicht erreichbar');
+      return p.replace('/p?u=', '/kv/');
+    });
+  }
+  var kfetch = window.fetch.__tvnOrig || window.fetch;
+  window.TVN_KV = {
+    put: function (k, v) {
+      var str = typeof v === 'string';
+      return kvBase().then(function (b) {
+        return kfetch(b + encodeURIComponent(k) + '?t=' + (str ? 's' : 'j'), { method: 'PUT', body: str ? v : JSON.stringify(v) });
+      }).then(function (r) { if (!r.ok) throw new Error('Speichern fehlgeschlagen (' + r.status + ')'); });
+    },
+    get: function (k) {
+      return kvBase().then(function (b) { return kfetch(b + encodeURIComponent(k), { cache: 'no-store' }); }).then(function (r) {
+        if (r.status === 404) return undefined;
+        if (!r.ok) throw new Error('Lesen fehlgeschlagen (' + r.status + ')');
+        var t = r.headers.get('X-Type');
+        return r.text().then(function (x) { return t === 'j' ? JSON.parse(x) : x; });
+      });
+    },
+    del: function (k) {
+      return kvBase().then(function (b) { return kfetch(b + encodeURIComponent(k), { method: 'DELETE' }); }).then(function () {}, function () {});
+    }
+  };
+
   var oopen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (m, u) {
     if (PROXY && needProxy(u)) { var a = Array.prototype.slice.call(arguments); a[1] = PROXY + encodeURIComponent(u); return oopen.apply(this, a); }
@@ -177,21 +205,49 @@
   /* ---------- Updates (direkt am Fernseher, wie in der Fire-TV-App) ----------
      Die App fragt über UPD (index.html) nach; „Jetzt updaten“ lädt die neue Oberfläche von GitHub,
      speichert sie auf dem Fernseher und startet neu. Profile und Login bleiben erhalten. */
-  function savePage(v, html) {
+  function idbPut(v, html) {
     return new Promise(function (res, rej) {
       try {
         var rq = indexedDB.open('tvn-web', 1);
         rq.onupgradeneeded = function () { rq.result.createObjectStore('f'); };
-        rq.onerror = function () { rej(new Error('Speicher nicht verfügbar')); };
+        rq.onerror = function () { rej(rq.error || new Error('Speicher nicht verfügbar')); };
         rq.onsuccess = function () {
+          var d = rq.result;
           try {
-            var tx = rq.result.transaction('f', 'readwrite');
-            tx.oncomplete = function () { res(); };
-            tx.onerror = tx.onabort = function () { rej(new Error('Speichern fehlgeschlagen')); };
+            var tx = d.transaction('f', 'readwrite');
+            tx.oncomplete = function () { try { d.close(); } catch (e) {} res(); };
+            tx.onerror = tx.onabort = function () { try { d.close(); } catch (e) {} rej(tx.error || new Error('Speichern fehlgeschlagen')); };
             tx.objectStore('f').put({ v: v, html: html }, 'app');
           } catch (e) { rej(e); }
         };
       } catch (e) { rej(e); }
+    });
+  }
+  function estimate() {
+    try {
+      return navigator.storage.estimate().then(function (e) {
+        return ' (' + Math.round((e.usage || 0) / 1048576) + ' von ' + Math.round((e.quota || 0) / 1048576) + ' MB belegt)';
+      }).catch(function () { return ''; });
+    } catch (e) { return Promise.resolve(''); }
+  }
+  // Platz schaffen: den Katalog-Zwischenspeicher löschen (wird beim nächsten Start neu geladen)
+  function freeSpace() {
+    return new Promise(function (res) {
+      try {
+        if (typeof CACHE !== 'undefined' && CACHE._d) { try { CACHE._d.close(); } catch (e) {} CACHE._d = null; }
+        var r = indexedDB.deleteDatabase('netefeliks');
+        r.onsuccess = r.onerror = r.onblocked = function () { res(); };
+        setTimeout(res, 5000);
+      } catch (e) { res(); }
+    });
+  }
+  function savePage(v, html) {
+    return idbPut(v, html).catch(function () {
+      return freeSpace().then(function () { return idbPut(v, html); }).catch(function (e2) {
+        // letzter Ausweg: im localStorage ablegen (liest die Startseite ab dieser Version ebenfalls)
+        try { localStorage.setItem('tvn.page.html', html); localStorage.setItem('tvn.page.v', String(v)); return; } catch (e3) {}
+        return estimate().then(function (t) { throw new Error('Speicher voll' + t + ' – ' + (e2 && (e2.name || e2.message) || e2)); });
+      });
     });
   }
   window.TVN_UPD = {

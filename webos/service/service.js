@@ -6,12 +6,15 @@
 var http = require('http');
 var https = require('https');
 var urlMod = require('url');
+var fs = require('fs');
+var pathMod = require('path');
+var os = require('os');
 
 var CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, HEAD, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, HEAD, OPTIONS',
   'Access-Control-Allow-Headers': '*',
-  'Access-Control-Expose-Headers': '*'
+  'Access-Control-Expose-Headers': 'X-Type, X-Final-Url, Content-Length, Content-Range'
 };
 var PASS_REQ = ['user-agent', 'range', 'accept', 'accept-language', 'content-type'];
 var PASS_RES = ['content-type', 'content-length', 'content-range', 'accept-ranges', 'last-modified', 'etag', 'cache-control'];
@@ -82,10 +85,69 @@ function upstream(target, req, res, hops) {
   if (opts.method === 'POST') req.pipe(up); else up.end();
 }
 
+
+/* ---------- Dateispeicher für den Katalog ----------
+   Der Browser des Fernsehers darf kaum etwas dauerhaft speichern. Der Dienst legt
+   den Katalog deshalb als Dateien auf dem Fernseher ab (erster beschreibbarer Ordner). */
+var dataDir = null;
+function mkdirp(d) { if (fs.existsSync(d)) return; mkdirp(pathMod.dirname(d)); fs.mkdirSync(d); }
+function pickDir() {
+  if (dataDir) return dataDir;
+  var cands = [pathMod.join(__dirname, 'data'), '/media/developer/temp/tivinator', pathMod.join(os.tmpdir(), 'tivinator')];
+  for (var i = 0; i < cands.length; i++) {
+    try {
+      mkdirp(cands[i]);
+      var t = pathMod.join(cands[i], '.probe');
+      fs.writeFileSync(t, 'ok'); fs.unlinkSync(t);
+      dataDir = cands[i]; return dataDir;
+    } catch (e) {}
+  }
+  return null;
+}
+function kvFile(key, type) { return pathMod.join(pickDir(), key.replace(/[^A-Za-z0-9_.-]/g, '_') + '.' + type); }
+function handleKv(req, res, key) {
+  var dir = pickDir();
+  if (!dir || !key) { res.writeHead(503, CORS); return res.end('kein Speicher'); }
+  var out = {}; Object.keys(CORS).forEach(function (k) { out[k] = CORS[k]; });
+  if (req.method === 'GET') {
+    var types = ['s', 'j'];
+    for (var i = 0; i < types.length; i++) {
+      var f = kvFile(key, types[i]);
+      if (fs.existsSync(f)) {
+        out['X-Type'] = types[i]; out['content-type'] = 'text/plain; charset=utf-8';
+        try { out['content-length'] = fs.statSync(f).size; } catch (e) {}
+        res.writeHead(200, out);
+        return fs.createReadStream(f).on('error', function () { try { res.end(); } catch (e) {} }).pipe(res);
+      }
+    }
+    res.writeHead(404, out); return res.end();
+  }
+  if (req.method === 'DELETE') {
+    ['s', 'j'].forEach(function (t) { try { fs.unlinkSync(kvFile(key, t)); } catch (e) {} });
+    res.writeHead(204, out); return res.end();
+  }
+  if (req.method === 'PUT' || req.method === 'POST') {
+    var type = /[?&]t=j/.test(req.url) ? 'j' : 's';
+    var target = kvFile(key, type), tmp = target + '.tmp' + Date.now();
+    var ws = fs.createWriteStream(tmp);
+    ws.on('error', function (e) { try { fs.unlinkSync(tmp); } catch (x) {} if (!res.headersSent) { res.writeHead(507, out); res.end(String(e.message || e)); } });
+    ws.on('finish', function () {
+      try {
+        fs.renameSync(tmp, target);
+        try { fs.unlinkSync(kvFile(key, type === 's' ? 'j' : 's')); } catch (e) {}
+        res.writeHead(204, out); res.end();
+      } catch (e) { res.writeHead(507, out); res.end(String(e.message || e)); }
+    });
+    return req.pipe(ws);
+  }
+  res.writeHead(405, out); res.end();
+}
+
 function handle(req, res) {
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); return res.end(); }
   var q = urlMod.parse(req.url, true);
-  if (q.pathname === '/ping') { res.writeHead(200, CORS); return res.end('ok'); }
+  if (q.pathname === '/ping') { res.writeHead(200, CORS); return res.end('ok ' + (pickDir() || 'kein Speicher')); }
+  if (q.pathname.indexOf('/kv/') === 0) return handleKv(req, res, decodeURIComponent(q.pathname.slice(4)));
   var target = q.query && q.query.u;
   if (!target) { res.writeHead(400, CORS); return res.end('missing u'); }
   upstream(String(target), req, res, 0);

@@ -1,3 +1,4 @@
+LG: Katalog bleibt gespeichert – kein Neuladen von Sendern, Filmen und Serien bei jedem Start; Updates speichern zuverlässig
 LG: kein schwarzes Bild mehr beim Sprachwechsel – schafft der Fernseher Bild und Ton aus zwei Fassungen nicht, läuft automatisch die Fassung in deiner Sprache
 LG: Updates direkt am Fernseher – „Update verfügbar – Jetzt updaten“ und Einstellungen → „Nach Updates suchen“ wie auf dem Fire TV
 LG: Bild und Ton aus verschiedenen Fassungen kombinierbar (z. B. 4K-Bild mit deutschem Ton); spürbar flüssiger

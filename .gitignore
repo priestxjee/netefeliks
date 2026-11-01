@@ -6,3 +6,4 @@ local.properties
 webos-dist/
 webos.html
 Tivinator.ipk
+webos/service/data/

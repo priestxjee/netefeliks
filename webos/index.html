@@ -10,6 +10,10 @@
 (function () {
   var BUILT = __TVN_VERSION__;
   function show(html) { document.open(); document.write(html); document.close(); }
+  function fromLS() {
+    try { var lv = +localStorage.getItem('tvn.page.v') || 0, lh = lv > BUILT && localStorage.getItem('tvn.page.html'); if (lh && lh.length > 100000 && lh.indexOf('TVN_WEBOS') > -1) { show(lh); return true; } } catch (e) {}
+    return false;
+  }
   function bundled() {
     var x = new XMLHttpRequest();
     x.open('GET', 'app.html', true);
@@ -20,16 +24,18 @@
   try {
     var rq = indexedDB.open('tvn-web', 1);
     rq.onupgradeneeded = function () { rq.result.createObjectStore('f'); };
-    rq.onerror = bundled;
+    rq.onerror = function () { if (!fromLS()) bundled(); };
     rq.onsuccess = function () {
       try {
         var g = rq.result.transaction('f', 'readonly').objectStore('f').get('app');
         g.onsuccess = function () {
-          var r = g.result;
-          if (r && r.v > BUILT && r.html && r.html.length > 100000 && r.html.indexOf('TVN_WEBOS') > -1) show(r.html);
-          else bundled();
+          var r = g.result, best = null, lv = 0, lh = null;
+          if (r && r.v > BUILT && r.html && r.html.length > 100000 && r.html.indexOf('TVN_WEBOS') > -1) best = r;
+          try { lv = +localStorage.getItem('tvn.page.v') || 0; } catch (e) {}
+          if (lv > BUILT && (!best || lv > best.v)) { try { lh = localStorage.getItem('tvn.page.html'); } catch (e) {} if (lh && lh.length > 100000 && lh.indexOf('TVN_WEBOS') > -1) best = { v: lv, html: lh }; }
+          if (best) show(best.html); else bundled();
         };
-        g.onerror = bundled;
+        g.onerror = function () { if (!fromLS()) bundled(); };
       } catch (e) { bundled(); }
     };
   } catch (e) { bundled(); }
