@@ -757,6 +757,8 @@ html.nomotion .intro .lgw img{animation:none!important;opacity:1!important;clip-
 .intro .lwd{clip-path:none!important;transform:scale(.94);animation:iword2 .62s cubic-bezier(.2,.8,.2,1) 1.12s forwards!important}
 @keyframes iword2{from{opacity:0;transform:scale(.94) translateY(2%)}to{opacity:1;transform:none}}
 .intro .stage,.intro .lgw{transform:translateZ(0)}
+
+.svc.s-hbo{background:linear-gradient(90deg,#0028ff,#7b2cff);color:#fff}
 </style>
 
 </head><body>
@@ -1765,7 +1767,7 @@ const TOP={data:LS.get('nfk.top2',null),busy:0,
 // ---------- Top 10 je Streamingdienst (Netflix, Prime Video, Apple TV, Disney+, IMDb) ----------
 // Rangliste von FlixPatrol (tägliche Top 10 in Deutschland); deutsche Titel/Jahr/IMDb-Nummer von JustWatch zum Abgleich.
 // Fällt FlixPatrol aus, zeigt die Reihe die beliebtesten Titel des Dienstes bei JustWatch.
-const CHS=[['nfx','Netflix','netflix'],['amp','Prime Video','amazon-prime'],['atp','Apple TV','apple-tv'],['dnp','Disney+','disney']];
+const CHS=[['nfx','Netflix','netflix'],['amp','Prime Video','amazon-prime'],['atp','Apple TV','apple-tv'],['hbo','HBO Max','hbo-max'],['dnp','Disney+','disney']];
 const CH={data:LS.get('nfk.ch',null),busy:0,_m:null,
   dec(t){return String(t||'').replace(/&amp;/g,'&').replace(/&#0?39;|&apos;|&#x27;/g,"'").replace(/&quot;/g,'"').replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(+n)).replace(/\s+/g,' ').trim()},
   // FlixPatrol-Seite: Abschnitte „TOP 10 Movies“ / „TOP 10 TV Shows“, darin Links auf /title/…
@@ -1776,14 +1778,14 @@ const CH={data:LS.get('nfk.ch',null),busy:0,_m:null,
       if(l.length<3)continue;const k=hs[j].k;if(k==='kids')continue;if(k==='all'){if(!out.movie.length)out.movie=l}else if(!out[k].length)out[k]=l}
     return out},
   async jw(pk,ty){const q='query P($country:Country!,$language:Language!,$first:Int!,$filter:TitleFilter){popularTitles(country:$country,first:$first,filter:$filter){edges{node{objectType content(country:$country,language:$language){title originalTitle originalReleaseYear externalIds{imdbId}}}}}}';
-    const body=JSON.stringify({query:q,variables:{country:'DE',language:'de',first:40,filter:{packages:[pk],objectTypes:[ty==='movie'?'MOVIE':'SHOW']}}});
+    const body=JSON.stringify({query:q,variables:{country:'DE',language:'de',first:40,filter:{packages:[CH._jp||pk],objectTypes:[ty==='movie'?'MOVIE':'SHOW']}}});
     const g=await NET.grab('https://apis.justwatch.com/graphql',{post:body,h:{'Content-Type':'application/json'},body:true,max:8e5});
     const j=JSON.parse(g.body||'{}');return(((j.data||{}).popularTitles||{}).edges||[]).map(e=>{const c=(e.node||{}).content||{};return{t:c.title||'',o:c.originalTitle||'',y:c.originalReleaseYear||null,imdb:(c.externalIds||{}).imdbId||''}}).filter(e=>e.t)},
-  async load(force){if(CH.busy||!APP.cfg||APP.cfg.mode==='demo')return;const d=CH.data;if(!force&&d&&Date.now()-d.t<6*36e5)return;CH.busy=1;
+  async load(force){if(CH.busy||!APP.cfg||APP.cfg.mode==='demo')return;const d=CH.data;if(!force&&d&&Date.now()-d.t<6*36e5&&d.s&&d.s.hbo)return;CH.busy=1;
     try{await waitIdle(3000);const res={t:Date.now(),s:{}};let any=0;
       for(const[pk,,slug]of CHS){const o={movie:[],series:[],src:''};let fp={movie:[],series:[]};
         try{const g=await NET.grab(`https://flixpatrol.com/top10/${slug}/germany/`,{body:true,max:2e6});fp=CH.fp(g.body||'')}catch(e){}
-        for(const ty of['movie','series']){let jw=[];try{jw=await CH.jw(pk,ty)}catch(e){}
+        for(const ty of['movie','series']){let jw=[];for(const jp of(pk==='hbo'?['mxx','hbm']:[pk])){CH._jp=jp;try{jw=await CH.jw(pk,ty)}catch(e){}CH._jp=null;if(jw.length)break}
           if(fp[ty].length>=3){o.src='fp';o[ty]=fp[ty].map(e=>{const k=mkey(e.t);const w=jw.find(x=>mkey(x.o)===k||mkey(x.t)===k);return w?{t:e.t,alt:uniq([w.t,w.o].filter(Boolean)),y:w.y,imdb:w.imdb}:{t:e.t,alt:[]}})}
           else if(jw.length>=3){o[ty]=jw.slice(0,10).map(w=>({t:w.t,alt:w.o&&w.o!==w.t?[w.o]:[],y:w.y,imdb:w.imdb}));o[ty+'Src']='jw'}
           if(o[ty].length)any=1}
@@ -1803,7 +1805,7 @@ function chartRow(pk,ty){const l=CH.list(pk,ty);if(l.length<3)return`<section cl
   const nm=pk==='imdb'?'IMDb':(CHS.find(c=>c[0]===pk)||[])[1];const src=pk==='imdb'?'meistgesucht weltweit':(CH.data&&CH.data.s[pk]&&CH.data.s[pk][ty+'Src']==='jw'?'gerade beliebt in Deutschland':'heute in Deutschland');
   const have=l.filter(x=>x.it).length;const st=CH.data&&CH.data.t&&pk!=='imdb'?' · Stand '+new Date(CH.data.t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'';
   return`<section class="row chrow" data-chart="${pk}|${ty}"><h3 class="pad"><span class="svc s-${pk}">${esc(nm)}</span> Top 10 ${ty==='movie'?'Filme':'Serien'}<small>${src} · ${have} von ${l.length} bei dir${st}</small></h3><div class="track pad">${l.map((x,i)=>x.it?`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(x.it,{why:'top'})}</div>`:`<div class="t10 gh"><span class="rk" aria-hidden="true">${i+1}</span><button class="card f ghost" data-act="chq" data-q="${esc(x.e.alt&&x.e.alt[0]||x.e.t)}" aria-label="${esc(x.e.t)} – nicht in deinem Abo">${artHTML({title:x.e.alt&&x.e.alt[0]||x.e.t,year:x.e.y,genres:[]})}<span class="bdg na">Nicht im Abo</span></button></div>`).join('')}</div></section>`}
-function chartRows(ty){if(!ROW('top10'))return'';if(APP.cfg&&APP.cfg.mode!=='demo')CH.load();return['nfx','amp','atp','dnp','imdb'].map(pk=>chartRow(pk,ty)).join('')}
+function chartRows(ty){if(!ROW('top10'))return'';if(APP.cfg&&APP.cfg.mode!=='demo')CH.load();return['nfx','amp','atp','hbo','dnp','imdb'].map(pk=>chartRow(pk,ty)).join('')}
 function refreshCharts(){$$('[data-chart]').forEach(sec=>{if(sec.contains(document.activeElement))return;const[pk,ty]=sec.dataset.chart.split('|');const w=document.createElement('div');w.innerHTML=chartRow(pk,ty);if(w.firstElementChild)sec.replaceWith(w.firstElementChild)})}
 // ---------- Kassenschlager: weltweit erfolgreichste Kinofilme je Jahr (Box Office), abgeglichen mit deinem Abo ----------
 // Vergangene Jahre ändern sich nicht mehr; das laufende Jahr wird wöchentlich von Box Office Mojo geholt. „|“ trennt andere Titel (z. B. deutsch).
