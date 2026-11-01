@@ -1,0 +1,6 @@
+{
+  "name": "com.tivinator.app.service",
+  "version": "1.0.0",
+  "description": "Tivinator Weiterleiter",
+  "main": "service.js"
+}

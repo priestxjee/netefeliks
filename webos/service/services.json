@@ -1,0 +1,10 @@
+{
+  "id": "com.tivinator.app.service",
+  "description": "Tivinator Weiterleiter für IPTV-Server",
+  "services": [
+    {
+      "name": "com.tivinator.app.service",
+      "description": "Leitet Anfragen der App an den IPTV-Server weiter"
+    }
+  ]
+}

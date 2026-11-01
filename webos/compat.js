@@ -8,6 +8,53 @@
   window.TVN_WEBOS = 1;
   var REPO = '__TVN_REPO__', VERSION = __TVN_VERSION__;
 
+  /* ---------- Verbindung zu fremden Servern ----------
+     Der Browser des Fernsehers sperrt direkte Abfragen an deinen IPTV-Server (CORS).
+     Der mitinstallierte Hintergrunddienst leitet sie über 127.0.0.1 weiter. */
+  var PROXY = null, proxyWait = null;
+  var DIRECT = /^https?:\/\/(127\.0\.0\.1|localhost|wsrv\.nl|fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)(:\d+)?\//i;
+  function needProxy(u) { return typeof u === 'string' && /^https?:\/\//i.test(u) && !DIRECT.test(u); }
+  function startProxy() {
+    proxyWait = new Promise(function (res) {
+      var done = false;
+      function fin(v) { if (!done) { done = true; PROXY = v; res(v); } }
+      if (!window.PalmServiceBridge) return fin(null);
+      try {
+        var b = new PalmServiceBridge();
+        window.__tvnBridge = b;
+        b.onservicecallback = function (m) {
+          try { var j = JSON.parse(m); fin(j && j.port ? 'http://127.0.0.1:' + j.port + '/p?u=' : null); } catch (e) { fin(null); }
+        };
+        b.call('luna://com.tivinator.app.service/start', '{}');
+      } catch (e) { fin(null); }
+      setTimeout(function () { fin(null); }, 10000);
+    });
+    return proxyWait;
+  }
+  startProxy();
+  window.TVN_PROXY = function () { return PROXY; };
+
+  if (window.fetch) {
+    var ofetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      var u = typeof input === 'string' ? input : null;
+      if (!needProxy(u)) return ofetch(input, init);
+      return (PROXY ? Promise.resolve(PROXY) : proxyWait).then(function (p) {
+        if (!p) return ofetch(input, init);
+        return ofetch(p + encodeURIComponent(u), init).catch(function (e) {
+          // Dienst wurde evtl. beendet: neu starten und einmal wiederholen
+          if (init && init.signal && init.signal.aborted) throw e;
+          return startProxy().then(function (p2) { return ofetch(p2 ? p2 + encodeURIComponent(u) : u, init); });
+        });
+      });
+    };
+  }
+  var oopen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (m, u) {
+    if (PROXY && needProxy(u)) { var a = Array.prototype.slice.call(arguments); a[1] = PROXY + encodeURIComponent(u); return oopen.apply(this, a); }
+    return oopen.apply(this, arguments);
+  };
+
   /* ---------- Fernbedienung ---------- */
   function vid() { return document.getElementById('vid'); }
   function send(key) {

@@ -36,7 +36,7 @@ jobs:
         run: |
           npm i --prefix "$RUNNER_TEMP/tvn" --no-audit --no-fund esbuild@0.24 @webos-tools/cli
           NODE_PATH="$RUNNER_TEMP/tvn/node_modules" node webos/build.js "${{ github.repository }}" "${{ github.run_number }}"
-          "$RUNNER_TEMP/tvn/node_modules/.bin/ares-package" webos-dist -o "$RUNNER_TEMP/ipk"
+          "$RUNNER_TEMP/tvn/node_modules/.bin/ares-package" webos-dist webos/service -o "$RUNNER_TEMP/ipk"
           cp "$RUNNER_TEMP"/ipk/*.ipk Tivinator.ipk
           ls -la Tivinator.ipk webos.html
       - uses: actions/upload-artifact@v4

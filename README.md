@@ -55,6 +55,10 @@ Alles ist kostenlos. Du brauchst einmalig einen Mac oder PC im selben WLAN wie d
 - Die Oberfläche aktualisiert sich automatisch: Tivinator prüft beim Start und alle 6 Stunden auf GitHub,
   lädt Updates im Hintergrund und nutzt sie beim nächsten Öffnen. Neu installieren musst du dafür nichts.
 
+## Technik
+- Der Browser des Fernsehers sperrt direkte Verbindungen zu fremden Servern. Deshalb installiert Tivinator.ipk einen
+  kleinen Hintergrunddienst mit, der die Anfragen an deinen IPTV-Server weiterleitet (nur im Fernseher, über 127.0.0.1).
+
 ## Unterschiede zur Fire-TV-Version
 - Video läuft über den Player des Fernsehers. Tonspuren und Untertitel sind je nach Stream eingeschränkt.
 - Offline-Downloads, „Daten sichern“ und das Fire-TV-Spezial-Tonmischen gibt es auf dem LG nicht.
