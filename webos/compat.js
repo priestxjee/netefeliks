@@ -78,20 +78,21 @@
       for (var i = 0; i < rules.length; i++) { try { if (el.matches(rules[i].sel)) r = rules[i].r; } catch (e) {} }
       return r;
     }
-    function fit(el) {
-      var r = el.__tvnAr; if (!r) return;
-      var w = el.getBoundingClientRect().width; if (!w) return;
-      var cs = getComputedStyle(el), h = w / r;
-      if (cs.boxSizing !== 'border-box') h -= (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
-      h = Math.max(0, h);
-      var cur = parseFloat(el.style.height) || 0;
-      if (Math.abs(cur - h) > 0.5) el.style.height = h + 'px';
+    // Höhe nur im ResizeObserver setzen (kein erzwungenes Layout pro Karte → flüssig)
+    function fit(el, w) {
+      var r = el.__tvnAr; if (!r || !w) return;
+      if (el.__tvnPad == null) {
+        var cs = getComputedStyle(el);
+        el.__tvnPad = cs.boxSizing === 'border-box' ? 0 : (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+      }
+      var h = Math.max(0, Math.round((w / r - el.__tvnPad) * 10) / 10);
+      if (el.__tvnH !== h) { el.__tvnH = h; el.style.height = h + 'px'; }
     }
-    var ro = new ResizeObserver(function (en) { for (var i = 0; i < en.length; i++) fit(en[i].target); });
+    var ro = new ResizeObserver(function (en) { for (var i = 0; i < en.length; i++) { var t = en[i].target; fit(t, t.offsetWidth); } });
     function consider(el) {
       var r = ratioOf(el);
-      if (r) { if (el.__tvnAr !== r) { el.__tvnAr = r; ro.observe(el); fit(el); } }
-      else if (el.__tvnAr) { el.__tvnAr = 0; ro.unobserve(el); el.style.height = ''; }
+      if (r) { if (el.__tvnAr !== r) { el.__tvnAr = r; el.__tvnH = null; ro.unobserve(el); ro.observe(el); } }
+      else if (el.__tvnAr) { el.__tvnAr = 0; el.__tvnH = null; ro.unobserve(el); el.style.height = ''; }
     }
     function scan(root) {
       if (root.nodeType !== 1) return;
@@ -108,6 +109,22 @@
       }
     }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
   }
+
+  /* ---------- Bilder: verkleinert laden (der Fire TV macht das selbst, der LG nicht) ---------- */
+  var TMDB = /^(https?:\/\/image\.tmdb\.org\/t\/p\/)(original|w\d+)(\/.*)$/i, SIZES = [92, 154, 185, 342, 500, 780, 1280];
+  function smallImg(u, w) {
+    if (!u || !/^https?:/i.test(u) || /^https?:\/\/(wsrv\.nl|nfk\.img)\//i.test(u)) return u;
+    w = Math.max(64, Math.min(1280, +w || 300));
+    var m = TMDB.exec(u);
+    if (m) { var s = 1280; for (var i = 0; i < SIZES.length; i++) if (SIZES[i] >= w) { s = SIZES[i]; break; } return m[1] + 'w' + s + m[3]; }
+    return 'https://wsrv.nl/?url=' + encodeURIComponent(u) + '&w=' + w + '&we&q=72&output=jpg&default=' + encodeURIComponent(u);
+  }
+  window.TVN_IMG = smallImg;
+  (function () {
+    var st = document.createElement('style');
+    st.textContent = '::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}html,body{-webkit-user-select:none;user-select:none}*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}input,textarea{-webkit-user-select:text;user-select:text}';
+    (document.head || document.documentElement).appendChild(st);
+  })();
 
   /* ---------- Updates ---------- */
   var pending = 0;

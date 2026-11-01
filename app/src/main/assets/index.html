@@ -1560,7 +1560,7 @@ function logoHTML(ch){const h=hstr(ch.title);const rtl=isRTL(ch.title);
   return`<div class="logo" style="--a:hsl(${h%360} 55% 32%);--b:hsl(${(h>>8)%360} 50% 10%)"><span${rtl?' dir="rtl"':''}>${esc(ch.title.replace(/\s+(UHD|4K)$/i,''))}</span></div>`}
 // Bilder: in der Fire-TV-App verkleinert und auf dem Gerät zwischengespeichert (schneller, weniger Arbeitsspeicher)
 let _imgN=null;const imgN=()=>_imgN==null?(_imgN=!!(window.NFK&&NFK.nativeVersion&&NFK.nativeVersion()>=7)):_imgN;
-function imgU(u,w){if(!u||!/^https?:/i.test(u)||!imgN())return u;return'https://nfk.img/?w='+w+'&u='+encodeURIComponent(u)}
+function imgU(u,w){if(window.TVN_IMG)return TVN_IMG(u,w);if(!u||!/^https?:/i.test(u)||!imgN())return u;return'https://nfk.img/?w='+w+'&u='+encodeURIComponent(u)}
 const thumbK=it=>'t'+(hstr(it.id)>>>0).toString(36);
 function posterHTML(it,wide){const img=wide?(it.backdrop||''):(it.logo||'');if(img&&!it.demo)return`<img class="pi" src="${esc(imgU(img,wide?960:320))}" alt="" loading="lazy" decoding="async" data-fb="${wide?'w':'p'}">`;return artHTML(it,wide)}
 // Karte „Weiterschauen“: letztes Bild aus dem Film/der Folge (vom Fire TV gespeichert), sonst Szenenbild, sonst Poster
