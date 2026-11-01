@@ -6,6 +6,7 @@
 (function () {
   'use strict';
   window.TVN_WEBOS = 1;
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
   var REPO = '__TVN_REPO__', VERSION = __TVN_VERSION__;
 
   /* ---------- Verbindung zu fremden Servern ----------

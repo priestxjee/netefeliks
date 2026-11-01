@@ -1114,15 +1114,15 @@ const APP={cfg:LS.get('nfk.cfg',null),profiles:LS.get('nfk.profiles',[]),pid:LS.
 function buildCatalog(raws){const r=catalogCore(raws);restoreItems(r.items);APP.sig=r.sig}
 // ---------- Playlist-Speicher: Katalog auf dem Gerät ablegen (IndexedDB), damit die App sofort startet ----------
 const CACHE={
-  db(){return new Promise((res,rej)=>{try{const r=indexedDB.open('netefeliks',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})},
+  db(){if(CACHE._d)return Promise.resolve(CACHE._d);return new Promise((res,rej)=>{try{const r=indexedDB.open('netefeliks',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{CACHE._d=r.result;r.result.onclose=()=>{CACHE._d=null};r.result.onversionchange=()=>{try{r.result.close()}catch(e){}CACHE._d=null};res(r.result)};r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error('Speicher blockiert'));setTimeout(()=>rej(new Error('Speicher antwortet nicht')),20000)}catch(e){rej(e)}})},
   sig(){const c=APP.cfg||{};return[c.mode,c.server||'',c.user||'',c.m3u||''].join('|')},
-  async put(k,v){const d=await CACHE.db();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})},
+  async put(k,v){const d=await CACHE.db();await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.oncomplete=res;t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('Speichern abgebrochen'));setTimeout(()=>rej(new Error('Speichern dauert zu lange')),45000);t.objectStore('kv').put(v,k)})},
   async get(k){const d=await CACHE.db();return new Promise((res,rej)=>{const r=d.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
-  async del(k){const d=await CACHE.db();return new Promise(res=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=res;t.onerror=res})},
+  async del(k){const d=await CACHE.db();return new Promise(res=>{const t=d.transaction('kv','readwrite');t.oncomplete=res;t.onerror=res;t.onabort=res;setTimeout(res,20000);t.objectStore('kv').delete(k)})},
   async saveParts(gen,n){CACHE.t=Date.now();let old=null;try{old=await CACHE.get('catalog')}catch(e){}await CACHE.put('catalog',{sig:CACHE.sig(),t:Date.now(),gen,parts:n,csig:APP.sig||'',xst:APP.xst||{}});
     if(old&&old.gen&&old.gen!==gen)for(let i=0;i<(old.parts||0);i++)CACHE.del('c'+old.gen+'_'+i).catch(()=>{})},
   async save(json){CACHE.t=Date.now();try{const items=json||catJSON(APP.items);const d=await CACHE.db();
-    await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put({sig:CACHE.sig(),t:Date.now(),items,csig:APP.sig||''},'catalog');t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}},
+    await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.oncomplete=res;t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('Speichern abgebrochen'));setTimeout(()=>rej(new Error('Speichern dauert zu lange')),45000);t.objectStore('kv').put({sig:CACHE.sig(),t:Date.now(),items,csig:APP.sig||''},'catalog')})}catch(e){}},
   async load(){try{const d=await CACHE.db();const v=await new Promise((res,rej)=>{const r=d.transaction('kv').objectStore('kv').get('catalog');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
     if(!v||v.sig!==CACHE.sig())return false;let items;
     if(v.parts){items=[];for(let i=0;i<v.parts;i++){if(i)await new Promise(r=>setTimeout(r,0));let s=await CACHE.get('c'+v.gen+'_'+i);if(!s)return false;const a=JSON.parse(s);s=null;for(let k=0;k<a.length;k++)items.push(a[k])}}else items=JSON.parse(v.items);if(!items.length)return false;restoreItems(items);CACHE.t=v.t;APP.sig=v.csig||'';APP.xst=v.xst||{};for(const c in APP.xst)if(!APP.stats[c])APP.stats[c]=APP.xst[c];return true}catch(e){return false}}};
@@ -1241,9 +1241,9 @@ async function loadCatalog0(ui,opt={}){const keep=scanKeep();LS.set('nfk.keepc',
   }finally{if(w)try{w.terminate()}catch(e){}}}
 // Neuer Katalog in Stücken: Stück für Stück lesen und auf dem Gerät speichern (nie alles als ein Text)
 async function applyCatalogB(res){APP.items=[];APP.byId=new Map();APP._pool=null;APP._tc=null;APP.hero=[];META.mem.clear();TRL.mem.clear();APP._vm=null;APP._dd=null;
-  const dec=new TextDecoder(),gen=Date.now().toString(36),items=[];const n=res.bufs.length;
-  for(let i=0;i<n;i++){let s=dec.decode(new Uint8Array(res.bufs[i]));res.bufs[i]=null;const a=JSON.parse(s);for(let k=0;k<a.length;k++)items.push(a[k]);try{await CACHE.put('c'+gen+'_'+i,s)}catch(e){}s=null}
-  restoreItems(items);APP.sig=res.sig;const xst={};if(res.stats)for(const c in res.stats)if(!APP.stats[c]){APP.stats[c]=res.stats[c];xst[c]=res.stats[c]}APP.xst=xst;try{await CACHE.saveParts(gen,n)}catch(e){}}
+  const dec=new TextDecoder(),gen=Date.now().toString(36),items=[];const n=res.bufs.length;let cOk=true;
+  for(let i=0;i<n;i++){let s=dec.decode(new Uint8Array(res.bufs[i]));res.bufs[i]=null;const a=JSON.parse(s);for(let k=0;k<a.length;k++)items.push(a[k]);if(cOk)try{await CACHE.put('c'+gen+'_'+i,s)}catch(e){cOk=false;TRL.log&&TRL.log('Katalog-Speicher: '+(e&&e.message||e))}s=null}
+  restoreItems(items);APP.sig=res.sig;const xst={};if(res.stats)for(const c in res.stats)if(!APP.stats[c]){APP.stats[c]=res.stats[c];xst[c]=res.stats[c]}APP.xst=xst;if(cOk)try{await CACHE.saveParts(gen,n)}catch(e){}}
 function applyCatalog(res){if(!res.items){APP.items=[];APP.byId=new Map();APP._pool=null;APP._tc=null;APP.hero=[];META.mem.clear();TRL.mem.clear()}restoreItems(res.items||JSON.parse(res.json));APP.sig=res.sig}
 
 // ---------- Profile & Verlauf ----------
