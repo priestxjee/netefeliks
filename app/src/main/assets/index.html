@@ -730,8 +730,8 @@ html.nomotion .intro .lgw img{animation:none!important;opacity:1!important;clip-
 .hero.dhero::after{background:linear-gradient(0deg,var(--bg2) 0%,rgba(18,18,20,.88) 16%,rgba(18,18,20,.45) 38%,rgba(18,18,20,0) 62%),linear-gradient(90deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 55%)}
 .hero.dhero .ht{bottom:56%}
 .hero.dhero+.dbody{position:relative;z-index:3;margin-top:-31%}
-.hero.dhero+.dbody .meta,.hero.dhero+.dbody .plot,.hero.dhero+.dbody .side{text-shadow:0 1px 8px rgba(0,0,0,.65)}
-.hero.dhero .ht .s-title{text-shadow:0 2px 18px rgba(0,0,0,.7)}
+
+.hero.dhero .ht .s-title{text-shadow:0 1px 3px rgba(0,0,0,.6)}
 
 /* Daumen hoch/runter immer zusammen, in eigener Zeile unter den Knöpfen */
 .acts .rategrp{display:flex;gap:.7rem;flex-basis:100%}
@@ -759,6 +759,8 @@ html.nomotion .intro .lgw img{animation:none!important;opacity:1!important;clip-
 .intro .stage,.intro .lgw{transform:translateZ(0)}
 
 .svc.s-hbo{background:linear-gradient(90deg,#0028ff,#7b2cff);color:#fff}
+
+.row.lzr{min-height:14rem}
 </style>
 
 </head><body>
@@ -1264,7 +1266,7 @@ const getRating=id=>getRatings()[id]||0;
 function setRating(it,v){const m=getRatings();if(m[it.id]===v){delete m[it.id];LS.set('nfk.rt.'+APP.pid,m);return 0}m[it.id]=v;LS.set('nfk.rt.'+APP.pid,m);logEvent(it,v>0?'like':'dislike');return v}
 function pool(type){
   const p=prof();if(!p)return[];let key=p.id+'|'+p.countries.join(',')+'|'+(p.other?1:0)+'|'+APP.catVer;
-  key+='|'+JSON.stringify(p.set||{});
+  key+='|'+JSON.stringify(POOLPS.map(k=>(p.set||{})[k]));
   if(!APP._pool||APP._pool.key!==key){const cs=new Set(p.countries);if(p.other)cs.add('XX');const all=APP.items.filter(i=>i.langs.some(l=>cs.has(l))&&allowed(i));APP._pool={key,live:all.filter(i=>i.type==='live'),movie:all.filter(i=>i.type==='movie'),series:all.filter(i=>i.type==='series')}}
   return type==='vod'?[...APP._pool.movie,...APP._pool.series]:APP._pool[type];
 }
@@ -1277,7 +1279,8 @@ const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'n
   rows:{cont:1,top:1,because:1,top10:1,sport:1,recent:1,new:1,pop:1,genre:1,list:1}};
 const PS=k=>{const p=prof();const v=p&&p.set?p.set[k]:undefined;return v===undefined?SET_DEF[k]:v};
 const ROW=k=>{const r=PS('rows');return r[k]===undefined?1:r[k]};
-function setPS(k,v){if(k==='uiLang'){LS.set('nfk.lang',v);I18N.set(v)}const p=prof();if(!p)return;p.set=Object.assign({},p.set||{});p.set[k]=v;saveProfiles();APP._pool=null;APP.ver++;applyLook()}
+const POOLPS=['adult','kids','hideGenres'];
+function setPS(k,v){if(k==='uiLang'){LS.set('nfk.lang',v);I18N.set(v)}const p=prof();if(!p)return;p.set=Object.assign({},p.set||{});p.set[k]=v;saveProfiles();if(POOLPS.includes(k))APP._pool=null;APP.ver++;applyLook()}
 function applyLook(){const h=document.documentElement;h.classList.toggle('pz-s',PS('poster')==='s');h.classList.toggle('pz-l',PS('poster')==='l');{const mo=PS('motion');const m=mo===1?'auto':mo===0?'off':mo;h.classList.toggle('nomotion',m==='off');h.classList.toggle('lite',m==='lite'||m==='off'||(m==='auto'&&!!(window.NFK||window.TVN_WEBOS)))}h.classList.toggle('nonums',!PS('liveNums'))}
 const ADULT=/(^|[^a-z])(xxx|adult|adults|18\+|\+18|porn|erotik|erotic|for adults|hot club)([^a-z]|$)/i;
 const KIDS_HIDE=new Set(['Horror','Thriller','Krimi']);
@@ -1570,6 +1573,21 @@ function cardHTML(it,o={}){
   const label=o.wide&&pr&&pr.ep?`St. ${pr.ep.s} Fg. ${pr.ep.n}`+(pr.d&&pr.p?` · ${Math.max(1,Math.round((pr.d-pr.p)/60))} Min. übrig`:''):'';
   return`<button class="card${o.wide?' w':''} f" data-id="${it.id}" data-act="${o.act||'open'}" data-why="${o.why||''}" aria-label="${esc(it.title)}">${o.wide&&pr&&o.why==='cont'?contImg(it,pr):posterHTML(it,o.wide)}${it.q==='4K'?'<span class="bdg k">4K</span>':''}${!mineL(it)&&it.langs[0]&&it.langs[0]!=='XX'?`<span class="bdg ov">${(CBY[it.langs[0]]&&CBY[it.langs[0]].flag)||''} ${it.langs[0]}</span>`:''}${isNew&&!o.wide&&!pct?`<span class="ribbon">${it.type==='series'?'NEUE FOLGEN':'NEU'}</span>`:''}${o.wide?`<div class="cap"><span dir="auto">${esc(it.title)}</span><small>${label||(pr?fmtT(pr.d-pr.p)+' übrig':'')}</small></div>`:''}${pct?`<div class="pbar"><i style="width:${pct*100}%"></i></div>`:''}</button>`;
 }
+// ---------- Reihen stückweise aufbauen (schnelles Öffnen von Startseite, Filme, Serien) ----------
+const LZ={q:[],gen:0,
+  // Reihen-HTML aufteilen: die ersten n sofort, der Rest als leere Platzhalter
+  split(html,n){LZ.gen++;LZ.q=[];if(!html)return html;const parts=html.split(/(?=<section[\s>])/);if(parts.length<=n+1)return html;
+    let out='',k=0;for(const part of parts){if(!part.startsWith('<section')||k<n||/^<section[^>]*\bhidden\b/.test(part)||/^<section class="row tz"/.test(part)){out+=part;if(part.startsWith('<section'))k++;continue}
+      const i=LZ.q.length;LZ.q.push(part);out+=`<section class="row lzr" data-lz="${i}" data-lg="${LZ.gen}"></section>`}
+    return out},
+  fill(el){const i=+el.dataset.lz;if(+el.dataset.lg!==LZ.gen||!LZ.q[i])return;const w=document.createElement('div');w.innerHTML=LZ.q[i];LZ.q[i]=null;const nw=w.firstElementChild;if(nw)el.replaceWith(nw);else el.remove()},
+  // die nächsten Platzhalter nach diesem Element füllen
+  ahead(from,n){let x=from&&from.closest?from.closest('section'):null;let c=0;if(!x)return;while((x=x.nextElementSibling)&&c<n){if(x.classList.contains('lzr')){LZ.fill(x);c++}}},
+  idle(){const run=dl=>{const ph=$('.lzr');if(!ph)return;if(Date.now()-(APP.lastKey||0)<350||P.el){setTimeout(()=>LZ.idle(),400);return}
+      let n=0;let x=ph;while(x&&n<2){const nx=x.nextElementSibling;if(x.classList.contains('lzr')){LZ.fill(x);n++}x=nx}
+      if($('.lzr'))LZ.idle()};
+    (window.requestIdleCallback||(f=>setTimeout(f,60)))(run,{timeout:600})}};
+document.addEventListener('focusin',e=>{if(LZ.q.length&&e.target&&e.target.closest&&e.target.closest('#rows'))LZ.ahead(e.target,3)});
 function rowHTML(title,items,o={}){if(!items||!items.length)return'';const sh=items.slice(0,o.max||30);const all=o.all&&(o.total||0)>sh.length?`<button class="card allc f" data-act="vall" data-a="${esc(JSON.stringify(o.all))}"><span><b>Alle anzeigen</b><small>${nf(o.total)} Titel</small><i>→</i></span></button>`:'';return`<section class="row"><h3 class="pad">${title}${o.sub?`<small>${o.sub}</small>`:''}</h3><div class="track pad">${sh.map((it,i)=>o.rank?`<div class="t10"><span class="rk" aria-hidden="true">${i+1}</span>${cardHTML(it,o)}</div>`:cardHTML(it,o)).join('')}${all}</div></section>`}
 function flagOf(c){const x=CBY[c];return x&&x.flag?`<span class="flag" title="${esc(x.name)}">${x.flag}</span>`:`<span class="tag">${esc(c)}</span>`}
 // Besetzung kurz: die ersten drei Namen
@@ -1600,7 +1618,7 @@ function renderApp(focusSel){
   $('#app').innerHTML=railHTML()+`<main class="main${['home','movies','series'].includes(APP.view)||(APP.view==='mylist'&&getList().length)?' home':''}" id="main"></main>`;
   VIEWS[APP.view]($('#main'),APP.args);
   if(APP.pip)requestAnimationFrame(pipSync);
-  requestAnimationFrame(()=>{const t=focusSel&&$(focusSel)||$('#main [data-autofocus]')||$('#main .f');if(t){t.focus({preventScroll:true});if(t.closest('.cats,.chl,.spanel'))t.scrollIntoView({block:'nearest'});else if(t.closest('.track'))ensureVisible(t)}});
+  requestAnimationFrame(()=>{if(focusSel&&!$(focusSel)&&$('.lzr'))$$('.lzr').forEach(LZ.fill);const t=focusSel&&$(focusSel)||$('#main [data-autofocus]')||$('#main .f');if(t){t.focus({preventScroll:true});if(t.closest('.cats,.chl,.spanel'))t.scrollIntoView({block:'nearest'});else if(t.closest('.track'))ensureVisible(t)}});
 }
 
 const VIEWS={};
@@ -1626,7 +1644,7 @@ VIEWS.home=(el)=>{
   if(ROW('pop'))for(const c of p.countries){const cv=vod.filter(i=>i.langs.includes(c));if(cv.length<4)continue;html+=rowHTML('Beliebt: '+esc(CBY[c].name)+' '+(CBY[c].flag||''),topN(cv,i=>(i.rating||0)+(i.pop||0)/40,24),{why:'pop'})}
   const tg=ROW('genre')?R.topGenres(t,3):[];for(const[g]of tg){const gi=scored.filter(x=>x.it.genres.includes(g)&&okR(x.it)).slice(0,24).map(x=>x.it);html+=rowHTML(esc(g)+' – ausgewählt für dich',gi,{why:'g:'+g})}
   const ml=getList().map(id=>APP.byId.get(id)).filter(Boolean);if(ROW('list'))html+=rowHTML('★ Deine Favoriten',ml,{why:'list'});
-  const hl=homeLive();const tz=hl?teamZoneHTML():'';if(!hl)APP.teamHits=[];el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><section class="row tz" id="teamzone">${tz}</section>${html||'<p class="empty pad">Für deine Länderauswahl wurden keine Inhalte gefunden. Ändere die Länder in den Einstellungen.</p>'}</div>`;
+  const hl=homeLive();const tz=hl?teamZoneHTML():'';if(!hl)APP.teamHits=[];html=LZ.split(html,4);setTimeout(()=>LZ.idle(),300);el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><section class="row tz" id="teamzone">${tz}</section>${html||'<p class="empty pad">Für deine Länderauswahl wurden keine Inhalte gefunden. Ändere die Länder in den Einstellungen.</p>'}</div>`;
   setTimeout(()=>trlPrefetch(APP.hero||[]),1500);APP.hero=hot.length>=3?hot.slice(0,6):uniq([...top.slice(0,2),...vod.filter(i=>QR[i.q]>=4).sort((a,b)=>b.added-a.added).slice(0,2),...top10.slice(0,2),...top.slice(2,8)]).slice(0,6);
   const lh=(APP.teamHits||[]).find(h=>h.live);if(lh)setSpot(lh.chans[0].id,'team');else if(APP.hero.length&&PS('hero')){showHero(0);const pb=$('#spot [data-hb="1"]');if(pb)pb.setAttribute('data-autofocus','')}else if(cont[0])setSpot(cont[0].id,'cont');else if(top[0])setSpot(top[0].id,'top');
 };
@@ -1806,7 +1824,8 @@ const CH={data:LS.get('nfk.ch',null),busy:0,_m:null,
   // Rangliste eines Dienstes mit deinen Titeln verknüpft: [{e, it|null}]
   list(pk,ty){const d=CH.data;let l;if(pk==='imdb'){l=((TOP.data&&TOP.data.imdb&&TOP.data.imdb[ty])||[]).filter(e=>ty!=='movie'||!e.tv).slice(0,10).map(e=>({t:e.t[0],alt:e.t.slice(1),y:e.y,imdb:e.id}))}
     else l=d&&d.s&&d.s[pk]&&d.s[pk][ty]||[];if(!l.length)return[];
-    const key=pk+ty+'|'+(d&&d.t)+'|'+(TOP.data&&TOP.data.t)+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.key)+'|'+Math.floor(Date.now()/6e5);CH._m=CH._m||{};if(CH._m[pk+ty]&&CH._m[pk+ty].k===key)return CH._m[pk+ty].v;
+    const key=pk+ty+'|'+(d&&d.t)+'|'+(TOP.data&&TOP.data.t)+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.key);CH._m=CH._m||{};if(CH._m[pk+ty]&&CH._m[pk+ty].k===key)return CH._m[pk+ty].v;
+    if(!TMATCH.ready(ty)){TMATCH.bg(ty);return[]}
     const used=new Set();const v=l.slice(0,10).map(e=>{const it=TMATCH.find(ty,e,used);if(it)used.add(it);return{e,it}});
     CH._m[pk+ty]={k:key,v};return v}};
 // ---------- Titel aus Ranglisten in der Playlist finden ----------
@@ -1822,11 +1841,19 @@ const TMATCH={_i:{},
   strip(k){if(!TMATCH._nz){TMATCH._nz=new Set([...Object.keys(CMAP).map(x=>x.toLowerCase()).filter(x=>x.length<=3&&!/^(in|it|no|at|be|me|my|us|ma|so)$/.test(x)),'4k','8k','uhd','fhd','hd','sd','hevc','h265','x265','h264','1080p','720p','2160p','multi','sub','subs','dual','dub','dubbed','omu','ger','deu','eng','vip','gold','premium','raw','backup','nf','nfx','netflix','amz','amazon','prime','dsnp','disney','atvp','hbo','wow','paramount','prmt','neu','serie','series','staffel','season','saison','komplett','complete'])}
     return k.replace(/^[~=]/,'').split(' ').filter(w=>w&&!TMATCH._nz.has(w)&&!/^(19|20)\d\d$/.test(w)&&!/^s\d{1,2}(e\d+)?$/.test(w)).join(' ').replace(/^(the|a|an|der|die|das|ein|eine|le|la|les|el|los|il)\s+/,'')},
   toks(k){return k.replace(/^[~=]/,'').split(' ').filter(w=>w.length>1&&!/^(the|a|an|der|die|das|and|und|of|von|in|im|le|la|de|el)$/.test(w))},
-  idx(ty){const k=APP.catVer+'|'+(APP._pool&&APP._pool.key)+'|'+Math.floor(Date.now()/6e5);const c=TMATCH._i[ty];if(c&&c.k===k)return c;
-    const ex=new Map(),pre=new Map(),tok=new Map();const add=(m,k,it)=>{let a=m.get(k);if(!a)m.set(k,a=[]);if(!a.includes(it))a.push(it)};
-    for(const it of poolAll(ty)){const ts=[it.title];const m=META.cache[it.id];if(m&&m.engTitle)ts.push(m.engTitle);if(m&&m.imdbId)add(ex,'#'+m.imdbId,it);
-      for(const t of ts)for(const v of TMATCH.vars(t)){if(v[0]==='~')add(pre,v.slice(1),it);else{add(ex,v,it);for(const w of TMATCH.toks(v))add(tok,w,it)}}}
-    return TMATCH._i[ty]={k,ex,pre,tok}},
+  key(){return APP.catVer+'|'+(APP._pool&&APP._pool.key)},
+  ready(ty){const c=TMATCH._i[ty];return!!(c&&c.k===TMATCH.key()&&c.done)},
+  // synchron (nur wenn nötig, z. B. im Hintergrund-Abgleich)
+  idx(ty){const c=TMATCH._i[ty];if(c&&c.k===TMATCH.key()&&c.done)return c;const n=TMATCH.mk(ty);const list=poolAll(ty);for(let i=0;i<list.length;i++)TMATCH.addIt(n,list[i]);n.done=1;return TMATCH._i[ty]=n},
+  mk(ty){return{k:TMATCH.key(),ex:new Map(),pre:new Map(),tok:new Map(),done:0}},
+  addIt(n,it){const add=(m,k)=>{let a=m.get(k);if(!a)m.set(k,a=[]);if(!a.includes(it))a.push(it)};const ts=[it.title];const m=META.cache[it.id];if(m&&m.engTitle)ts.push(m.engTitle);if(m&&m.imdbId)add(n.ex,'#'+m.imdbId);
+    for(const t of ts)for(const v of TMATCH.vars(t)){if(v[0]==='~')add(n.pre,v.slice(1));else{add(n.ex,v);for(const w of TMATCH.toks(v))add(n.tok,w)}}},
+  // im Hintergrund: je 1500 Titel, dann der Oberfläche Zeit lassen
+  bg(ty){if(TMATCH.ready(ty)||TMATCH['_b'+ty])return;TMATCH['_b'+ty]=1;const n=TMATCH.mk(ty);const list=poolAll(ty);let i=0;
+    const step=()=>{if(n.k!==TMATCH.key()){TMATCH['_b'+ty]=0;return}const end=Math.min(list.length,i+1500);for(;i<end;i++)TMATCH.addIt(n,list[i]);
+      if(i<list.length){(window.requestIdleCallback||((f)=>setTimeout(f,30)))(step,{timeout:400});return}
+      n.done=1;TMATCH._i[ty]=n;TMATCH['_b'+ty]=0;CH._m=null;setTimeout(refreshCharts,0)};
+    setTimeout(step,250)},
   find(ty,e,used){const I=TMATCH.idx(ty);const titles=[e.t,...(e.alt||[])].filter(Boolean);const free=a=>(a||[]).filter(it=>!used.has(it));
     const yOk=(it,d)=>ty!=='movie'||!e.y||!it.year||Math.abs(it.year-e.y)<=d;
     const best=c=>{c=uniq(c);if(!c.length)return null;const mine=c.filter(mineL);if(mine.length)c=mine;return c.sort((a,b)=>(e.y?Math.abs((a.year||e.y)-e.y)-Math.abs((b.year||e.y)-e.y):0)||QR[b.q]-QR[a.q])[0]};
@@ -2046,9 +2073,10 @@ function ddOf(type,items){const k=type+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.
   const out={k,lp,gm:{}};for(const cc in gm)out.gm[cc]=[...gm[cc].entries()].sort((x,y)=>y[1]-x[1]);APP._dd[slot]=out;return out}
 function vodView(type){return(el,a)=>{
   const t=R.taste(),items=pool(type),allI=poolAll(type),p=prof();const g=a.g||'Für dich',c=a.c||'',sort=a.s||'rec';
-  const gc={};allI.forEach(i=>i.genres.forEach(x=>gc[x]=(gc[x]||0)+1));const genres=Object.keys(gc).sort((x,y)=>gc[y]-gc[x]);
-  const favs=allI.filter(i=>inList(i.id));
-  const lc={};for(const i of allI)for(const l of i.langs)lc[l]=(lc[l]||0)+1;
+  const ck=type+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.key);APP._vc=APP._vc||{};let vc=APP._vc[type];
+  if(!vc||vc.k!==ck){const gc0={},lc0={};for(const i of allI){for(const x of i.genres)gc0[x]=(gc0[x]||0)+1;for(const l of i.langs)lc0[l]=(lc0[l]||0)+1}vc=APP._vc[type]={k:ck,gc:gc0,lc:lc0,genres:Object.keys(gc0).sort((x,y)=>gc0[y]-gc0[x])}}
+  const gc=vc.gc,lc=vc.lc,genres=vc.genres;
+  const favs=getList().map(id=>APP.byId.get(id)).filter(i=>i&&i.type===type&&allowed(i));
   const cat=a.cat||'';let list,sc;
   // Ergebnis merken: Zurück oder Wechsel Filme ↔ Serien ist dann sofort da (statt alles neu zu sortieren)
   const mk=[type,APP.catVer,APP._pool&&APP._pool.key,g,c,cat,sort,g==='★ Favoriten'?getList().length:0].join('|');APP._vm=APP._vm||{};const vm=APP._vm[type];
@@ -2079,6 +2107,7 @@ function vodView(type){return(el,a)=>{
       gm.filter(([,n])=>n>=5).slice(0,3).forEach(([gr,n])=>{const r=[];for(const i of list){if(i.groups.includes(gr)){r.push(i);if(r.length>=24)break}}body+=rowHTML(`${CBY[cc].flag||''} ${esc(gr)}`,r,{why:'top',sub:nf(n)+' Titel',all:{cat:gr,open:1},total:n})})}}
     for(const x of order.slice(0,8)){const r=[];for(const i of list){if(i.genres.includes(x)){r.push(i);if(r.length>=24)break}}if(r.length<24){const hs=new Set(r);for(const i of allI){if(r.length>=24)break;if(!hs.has(i)&&i.genres.includes(x))r.push(i)}}body+=rowHTML(esc(x),r,{why:'g:'+x,sub:gc[x]+' Titel',all:{g:x,open:1},total:gc[x]})}
     if(p.countries.length>1)for(const cc of p.countries){const cl=[];for(const i of list){if(i.langs.includes(cc)){cl.push(i);if(cl.length>=24)break}}if(cl.length>3)body+=rowHTML(esc(label)+' · '+esc(CBY[cc].name)+' '+(CBY[cc].flag||''),cl.slice(0,24),{why:'top',all:{c:cc,open:1},total:items.reduce((n,i)=>n+(i.langs.includes(cc)?1:0),0)})}
+    body=LZ.split(body,4);setTimeout(()=>LZ.idle(),300);
   }else{APP._gAll=list;APP._gl=list;APP._gn=0;body=`<div class="pad"><div class="grid" id="vgrid"></div><p class="empty" id="vgempty"${list.length?' hidden':''}>Keine Titel für diese Auswahl.</p></div>`}
   const ctitle=isGrid?(g==='★ Favoriten'?'★ Favoriten':cat?(cat.startsWith('@')?(ADJ[cat.slice(1)]||cat.slice(1))+' '+label:cat):g!=='Für dich'?g+' · '+label:c?label+' · '+(c==='~'?'Meine Sprachen':CBY[c]?CBY[c].name:c):sort==='new'?'Neu · '+label:label):label;
   el.innerHTML=`<div class="spot" id="spot"></div><div class="rows" id="rows"><div class="pad" style="padding-top:.4rem"><h2 class="vtitle sm"><span dir="auto">${esc(ctitle)}</span> <small id="vgcount">${nf(isGrid?list.length:allI.length)} Titel</small></h2>
@@ -2239,7 +2268,7 @@ async function openDetails(id){
   const it=APP.byId.get(id);if(!it)return;logEvent(it,'open');const t=R.taste();const back=APP.modal?APP.modal.back:document.activeElement;if(APP.modal)APP.modal.el.remove();
   const m=document.createElement('div');m.className='modal';m.id='modal';APP.modal={el:m,back};
   const pr=getProg()[it.id];const rt=getRating(it.id);const rtl=isRTL(it.title);
-  const sims=pool('vod').filter(x=>x!==it).map(x=>({x,s:R.sim(it,x)*.85+.15*R.score(x,t)})).sort((a,b)=>b.s-a.s).slice(0,18).map(o=>o.x);
+  const sims=(()=>{const pv=pool('vod');const g0=new Set(it.genres);let cand=g0.size?pv.filter(x=>x!==it&&x.genres.some(g=>g0.has(g))):pv.filter(x=>x!==it);if(cand.length>3000)cand=topN(cand,x=>(x.rating||6)+(x.added||0)/1e13,3000);return topN(cand,x=>R.sim(it,x)*.85+.15*R.score(x,t),18)})();
   TR.stop();m.innerHTML=`<div class="sheet"><div class="hero dhero"><div class="bd">${posterHTML(it,true)}</div><div class="ht"><h1 class="s-title ${rtl?'':'ft-b'}"${rtl?' dir="rtl" style="font-family:var(--f-fa);font-weight:800;text-align:left"':''}>${esc(it.title)}</h1></div></div>
    <div class="dbody"><div><div id="d-m">${metaHTML(it,t)}</div>
      <div class="acts"><button class="btn pri f" data-act="${pr&&!pr.done?'resume':'play'}" data-id="${it.id}" data-autofocus>${I.play}${pr&&!pr.done?(pr.ep?`Fortsetzen S${pr.ep.s}:F${pr.ep.n}`:'Fortsetzen · '+fmtT(pr.p)):'Abspielen'}</button>

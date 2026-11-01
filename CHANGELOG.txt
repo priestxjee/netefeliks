@@ -1,3 +1,4 @@
+Schneller und flüssiger: Startseite, Filme und Serien bauen zuerst nur die oberen Reihen, der Rest kommt unauffällig nach; Zurück, Film öffnen und Film beenden reagieren deutlich schneller; Top-10-Abgleich läuft im Hintergrund statt beim Öffnen
 Neu: Tivinator gibt es jetzt auch für LG-Fernseher (webOS) – Anleitung auf GitHub
 Top 10: Ranglisten jetzt aus den USA mit englischen Titeln – passt zu den Titeln in deiner Playlist
 Top 10: Titel mit Anbieter-Zusätzen werden jetzt erkannt (z. B. „NF - Lupin“, „Reacher (DE)“, „… [MULTI-SUB]“, „AMZ“, „4K“, Jahreszahlen)
