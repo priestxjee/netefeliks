@@ -1503,7 +1503,7 @@ const UPD={
     d.innerHTML=`<div><div class="lg2"><span class="tag k">NEU</span><b>Update verfügbar</b></div><small class="ust">${i.nat?'Die App wird kurz neu installiert – deine Profile bleiben.':'Dauert nur ein paar Sekunden.'}</small>${i.notes?`<p class="notes" hidden>${esc(i.notes)}</p>`:''}</div><div class="bar-row"><button class="btn pri sm f" data-act="upd">Jetzt updaten</button>${i.notes?'<button class="btn sm f" data-act="udet">Details</button>':''}<button class="btn sm f" data-act="ux">Später</button></div>`;
     popOpen(d,'upd')},
   async run(){const i=UPD.info;if(!i)return;const st=$('.uplert .ust')||$('.updbox .ust');if(st)st.textContent='Lade Update…';
-    try{if(i.nat){NFK.installApk(UPD.base()+'Tivinator.apk');return}
+    try{if(i.nat){NFK.installApk(UPD.base()+'Netefeliks.apk');return}
       const h=await(await fetch(UPD.base()+'index.html?t='+Date.now(),{cache:'no-store'})).text();
       if(!h.includes('TIVINATOR')||!h.includes('</html>'))throw new Error('Datei unvollständig');
       if(st)st.textContent='Wird installiert…';if(!NFK.saveWeb(h,+i.version))throw new Error('Speichern fehlgeschlagen')}

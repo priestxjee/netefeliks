@@ -24,6 +24,8 @@ jobs:
       - name: Update-Dateien vorbereiten
         run: |
           cp app/build/outputs/apk/release/app-release.apk Netefeliks.apk
+          # gleiche Datei auch unter dem neuen Namen (ältere App-Versionen laden Tivinator.apk)
+          cp Netefeliks.apk Tivinator.apk
           cp app/src/main/assets/index.html index.html
           NATIVE=$(cat native-version.txt 2>/dev/null || echo 1)
           NOTES=$(head -n 6 CHANGELOG.txt 2>/dev/null || echo "Neue Version")
@@ -40,6 +42,7 @@ jobs:
           body: Neue Version von Netefeliks
           files: |
             Netefeliks.apk
+            Tivinator.apk
             index.html
             version.json
           make_latest: true
