@@ -1,3 +1,9 @@
+Filme & Serien: eigene Top 10 von Netflix, Prime Video, Apple TV, Disney+ und IMDb – mit Platz 1–10; Titel, die du nicht hast, sind ausgegraut (OK = suchen)
+Live-TV: zweites OK macht das Mini-Bild direkt zum Vollbild – nichts lädt neu
+Live-TV: alle DAZN-Sender immer dabei, als eigene Kategorie „DAZN“ (egal aus welchem Land)
+Sport: keine Benachrichtigungen mehr
+Iranische Serien/Filme: werden besser erkannt (z. B. Kategorien wie „IRAN SERIES“ mit lateinischen Titeln)
+Intro: startet erst, wenn alles bereit ist, und ruckelt nicht mehr; neuer Klang (Wirbel, Aufschlag, breiter Akkord mit Glitzern)
 Menü: Startseite steht jetzt in der Mitte (nach Live-TV und Sport, vor Filme); bei „Kein Interesse an Sport“ verschwindet Sport ganz aus dem Menü (in den Einstellungen wieder einschaltbar)
 Neues Einstellungs-Symbol (Zahnrad statt Sonne) – im Menü und im Player
 Einrichten: Team-Auswahl kompakter, die Liste scrollt in einem eigenen Kasten und die Seite springt nicht mehr nach unten

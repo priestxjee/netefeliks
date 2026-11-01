@@ -200,7 +200,8 @@ class VideoEngine {
             ensure();
             openGen++;
             lastCfg = c;
-            miniOff();
+            // Live im Vollbild auf dem Mini-Bild: Senderwechsel bleibt auf derselben Bildfläche (kein Umschalten = kein schwarzes Bild)
+            if (!texFull || c.has("mini")) miniOff();
             if (frame != null) frame.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
             if (c.has("mini") && player != null) { try { miniApply(c.getJSONObject("mini")); } catch (Exception ignored) { } c.remove("mini"); }
             String[] langs = arr(c.optJSONArray("langs"));
@@ -288,7 +289,11 @@ class VideoEngine {
                 try {
                     if (json == null || json.length() == 0) { miniOff(); return; }
                     JSONObject c = new JSONObject(json);
-                    if (c.optBoolean("full")) { if (c.optBoolean("anim")) miniGrow(); else miniOff(); return; }
+                    if (c.optBoolean("full")) {
+                        boolean keep = c.optBoolean("keep");
+                        if (c.optBoolean("anim")) miniGrow(keep); else if (keep) texFullNow(); else miniOff();
+                        return;
+                    }
                     miniApply(c);
                 } catch (Exception ignored) { }
             }
@@ -296,6 +301,8 @@ class VideoEngine {
     }
 
     private int[] miniRect;
+    // Vollbild direkt auf dem Mini-Bild (gleiche Wiedergabe, nichts wird neu geladen oder umgeleitet)
+    private boolean texFull;
     private boolean awaitFrame, surfaceReady, swapRisky;
     private JSONObject pendingMini;
     private int swapGen;
@@ -383,7 +390,9 @@ class VideoEngine {
         }
         if (!miniOn) swapRisky = !surfaceReady;
         pendingMini = null;
-        boolean shrink = c.optBoolean("anim") && !miniOn && frame.getVisibility() == View.VISIBLE && r[2] > 0 && r[3] > 0;
+        boolean fromFull = texFull && miniOn;
+        texFull = false;
+        boolean shrink = c.optBoolean("anim") && r[2] > 0 && r[3] > 0 && (fromFull || (!miniOn && frame.getVisibility() == View.VISIBLE));
         miniAr.setAspectRatio(videoRatio);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.max(1, r[2]), Math.max(1, r[3]), Gravity.TOP | Gravity.LEFT);
         lp.leftMargin = r[0];
@@ -408,19 +417,36 @@ class VideoEngine {
     }
 
     /** Mini-Fenster wächst zum Vollbild, danach übernimmt die normale Bildfläche. */
-    private void miniGrow() {
-        if (!miniOn || miniBox == null || miniBox.getVisibility() != View.VISIBLE || miniRect == null) { miniOff(); return; }
+    private void miniGrow(final boolean keep) {
+        if (!miniOn || miniBox == null || miniBox.getVisibility() != View.VISIBLE || miniRect == null) { if (keep && miniOn) texFullNow(); else miniOff(); return; }
         ViewGroup root = (ViewGroup) frame.getParent();
         float W = root.getWidth(), H = root.getHeight();
         int[] r = miniRect;
-        if (W <= 0 || H <= 0 || r[2] <= 0 || r[3] <= 0) { miniOff(); return; }
+        if (W <= 0 || H <= 0 || r[2] <= 0 || r[3] <= 0) { if (keep) texFullNow(); else miniOff(); return; }
+        final Runnable done = new Runnable() { @Override public void run() {
+            if (!miniOn || texFull) return;
+            if (keep) texFullNow(); else miniOff();
+        } };
         miniBox.animate().cancel();
         miniBox.setPivotX(0); miniBox.setPivotY(0);
         miniBox.animate().scaleX(W / r[2]).scaleY(H / r[3]).translationX(-r[0]).translationY(-r[1]).setDuration(220)
                 .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator())
-                .withEndAction(new Runnable() { @Override public void run() { if (miniOn) miniOff(); } }).start();
+                .withEndAction(done).start();
         // falls die Animation nicht zu Ende läuft: spätestens nach 0,4 s umschalten
-        ui.postDelayed(new Runnable() { @Override public void run() { if (miniOn && miniBox != null && miniBox.getScaleX() != 1f) miniOff(); } }, 400);
+        ui.postDelayed(new Runnable() { @Override public void run() { if (miniOn && !texFull && miniBox != null && miniBox.getScaleX() != 1f) done.run(); } }, 400);
+    }
+
+    /** Das Mini-Bild wird selbst zum Vollbild: gleiche Wiedergabe, gleiche Bildfläche – kein Neuladen, kein schwarzes Bild. */
+    private void texFullNow() {
+        if (!miniOn || miniBox == null) { miniOff(); return; }
+        miniBox.animate().cancel();
+        miniBox.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+        miniBox.setScaleX(1f); miniBox.setScaleY(1f); miniBox.setTranslationX(0f); miniBox.setTranslationY(0f);
+        miniBox.setVisibility(View.VISIBLE);
+        if (miniAr != null) miniAr.setAspectRatio(videoRatio);
+        miniRect = null;
+        texFull = true;
+        events.emit("log", "Live-Vollbild ohne Neuladen");
     }
 
     /** Rechteck in Bildschirm-Pixeln: bevorzugt Anteile (fx…), sonst alte Pixelangaben. */
@@ -436,6 +462,7 @@ class VideoEngine {
     private void miniOff() {
         boolean swap = miniOn && player != null;
         miniOn = false;
+        texFull = false;
         miniRect = null;
         // erst die große Bildfläche sichtbar machen, dann das Video dorthin umleiten
         if (frame != null) {
