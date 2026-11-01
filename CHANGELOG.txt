@@ -1,3 +1,4 @@
+Live-TV: neue Kategorie „Sport“ mit Auswahl nach Anbieter – DAZN, Sky Sport, Sky Sports (UK), MagentaSport, Sport1, Eurosport, TNT Sports, Viaplay, LaLiga TV, ESPN, Varzesh und Weitere; die großen Sportsender bleiben aus allen Ländern dabei
 Filme & Serien: eigene Top 10 von Netflix, Prime Video, Apple TV, Disney+ und IMDb – mit Platz 1–10; Titel, die du nicht hast, sind ausgegraut (OK = suchen)
 Live-TV: zweites OK macht das Mini-Bild direkt zum Vollbild – nichts lädt neu
 Live-TV: alle DAZN-Sender immer dabei, als eigene Kategorie „DAZN“ (egal aus welchem Land)

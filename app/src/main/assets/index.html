@@ -898,10 +898,18 @@ function mergeInto(ex,it){ex.versions.push(...it.versions);if(QR[it.q]>QR[ex.q])
 // Katalog bauen: Sprach- und Qualitätsfassungen zusammenführen, Länder zuordnen
 // DAZN-Sender immer behalten – egal aus welchem Land (eigene Kategorie in Live-TV)
 const DAZNRE=/(^|[^a-z])dazn([^a-z]|$)/i;function isDazn(it){return DAZNRE.test(it.title)||it.groups.some(g=>DAZNRE.test(g))}
+// Sport-Anbieter in Live-TV (Reihenfolge = Reihenfolge der Auswahl). keep = aus jedem Land behalten
+const SPROV=[['dazn','DAZN',/(^|[^a-z])dazn([^a-z]|$)/i,1],['sky','Sky Sport',/\bsky ?(sports?|bundesliga|f1|golf|tennis|premier|top ?event|mix|main ?event|football|cricket|racing|arena|action|nfl|nba|darts)\b/i,1],
+  ['magenta','MagentaSport',/magenta ?sport/i,1],['sport1','Sport1',/(^|[^a-z])sport ?1([^0-9]|$)/i,0,'DE'],['euro','Eurosport',/eurosport/i,1],['tnt','TNT Sports',/\btnt ?sports?\b/i,1],
+  ['viaplay','Viaplay',/viaplay/i,1],['premier','Premier Sports',/premier ?sports?/i,1],['sdig','sportdigital',/sportdigital/i,1],['laliga','LaLiga TV',/laliga ?tv/i,1],
+  ['bein','beIN Sports',/\bbe ?in\b|bein ?sports?/i,0],['espn','ESPN',/\bespn/i,1],['varzesh','Varzesh',/varzesh|ورزش/i,0]];
+function provOfStr(t,c){for(const[k,,re,,cc]of SPROV)if((!cc||cc===c)&&re.test(t))return k;return''}
+function provOf(it){if(it._pv!==undefined)return it._pv;let v=provOfStr(it.title,it.country);if(!v)for(const g of it.groups){v=provOfStr(g,it.country);if(v)break}return it._pv=v}
+function keepSportRaw(name,group){for(const[,,re,keep]of SPROV)if(keep&&(re.test(name)||re.test(group||'')))return true;return false}
 function catalogCore(raws,tick,keep){
   const map=new Map(),tm=new Map();const N=raws.length;const kc=keep&&keep.c&&keep.c.length?new Set(keep.c):null;const skip={};
   for(let i=0;i<N;i++){const r=raws[i];raws[i]=null;if(!r||!r.name)continue;const it=normalize(r);
-    if(kc&&it.type==='live'&&it.country!=='XX'&&!kc.has(it.country)&&!DAZNRE.test(r.name+' '+(r.group||''))){const s0=skip[it.country]=skip[it.country]||{live:0,movie:0,series:0,sport:0};s0[it.type]++;if(it.sport)s0.sport++;if(tick&&i%5000===0)tick(i,N);continue}
+    if(kc&&it.type==='live'&&it.country!=='XX'&&!kc.has(it.country)&&!keepSportRaw(r.name,r.group)){const s0=skip[it.country]=skip[it.country]||{live:0,movie:0,series:0,sport:0};s0[it.type]++;if(it.sport)s0.sport++;if(tick&&i%5000===0)tick(i,N);continue}
     const old=it.title.toLowerCase().replace(/\s+/g,' ');// alte Schlüssel-Form → gleiche IDs wie bisher (Verlauf, Listen bleiben)
     const tk=it.type==='live'?liveKey(it.title):mkey(it.title)||old;
     const key=it.type==='live'?'live|'+it.country+'|'+tk:it.type+'|'+tk+'|'+(it.year||'');
@@ -920,7 +928,7 @@ function catalogCore(raws,tick,keep){
     IR:/(irib|manoto|\bgem\b|iran ?international|bbc persian|persiana|varzesh|tapesh|ifilm|ایران|شبکه|فارسی)/i,TR:/\b(trt|atv|show tv|star tv|kanal d|tv8|fox tr)\b/i,EN:/\b(bbc (one|two|three|four|news)|itv\d?|channel [45]|sky news|cnn|cbs|nbc|abc|fox news|espn)\b/i};
   const gv={},gn={};for(const it of items){gn[it.group]=(gn[it.group]||0)+1;if(it.type==='live'&&it.country==='XX'){for(const k in KN)if(KN[k].test(it.title)){it._kc=k;(gv[it.group]=gv[it.group]||{})[k]=((gv[it.group]||{})[k]||0)+1;break}}}
   for(const it of items)if(it.type==='live'&&it.country==='XX'){const v=gv[it.group]||{};const best=Object.keys(v).sort((a,b)=>v[b]-v[a])[0];const c=it._kc||(best&&v[best]>=Math.max(2,(gn[it.group]||0)*.4)?best:null);if(c){it.country=c;it.versions.forEach(x=>x.lang=c)}delete it._kc}
-  if(kc)items=items.filter(it=>it.type!=='live'||kc.has(it.country)||(keep.xx&&it.country==='XX')||isDazn(it));
+  if(kc)items=items.filter(it=>it.type!=='live'||kc.has(it.country)||(keep.xx&&it.country==='XX')||(it.sport||provOf(it))&&keepSportRaw(it.title,it.groups.join(' ')));
   let sig=0;const st={};for(const c in skip)st[c]=skip[c];
   for(const it of items){it.versions.sort((a,b)=>QR[b.q]-QR[a.q]);it.langs=uniq(it.versions.map(v=>v.lang));if(kc&&it.type!=='live'&&it.plot&&!it.langs.some(l=>kc.has(l)))it.plot='';sig=(Math.imul(sig,31)+hstr(it.id+':'+it.versions.length))|0;
     for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}}
@@ -1184,7 +1192,7 @@ async function loadCatalog(ui,opt={}){try{return await loadCatalog0(ui,opt)}catc
   LS.set('nfk.scanerr',{t:Date.now(),m});ui&&ui({msg:'Zweiter Versuch …',p:.02});return await loadCatalog0(ui,{...opt,textMode:true})}}
 function scanKeep(){const ps=LS.get('nfk.profiles',[])||[];const cs=new Set(LS.get('nfk.scanc',[])||[]);let xx=false;for(const p of ps){(p.countries||[]).forEach(c=>cs.add(c));if(p.other)xx=true}
   if(!cs.size)return null;if(cs.has('DE')){cs.add('AT');cs.add('CH')}if(cs.has('IR'))cs.add('AF');return{c:[...cs].sort(),xx}}
-const CATV='alle2';// Katalog-Format: Filme & Serien aller Sprachen
+const CATV='alle3';// Katalog-Format: Filme & Serien aller Sprachen
 async function loadCatalog0(ui,opt={}){const keep=scanKeep();LS.set('nfk.keepc',keep);const lsig=LS.get('nfk.lsig',{})||{},nsig={v:CATV};let changed=!opt.bg||lsig.v!==CATV;const tsig=t=>t.length+':'+hstr(t.slice(0,3000)+t.slice(t.length>>1,(t.length>>1)+3000)+t.slice(-3000));
   const c=APP.cfg;const cnt={live:0,movie:0,series:0};const up=o=>{if(ui)ui(Object.assign({cnt},o))};
   let w=c.mode==='demo'?null:mkWorker();if(w&&!(await wReady(w))){try{w.terminate()}catch(e){}w=null}APP.noWorker=c.mode!=='demo'&&!w;
@@ -1903,19 +1911,23 @@ VIEWS.live=(el,a)=>{
   const all=!!a.all,lv=livePool(all);const countries=liveCountries(lv);const p=prof();
   const favs=(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c));const rc=getRecentCh().map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c)).slice(0,30);
   const mus=lv.filter(isMusicCh);
-  const dz=APP.items.filter(i=>i.type==='live'&&allowed(i)&&isDazn(i));
+  const lvs=new Set(lv);const spt=APP.items.filter(i=>i.type==='live'&&allowed(i)&&(lvs.has(i)?(i.sport||provOf(i)):(provOf(i)&&keepSportRaw(i.title,i.groups.join(' ')))));
   const pins=(PS('livePins')||[]).filter(g=>lv.some(c=>c.groups.includes(g)));
-  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');if(sel==='__music'&&!mus.length)sel='__c:'+(countries[0]||'');if(sel==='__dazn'&&!dz.length)sel='__c:'+(countries[0]||'');
+  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');if(sel==='__music'&&!mus.length)sel='__c:'+(countries[0]||'');if(sel==='__dazn')sel='__spt';if(sel==='__spt'&&!spt.length)sel='__c:'+(countries[0]||'');
   const selC=sel.startsWith('__c:')?sel.slice(4).split('|')[0]:'';const selG=sel.startsWith('__c:')&&sel.includes('|')?sel.slice(sel.indexOf('|')+1):(!sel.startsWith('__')?sel:'');
   const gsz={};for(const c of lv)gsz[c.group]=(gsz[c.group]||0)+1;
-  let list;if(sel==='__dazn'){const ci=c=>{const i=countries.indexOf(c.country);return i<0?99:i};const dn=t=>{const m=String(t).match(/dazn\s*(\d+)/i);return m?+m[1]:50};list=dz.slice().sort((x,y)=>ci(x)-ci(y)||(x.country<y.country?-1:x.country>y.country?1:0)||dn(x.title)-dn(y.title)||x.title.localeCompare(y.title))}else if(sel==='__fav')list=favs;else if(sel==='__recent')list=rc;else if(sel==='__music'){const mf=a.mf||'';const ci=c=>{const i=countries.indexOf(c.country);return i<0?99:i};list=mus.filter(c=>mf==='radio'?musR(c):mf?(c.country===mf&&!musR(c)):true);list.sort((x,y)=>musR(x)-musR(y)||ci(x)-ci(y)||x.title.localeCompare(y.title))}else if(selC){list=lv.filter(c=>c.country===selC&&(!selG||c.groups.includes(selG)));list.sort((x,y)=>(x.sport-y.sport)||(gsz[y.group]-gsz[x.group])||x.group.localeCompare(y.group))}else{list=lv.filter(c=>c.groups.includes(sel))}
+  let list;const spk=c=>{const v=provOf(c)||'other';return v};const spCs={};for(const c of spt){const k=spk(c);(spCs[k]=spCs[k]||new Set()).add(c.country)}
+  const spKey=c=>{const k=spk(c);return spCs[k].size>1?k+':'+c.country:k};
+  if(sel==='__spt'){const sp=a.sp||'';const ci=c=>{const i=countries.indexOf(c.country);return i<0?99:i};const pi=c=>{const i=SPROV.findIndex(x=>x[0]===spk(c));return i<0?99:i};const dn=t=>{const m=String(t).match(/(\d+)\s*(hd|fhd|uhd|4k)?\s*$/i)||String(t).match(/\b(\d{1,2})\b/);return m?+m[1]:50};
+    list=spt.filter(c=>!sp||spKey(c)===sp||spk(c)===sp).sort((x,y)=>pi(x)-pi(y)||ci(x)-ci(y)||(x.country<y.country?-1:x.country>y.country?1:0)||dn(x.title)-dn(y.title)||x.title.localeCompare(y.title))}
+  else if(sel==='__fav')list=favs;else if(sel==='__recent')list=rc;else if(sel==='__music'){const mf=a.mf||'';const ci=c=>{const i=countries.indexOf(c.country);return i<0?99:i};list=mus.filter(c=>mf==='radio'?musR(c):mf?(c.country===mf&&!musR(c)):true);list.sort((x,y)=>musR(x)-musR(y)||ci(x)-ci(y)||x.title.localeCompare(y.title))}else if(selC){list=lv.filter(c=>c.country===selC&&(!selG||c.groups.includes(selG)));list.sort((x,y)=>(x.sport-y.sport)||(gsz[y.group]-gsz[x.group])||x.group.localeCompare(y.group))}else{list=lv.filter(c=>c.groups.includes(sel))}
   const lim=a.lim||120;const favSet=new Set(PS('liveFav')||[]);
   const item=(k,ic,l,n)=>`<button class="cat f${k===sel||(k.startsWith('__c:')&&selC&&k==='__c:'+selC)?' on':''}" data-act="lg" data-g="${esc(k)}"${(k===sel||(selC&&k==='__c:'+selC))?' data-autofocus':''}><span dir="auto">${ic}${l}</span><em>${n}</em></button>`;
   let cats='';
   cats+=item('__fav','★ ','Favoriten',favs.length);
   if(rc.length)cats+=item('__recent','↺ ','Zuletzt gesehen',rc.length);
   if(mus.length)cats+=item('__music','♪ ','Musik',mus.length);
-  if(dz.length)cats+=item('__dazn','','DAZN',dz.length);
+  if(spt.length&&!p.noSport)cats+=item('__spt','⚽ ','Sport',spt.length);
   if(pins.length)cats+=pins.map(g=>item(g,'',esc(g),gsz[g]||lv.filter(c=>c.groups.includes(g)).length)).join('');
   cats+='<div class="csep"></div>';
   cats+=countries.map(c=>item('__c:'+c,(CBY[c]&&CBY[c].flag?CBY[c].flag+' ':''),esc(c==='XX'?'Ohne Land':(CBY[c]||{name:c}).name.split(' · ')[0]),lv.filter(x=>x.country===c).length)).join('');
@@ -1924,10 +1936,15 @@ VIEWS.live=(el,a)=>{
   let chipsH='';if(selC){const gm=new Map();for(const c of lv)if(c.country===selC)for(const g of c.groups)gm.set(g,(gm.get(g)||0)+1);
     const gs=[...gm.entries()].sort((x,y)=>isSportStr(x[0])-isSportStr(y[0])||y[1]-x[1]);
     if(gs.length>1)chipsH=`<div class="chips lchips"><button class="chip f${!selG?' on':''}" data-act="lg" data-g="__c:${selC}">Alle</button>${(()=>{const sh=g=>g.replace(/^\s*[A-Za-z]{2,3}\s*[|:\-–]\s*/,'')||g;const cnt={};gs.forEach(([g])=>cnt[sh(g)]=(cnt[sh(g)]||0)+1);return gs.map(([g,n])=>`<button class="chip f${selG===g?' on':''}" data-act="lg" data-g="__c:${selC}|${esc(g)}">${esc(cnt[sh(g)]>1?g:sh(g))} <small>${n}</small></button>`).join('')})()}</div>`}
+  if(sel==='__spt'){const sp=a.sp||'';const n={};for(const c of spt){const k=spKey(c);n[k]=(n[k]||0)+1}
+    const order=k=>{const[p,c]=k.split(':');const i=SPROV.findIndex(x=>x[0]===p);const j=c?countries.indexOf(c):0;return(i<0?99:i)*1000+(j<0?99:j)};
+    const lab=k=>{const[p,c]=k.split(':');let nm=p==='other'?'Weitere':((SPROV.find(x=>x[0]===p)||[])[1]||p);if(p==='sky'&&c==='EN')nm='Sky Sports';const fg=c==='EN'&&['sky','tnt','premier','viaplay','euro'].includes(p)?'🇬🇧':(CBY[c]&&CBY[c].flag)||'';return c?(fg?fg+' ':'')+nm+(fg?'':' '+c):nm};
+    const ch=(k,l,m)=>`<button class="chip f${sp===k?' on':''}" data-act="lsp" data-sp="${esc(k)}">${esc(l)} <small>${m}</small></button>`;
+    chipsH=`<div class="chips lchips">${ch('','Alle',spt.length)}${Object.keys(n).sort((x,y)=>order(x)-order(y)).map(k=>ch(k,lab(k),n[k])).join('')}</div>`}
   if(sel==='__music'){const mf=a.mf||'';const cs=countries.filter(c=>mus.some(x=>x.country===c&&!musR(x)));const nr=mus.filter(musR).length;
     const ch=(k,l,n)=>`<button class="chip f${mf===k?' on':''}" data-act="lmf" data-mf="${k}">${l} <small>${n}</small></button>`;
     chipsH=`<div class="chips lchips">${ch('','Alle',mus.length)}${cs.map(c=>ch(c,(CBY[c]&&CBY[c].flag?CBY[c].flag+' ':'')+esc(c==='XX'?'Ohne Land':(CBY[c]||{name:c}).name.split(' · ')[0]),mus.filter(x=>x.country===c&&!musR(x)).length)).join('')}${nr?ch('radio','📻 Radio',nr):''}</div>`}
-  const head=sel==='__dazn'?'DAZN':sel==='__music'?'♪ Musik':sel==='__fav'?'★ Favoriten':sel==='__recent'?'Zuletzt gesehen':selC?((CBY[selC]&&CBY[selC].flag?CBY[selC].flag+' ':'')+esc(selC==='XX'?'Ohne Länderangabe':CBY[selC].name)+(selG?' · '+esc(selG):'')):esc(sel);
+  const head=sel==='__spt'?'⚽ Sport'+(a.sp?' · '+esc(((SPROV.find(x=>x[0]===a.sp.split(':')[0])||[])[1])||'Weitere Sportsender'):''):sel==='__music'?'♪ Musik':sel==='__fav'?'★ Favoriten':sel==='__recent'?'Zuletzt gesehen':selC?((CBY[selC]&&CBY[selC].flag?CBY[selC].flag+' ':'')+esc(selC==='XX'?'Ohne Länderangabe':CBY[selC].name)+(selG?' · '+esc(selG):'')):esc(sel);
   const pinBtn=selG?`<button class="btn sm f" data-act="lpin" data-g="${esc(selG)}">${pins.includes(selG)?'Lösen':'Links anheften'}</button>`:'';
   const row=(c,i)=>{const e=EPG.get(c);const fv=favSet.has(c.id);const nq=uniq(c.versions.map(v=>v.q).filter(Boolean)).length;
     return`<div class="chw"><button class="chr f" data-id="${c.id}" data-act="play"><span class="no">${i+1}</span><span class="lg">${logoHTML(c)}</span><span class="tx"><b dir="auto">${esc(c.title)}${c.q?` <span class="tag${QR[c.q]>=4?' k':''}">${esc(c.q==='FHD'?'FHD':c.q)}</span>`:''}${nq>1?` <span class="qn">${nq} Qualitäten</span>`:''}</b><div data-epg="${c.id}">${e&&e.cur?`<span dir="auto">${esc(e.cur.title)}</span> · ${hhmm(e.cur.start)}–${hhmm(e.cur.end)}`:epgLine(c)}</div>${e&&e.cur?`<i class="epb"><i style="width:${Math.round(clamp((Date.now()-e.cur.start)/(e.cur.end-e.cur.start),0,1)*100)}%"></i></i>`:''}</span><span class="nx" dir="auto">${e&&e.next?'Danach: '+esc(e.next.title):''}</span></button>${sel==='__fav'?(i?`<button class="mini f" data-act="lfmove" data-id="${c.id}" data-d="-1" aria-label="Nach oben">▲</button>`:''):''}<button class="mini f${fv?' fv':''}" data-act="lfav" data-id="${c.id}" aria-label="${fv?'Aus Favoriten entfernen':'Zu Favoriten'}">${fv?'★':'☆'}</button></div>`};
@@ -2743,6 +2760,7 @@ document.addEventListener('click',e=>{
    case'season':renderEps(it,APP.modal.el,b.dataset.s);$(`[data-act="season"][data-s="${b.dataset.s}"]`,APP.modal.el).focus();break;
    case'ep':{const ep=it._seasons[b.dataset.s].find(x=>x.id===b.dataset.e);ep._s=b.dataset.s;P.open(it,{ep});break}
    case'close':closeModal();break;
+   case'lsp':APP.args={g:'__spt',all:APP.args.all,sp:b.dataset.sp};renderApp(`.chip[data-act="lsp"][data-sp="${CSS.escape(b.dataset.sp)}"]`);break;
    case'lmf':APP.args={g:'__music',all:APP.args.all,mf:b.dataset.mf};renderApp(`.chip[data-act="lmf"][data-mf="${CSS.escape(b.dataset.mf)}"]`);break;
    case'lg':APP.args={g:b.dataset.g,all:APP.args.all};renderApp(`.cat[data-g="${CSS.escape(b.dataset.g)}"]`);break;
    case'sf':APP.args={f:b.dataset.f};renderApp(`.chip[data-f="${CSS.escape(b.dataset.f)}"]`);break;
