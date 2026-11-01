@@ -31,6 +31,14 @@ jobs:
           NOTES=$(head -n 6 CHANGELOG.txt 2>/dev/null || echo "Neue Version")
           jq -n --argjson v ${{ github.run_number }} --argjson n "$NATIVE" --arg notes "$NOTES" '{version:$v,native:$n,notes:$notes}' > version.json
           cat version.json
+      - name: LG-webOS-Version bauen
+        continue-on-error: true
+        run: |
+          npm i --prefix "$RUNNER_TEMP/tvn" --no-audit --no-fund esbuild@0.24 @webos-tools/cli
+          NODE_PATH="$RUNNER_TEMP/tvn/node_modules" node webos/build.js "${{ github.repository }}" "${{ github.run_number }}"
+          "$RUNNER_TEMP/tvn/node_modules/.bin/ares-package" webos-dist -o "$RUNNER_TEMP/ipk"
+          cp "$RUNNER_TEMP"/ipk/*.ipk Tivinator.ipk
+          ls -la Tivinator.ipk webos.html
       - uses: actions/upload-artifact@v4
         with:
           name: Netefeliks-APK
@@ -45,4 +53,6 @@ jobs:
             Tivinator.apk
             index.html
             version.json
+            Tivinator.ipk
+            webos.html
           make_latest: true

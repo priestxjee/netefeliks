@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Tivinator</title>
+<style>html,body{margin:0;height:100%;background:#000}</style></head>
+<body>
+<script>
+/* Tivinator für LG webOS – Startseite.
+   Lädt die neueste Oberfläche (falls ein Update heruntergeladen wurde) aus der Datenbank,
+   sonst die mitgelieferte app.html. Die Adresse bleibt immer index.html, damit
+   Profile, Verlauf und Zugangsdaten (localStorage) erhalten bleiben. */
+(function () {
+  var BUILT = __TVN_VERSION__;
+  function show(html) { document.open(); document.write(html); document.close(); }
+  function bundled() {
+    var x = new XMLHttpRequest();
+    x.open('GET', 'app.html', true);
+    x.onload = function () { show(x.responseText); };
+    x.onerror = function () { document.body.style.color = '#fff'; document.body.textContent = 'Tivinator konnte nicht starten.'; };
+    x.send();
+  }
+  try {
+    var rq = indexedDB.open('tvn-web', 1);
+    rq.onupgradeneeded = function () { rq.result.createObjectStore('f'); };
+    rq.onerror = bundled;
+    rq.onsuccess = function () {
+      try {
+        var g = rq.result.transaction('f', 'readonly').objectStore('f').get('app');
+        g.onsuccess = function () {
+          var r = g.result;
+          if (r && r.v > BUILT && r.html && r.html.length > 100000 && r.html.indexOf('TVN_WEBOS') > -1) show(r.html);
+          else bundled();
+        };
+        g.onerror = bundled;
+      } catch (e) { bundled(); }
+    };
+  } catch (e) { bundled(); }
+})();
+</script>
+</body></html>

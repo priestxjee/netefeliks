@@ -3,3 +3,6 @@ build/
 app/build/
 local.properties
 .idea/
+webos-dist/
+webos.html
+Tivinator.ipk

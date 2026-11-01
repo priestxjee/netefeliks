@@ -1278,7 +1278,7 @@ const SET_DEF={adult:0,kids:0,hideGenres:[],minRating:0,quality:'auto',player:'n
 const PS=k=>{const p=prof();const v=p&&p.set?p.set[k]:undefined;return v===undefined?SET_DEF[k]:v};
 const ROW=k=>{const r=PS('rows');return r[k]===undefined?1:r[k]};
 function setPS(k,v){if(k==='uiLang'){LS.set('nfk.lang',v);I18N.set(v)}const p=prof();if(!p)return;p.set=Object.assign({},p.set||{});p.set[k]=v;saveProfiles();APP._pool=null;APP.ver++;applyLook()}
-function applyLook(){const h=document.documentElement;h.classList.toggle('pz-s',PS('poster')==='s');h.classList.toggle('pz-l',PS('poster')==='l');{const mo=PS('motion');const m=mo===1?'auto':mo===0?'off':mo;h.classList.toggle('nomotion',m==='off');h.classList.toggle('lite',m==='lite'||m==='off'||(m==='auto'&&!!window.NFK))}h.classList.toggle('nonums',!PS('liveNums'))}
+function applyLook(){const h=document.documentElement;h.classList.toggle('pz-s',PS('poster')==='s');h.classList.toggle('pz-l',PS('poster')==='l');{const mo=PS('motion');const m=mo===1?'auto':mo===0?'off':mo;h.classList.toggle('nomotion',m==='off');h.classList.toggle('lite',m==='lite'||m==='off'||(m==='auto'&&!!(window.NFK||window.TVN_WEBOS)))}h.classList.toggle('nonums',!PS('liveNums'))}
 const ADULT=/(^|[^a-z])(xxx|adult|adults|18\+|\+18|porn|erotik|erotic|for adults|hot club)([^a-z]|$)/i;
 const KIDS_HIDE=new Set(['Horror','Thriller','Krimi']);
 function allowed(it){if(!PS('adult')&&ADULT.test(it.group+' '+it.title))return false;
@@ -2731,7 +2731,7 @@ async function startScan(tab){
   LS.set('nfk.scanning',Date.now());let res;
   try{res=await loadCatalog(ui)}catch(e){clearInterval(tm);LS.del('nfk.scanning');
     const msg=e.message==='AUTH'?'Benutzername oder Passwort stimmen nicht – oder das Abo ist abgelaufen.':e.message==='KEINM3U'?'Unter diesem Link liegt keine M3U-Playlist.':/^HTTP/.test(e.message)?`Der Server hat mit Fehler ${esc(e.message.slice(5))} geantwortet. Prüfe die Server-URL.`:
-      (window.NFK?'Der Server ist nicht erreichbar oder das Einlesen ist fehlgeschlagen. Prüfe die Adresse (inkl. Port) und versuche es nochmal.':'Der Server ist nicht erreichbar. Prüfe die Adresse (inkl. Port). <br><br><b>Hinweis:</b> In dieser Browser-Vorschau sind Verbindungen zu fremden Servern gesperrt. Auf dem Fire TV bzw. als App funktioniert die echte Anmeldung – hier kannst du mit „Demo ansehen“ alles testen.')+`<br><small style="opacity:.7">Technischer Hinweis: ${esc(String(e&&e.message||e).slice(0,160))}</small>`;
+      (window.NFK||window.TVN_WEBOS?'Der Server ist nicht erreichbar oder das Einlesen ist fehlgeschlagen. Prüfe die Adresse (inkl. Port) und versuche es nochmal.':'Der Server ist nicht erreichbar. Prüfe die Adresse (inkl. Port). <br><br><b>Hinweis:</b> In dieser Browser-Vorschau sind Verbindungen zu fremden Servern gesperrt. Auf dem Fire TV bzw. als App funktioniert die echte Anmeldung – hier kannst du mit „Demo ansehen“ alles testen.')+`<br><small style="opacity:.7">Technischer Hinweis: ${esc(String(e&&e.message||e).slice(0,160))}</small>`;
     return vLogin(msg,tab)}
   ui({step:'save',msg:'Speichere auf dem Gerät…',p:.97});await sleep(30);
   if(res.bufs)await applyCatalogB(res);else{applyCatalog(res);await CACHE.save(res.json)}LS.set('nfk.cfg',APP.cfg);LS.del('nfk.scanning');
