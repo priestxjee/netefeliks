@@ -909,7 +909,7 @@ function keepSportRaw(name,group){for(const[,,re,keep]of SPROV)if(keep&&(re.test
 function catalogCore(raws,tick,keep){
   const map=new Map(),tm=new Map();const N=raws.length;const kc=keep&&keep.c&&keep.c.length?new Set(keep.c):null;const skip={};
   for(let i=0;i<N;i++){const r=raws[i];raws[i]=null;if(!r||!r.name)continue;const it=normalize(r);
-    if(kc&&it.type==='live'&&it.country!=='XX'&&!kc.has(it.country)&&!keepSportRaw(r.name,r.group)){const s0=skip[it.country]=skip[it.country]||{live:0,movie:0,series:0,sport:0};s0[it.type]++;if(it.sport)s0.sport++;if(tick&&i%5000===0)tick(i,N);continue}
+    if(kc&&it.type==='live'&&it.country!=='XX'&&!kc.has(it.country)){const s0=skip[it.country]=skip[it.country]||{live:0,movie:0,series:0,sport:0};s0[it.type]++;if(it.sport)s0.sport++;if(tick&&i%5000===0)tick(i,N);continue}
     const old=it.title.toLowerCase().replace(/\s+/g,' ');// alte Schlüssel-Form → gleiche IDs wie bisher (Verlauf, Listen bleiben)
     const tk=it.type==='live'?liveKey(it.title):mkey(it.title)||old;
     const key=it.type==='live'?'live|'+it.country+'|'+tk:it.type+'|'+tk+'|'+(it.year||'');
@@ -928,7 +928,7 @@ function catalogCore(raws,tick,keep){
     IR:/(irib|manoto|\bgem\b|iran ?international|bbc persian|persiana|varzesh|tapesh|ifilm|ایران|شبکه|فارسی)/i,TR:/\b(trt|atv|show tv|star tv|kanal d|tv8|fox tr)\b/i,EN:/\b(bbc (one|two|three|four|news)|itv\d?|channel [45]|sky news|cnn|cbs|nbc|abc|fox news|espn)\b/i};
   const gv={},gn={};for(const it of items){gn[it.group]=(gn[it.group]||0)+1;if(it.type==='live'&&it.country==='XX'){for(const k in KN)if(KN[k].test(it.title)){it._kc=k;(gv[it.group]=gv[it.group]||{})[k]=((gv[it.group]||{})[k]||0)+1;break}}}
   for(const it of items)if(it.type==='live'&&it.country==='XX'){const v=gv[it.group]||{};const best=Object.keys(v).sort((a,b)=>v[b]-v[a])[0];const c=it._kc||(best&&v[best]>=Math.max(2,(gn[it.group]||0)*.4)?best:null);if(c){it.country=c;it.versions.forEach(x=>x.lang=c)}delete it._kc}
-  if(kc)items=items.filter(it=>it.type!=='live'||kc.has(it.country)||(keep.xx&&it.country==='XX')||(it.sport||provOf(it))&&keepSportRaw(it.title,it.groups.join(' ')));
+  if(kc)items=items.filter(it=>it.type!=='live'||kc.has(it.country)||(keep.xx&&it.country==='XX'));
   let sig=0;const st={};for(const c in skip)st[c]=skip[c];
   for(const it of items){it.versions.sort((a,b)=>QR[b.q]-QR[a.q]);it.langs=uniq(it.versions.map(v=>v.lang));if(kc&&it.type!=='live'&&it.plot&&!it.langs.some(l=>kc.has(l)))it.plot='';sig=(Math.imul(sig,31)+hstr(it.id+':'+it.versions.length))|0;
     for(const l of it.langs){const s=st[l]=st[l]||{live:0,movie:0,series:0,sport:0};s[it.type]++;if(it.sport)s.sport++}}
@@ -1192,7 +1192,7 @@ async function loadCatalog(ui,opt={}){try{return await loadCatalog0(ui,opt)}catc
   LS.set('nfk.scanerr',{t:Date.now(),m});ui&&ui({msg:'Zweiter Versuch …',p:.02});return await loadCatalog0(ui,{...opt,textMode:true})}}
 function scanKeep(){const ps=LS.get('nfk.profiles',[])||[];const cs=new Set(LS.get('nfk.scanc',[])||[]);let xx=false;for(const p of ps){(p.countries||[]).forEach(c=>cs.add(c));if(p.other)xx=true}
   if(!cs.size)return null;if(cs.has('DE')){cs.add('AT');cs.add('CH')}if(cs.has('IR'))cs.add('AF');return{c:[...cs].sort(),xx}}
-const CATV='alle3';// Katalog-Format: Filme & Serien aller Sprachen
+const CATV='alle4';// Katalog-Format: Filme & Serien aller Sprachen
 async function loadCatalog0(ui,opt={}){const keep=scanKeep();LS.set('nfk.keepc',keep);const lsig=LS.get('nfk.lsig',{})||{},nsig={v:CATV};let changed=!opt.bg||lsig.v!==CATV;const tsig=t=>t.length+':'+hstr(t.slice(0,3000)+t.slice(t.length>>1,(t.length>>1)+3000)+t.slice(-3000));
   const c=APP.cfg;const cnt={live:0,movie:0,series:0};const up=o=>{if(ui)ui(Object.assign({cnt},o))};
   let w=c.mode==='demo'?null:mkWorker();if(w&&!(await wReady(w))){try{w.terminate()}catch(e){}w=null}APP.noWorker=c.mode!=='demo'&&!w;
@@ -1911,9 +1911,9 @@ VIEWS.live=(el,a)=>{
   const all=!!a.all,lv=livePool(all);const countries=liveCountries(lv);const p=prof();
   const favs=(PS('liveFav')||[]).map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c));const rc=getRecentCh().map(id=>APP.byId.get(id)).filter(c=>c&&lv.includes(c)).slice(0,30);
   const mus=lv.filter(isMusicCh);
-  const lvs=new Set(lv);const spt=APP.items.filter(i=>i.type==='live'&&allowed(i)&&(lvs.has(i)?(i.sport||provOf(i)):(provOf(i)&&keepSportRaw(i.title,i.groups.join(' ')))));
+  const spt=[];
   const pins=(PS('livePins')||[]).filter(g=>lv.some(c=>c.groups.includes(g)));
-  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');if(sel==='__music'&&!mus.length)sel='__c:'+(countries[0]||'');if(sel==='__dazn')sel='__spt';if(sel==='__spt'&&!spt.length)sel='__c:'+(countries[0]||'');
+  let sel=a.g||PS('liveStart');if(sel==='__all'||sel==='__sport'||!sel)sel='__c:'+(countries[0]||'');if(sel==='__recent'&&!rc.length)sel='__c:'+(countries[0]||'');if(sel==='__music'&&!mus.length)sel='__c:'+(countries[0]||'');if(sel==='__dazn'||sel==='__spt')sel='__c:'+(countries[0]||'');
   const selC=sel.startsWith('__c:')?sel.slice(4).split('|')[0]:'';const selG=sel.startsWith('__c:')&&sel.includes('|')?sel.slice(sel.indexOf('|')+1):(!sel.startsWith('__')?sel:'');
   const gsz={};for(const c of lv)gsz[c.group]=(gsz[c.group]||0)+1;
   let list;const spk=c=>{const v=provOf(c)||'other';return v};const spCs={};for(const c of spt){const k=spk(c);(spCs[k]=spCs[k]||new Set()).add(c.country)}
@@ -1927,7 +1927,6 @@ VIEWS.live=(el,a)=>{
   cats+=item('__fav','★ ','Favoriten',favs.length);
   if(rc.length)cats+=item('__recent','↺ ','Zuletzt gesehen',rc.length);
   if(mus.length)cats+=item('__music','♪ ','Musik',mus.length);
-  if(spt.length&&!p.noSport)cats+=item('__spt','⚽ ','Sport',spt.length);
   if(pins.length)cats+=pins.map(g=>item(g,'',esc(g),gsz[g]||lv.filter(c=>c.groups.includes(g)).length)).join('');
   cats+='<div class="csep"></div>';
   cats+=countries.map(c=>item('__c:'+c,(CBY[c]&&CBY[c].flag?CBY[c].flag+' ':''),esc(c==='XX'?'Ohne Land':(CBY[c]||{name:c}).name.split(' · ')[0]),lv.filter(x=>x.country===c).length)).join('');
@@ -1972,7 +1971,7 @@ document.addEventListener('focusin',e=>{const el=e.target;if(!el.classList||!el.
 // ----- Sport -----
 const SPORTF=[['Alle',null],['Fußball',['LIGA','LEAGUE','POKAL','CHAMPIONS','لیگ','SÜPER','SERIE A','CUP','UEFA','فوتبال']],['LaLiga',['LALIGA','LA LIGA','REAL MADRID']],['Premier League',['PREMIER']],['Bundesliga',['BUNDESLIGA']],['Champions League',['CHAMPIONS']],['UFC / MMA',['UFC','MMA','FIGHT']],['Boxen',['BOX']],['Basketball',['NBA','BASKET']],['Motorsport',['F1','FORMEL','FORMULA','MOTOGP','GRAND PRIX']],['Tennis',['ATP','WTA','TENNIS']]];
 VIEWS.sport=(el,a)=>{
-  const f=a.f||'Alle';const kw=(SPORTF.find(x=>x[0]===f)||[])[1];const lv=pool('live').filter(c=>c.sport);
+  const f=a.f||'Alle';const kw=(SPORTF.find(x=>x[0]===f)||[])[1];const lv=pool('live').filter(c=>c.sport||provOf(c));
   const ev=lv.map(c=>({c,e:EPG.get(c)})).filter(o=>o.e&&o.e.cur);
   const match=s=>!kw||kw.some(k=>String(s).toUpperCase().includes(k));
   const nowEv=ev.filter(o=>match(o.e.cur.title)&&/–|UFC|NBA|F1|:|لیگ|Boxing/.test(o.e.cur.title));const seenT=new Set();const evU=nowEv.filter(o=>!seenT.has(o.e.cur.title)&&seenT.add(o.e.cur.title));
@@ -1984,8 +1983,19 @@ VIEWS.sport=(el,a)=>{
   <div class="chips">${SPORTF.map(([n])=>`<button class="chip f${n===f?' on':''}" data-act="sf" data-f="${esc(n)}"${n===f?' data-autofocus':''}>${esc(n)}</button>`).join('')}</div></div>
   <section class="row tz" id="teamzone" style="margin-top:1.2rem">${teamZoneHTML()}</section>${(prof().teams||[]).length&&!(APP.teamHits||[]).length?`<p class="hint pad" style="margin-top:1rem">Für ${esc(prof().teams.map(t=>t.n).join(', '))} steht gerade kein Spiel im Programm. Die App prüft das jede Minute und meldet sich, sobald eins läuft.</p>`:''}<section class="row" style="margin-top:1.2rem"><h3 class="pad">Jetzt live<small>${evU.length} Übertragungen</small></h3><div class="track pad">${evU.map(o=>card(o)).join('')||'<p class="empty" style="padding:1rem 0">Gerade läuft hier nichts Live. Schau bei „Gleich“ oder in den Sendern unten.</p>'}</div></section>
   ${nextEv.length?`<section class="row"><h3 class="pad">Gleich</h3><div class="track pad">${nextEv.map(o=>card(o,1)).join('')}</div></section>`:''}
-  <section class="row"><h3 class="pad">Sportsender<small>${chans.length}</small></h3><div class="pad"><div class="grid wide">${chans.slice(0,120).map(c=>cardHTML(c)).join('')}</div></div></section>`;
+  ${sportRows(chans)}`;
 };
+// Sportsender nach Anbieter (DAZN, Sky Sport, MagentaSport …) – je eine Reihe, nur aus deinen Ländern
+function sportRows(chans){const p=prof();const cs=p.countries;const grp=new Map();
+  for(const c of chans){const k=provOf(c)||'other';let a=grp.get(k);if(!a)grp.set(k,a=[]);a.push(c)}
+  const ci=c=>{const i=cs.indexOf(c.country);return i<0?99:i};const dn=t=>{const m=String(t).match(/\b(\d{1,2})\b/);return m?+m[1]:50};
+  const keys=[...grp.keys()].sort((x,y)=>{const i=SPROV.findIndex(z=>z[0]===x),j=SPROV.findIndex(z=>z[0]===y);return(i<0?99:i)-(j<0?99:j)});
+  let h='';for(const k of keys){const l=grp.get(k);const ctry=uniq(l.map(c=>c.country)).sort((x,y)=>ci({country:x})-ci({country:y}));
+    const parts=k==='other'||ctry.length<2?[[null,l]]:ctry.map(c=>[c,l.filter(x=>x.country===c)]);
+    for(const[c,ls]of parts){let nm=k==='other'?'Weitere Sportsender':((SPROV.find(z=>z[0]===k)||[])[1]||k);if(k==='sky'&&c==='EN')nm='Sky Sports';const fl=c==='EN'&&['sky','tnt','premier','viaplay','euro'].includes(k)?'🇬🇧 ':c&&CBY[c]&&CBY[c].flag?CBY[c].flag+' ':'';
+      ls.sort((x,y)=>ci(x)-ci(y)||dn(x.title)-dn(y.title)||x.title.localeCompare(y.title));
+      h+=`<section class="row"><h3 class="pad">${fl}${esc(nm)}<small>${ls.length} Sender</small></h3><div class="track pad">${ls.slice(0,60).map(x=>cardHTML(x)).join('')}</div></section>`}}
+  return h||'<p class="empty pad">Keine Sportsender in deinen Ländern gefunden.</p>'}
 // ----- Filme & Serien -----
 // Zählungen für Kategorien-Menü und Länder-Reihen: nur einmal pro Katalog berechnen
 function ddOf(type,items){const k=type+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.key)+'|'+items.length;const slot=type+(items===(APP._pool&&APP._pool['a'+type])?'A':'');APP._dd=APP._dd||{};const c=APP._dd[slot];if(c&&c.k===k)return c;
