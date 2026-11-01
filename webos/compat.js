@@ -153,7 +153,7 @@
       for (var i = 0; i < ms.length; i++) {
         var m = ms[i];
         if (m.type === 'childList') { for (var j = 0; j < m.addedNodes.length; j++) scan(m.addedNodes[j]); }
-        else if (m.target.nodeType === 1 && (m.target.__tvnAr || (m.target.matches && m.target.matches(all)))) consider(m.target);
+        else if (m.target.nodeType === 1 && (m.target.__tvnAr || (m.target.classList && m.target.classList.contains('hero')))) consider(m.target); // nur wenige Elemente prüfen (Fokuswechsel ändern ständig Klassen)
       }
     }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
   }
@@ -170,7 +170,7 @@
   window.TVN_IMG = smallImg;
   (function () {
     var st = document.createElement('style');
-    st.textContent = '::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}html,body{-webkit-user-select:none;user-select:none}*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}input,textarea{-webkit-user-select:text;user-select:text}';
+    st.textContent = '::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}html,body{-webkit-user-select:none;user-select:none}*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}.m4::before,.m0::before,.m2::after,.m3::before{filter:none!important;box-shadow:none!important}input,textarea{-webkit-user-select:text;user-select:text}';
     (document.head || document.documentElement).appendChild(st);
   })();
 

@@ -23,6 +23,10 @@ html = html.replace(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g, (all,
   return `<script${attrs}>${r.code.replace(/<\/script/gi, '<\\/script')}</script>`;
 });
 
+// Schonender für den schwächeren LG-Prozessor: Bilder erst laden, wenn sie sichtbar werden; Hintergrundbilder kleiner
+html = html.replace(/<img (?![^>]*\bloading=)/g, '<img loading="lazy" ')
+  .replace(/image\.tmdb\.org\/t\/p\/w1280/g, 'image.tmdb.org/t/p/w780');
+
 // webOS-Anpassungen als erstes Skript einsetzen
 const compat = fs.readFileSync(path.join(__dirname, 'compat.js'), 'utf8')
   .replace(/__TVN_REPO__/g, repo)
