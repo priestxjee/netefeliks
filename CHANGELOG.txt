@@ -2,7 +2,6 @@ Sport: Sportsender jetzt nach Anbieter in eigenen Reihen – DAZN, Sky Sport, Sk
 Live-TV: Sport-Kategorie und DAZN-Kategorie wieder raus (gehört in den Bereich Sport); es werden nur Sender aus deinen Ländern geladen
 Filme & Serien: eigene Top 10 von Netflix, Prime Video, Apple TV, Disney+ und IMDb – mit Platz 1–10; Titel, die du nicht hast, sind ausgegraut (OK = suchen)
 Live-TV: zweites OK macht das Mini-Bild direkt zum Vollbild – nichts lädt neu
-Live-TV: alle DAZN-Sender immer dabei, als eigene Kategorie „DAZN“ (egal aus welchem Land)
 Sport: keine Benachrichtigungen mehr
 Iranische Serien/Filme: werden besser erkannt (z. B. Kategorien wie „IRAN SERIES“ mit lateinischen Titeln)
 Intro: startet erst, wenn alles bereit ist, und ruckelt nicht mehr; neuer Klang (Wirbel, Aufschlag, breiter Akkord mit Glitzern)
