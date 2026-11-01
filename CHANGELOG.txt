@@ -1,3 +1,5 @@
+Top 10: Titel werden viel genauer in deiner Playlist gefunden – auch mit deutschem Titel, ohne „Staffel 2“, mit Untertitel nach „:“ und in allen Sprachen; fehlende deutsche Titel werden nachgeschlagen
+Leiste links bleibt nicht mehr „hängen“ – sie klappt nur noch auf, wenn du wirklich dort bist
 Update-Fehler „HTTP 404“ behoben (App-Datei wurde unter falschem Namen gesucht)
 Filme & Serien: Top 10 von HBO Max dazu
 Sport: Sportsender jetzt nach Anbieter in eigenen Reihen – DAZN, Sky Sport, Sky Sports (UK), MagentaSport, Sport1, Eurosport, TNT Sports, Viaplay, ESPN, Varzesh und Weitere – nur aus deinen gewählten Ländern

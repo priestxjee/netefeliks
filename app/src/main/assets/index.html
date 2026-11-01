@@ -28,16 +28,16 @@ button{font:inherit;color:inherit}
 
 /* ---------- Seitenleiste ---------- */
 .rail{position:fixed;left:0;top:0;bottom:0;width:var(--rail);z-index:30;display:flex;flex-direction:column;justify-content:center;gap:.25rem;padding:1rem .55rem;padding-left:max(.55rem,env(safe-area-inset-left,0px));background:linear-gradient(90deg,rgba(0,0,0,.97) 40%,rgba(0,0,0,0));transition:width .22s ease,background .22s}
-.rail:focus-within,.rail:hover{width:16rem;background:linear-gradient(90deg,#0c0c0f 0,#0c0c0f 55%,rgba(0,0,0,.85) 75%,rgba(0,0,0,0))}
+.rail:focus-within,html.mouse .rail:hover{width:16rem;background:linear-gradient(90deg,#0c0c0f 0,#0c0c0f 55%,rgba(0,0,0,.85) 75%,rgba(0,0,0,0))}
 .rail .brand{position:absolute;top:1.1rem;left:max(1rem,env(safe-area-inset-left,0px));font-family:var(--f-brand);color:var(--red);font-size:2.1rem;letter-spacing:.02em;line-height:1;white-space:nowrap}
 .rail .brand b{font-weight:400;display:none}
-.rail:focus-within .brand b,.rail:hover .brand b{display:inline}
-.rail:focus-within .brand i,.rail:hover .brand i{display:none}
+.rail:focus-within .brand b,html.mouse .rail:hover .brand b{display:inline}
+.rail:focus-within .brand i,html.mouse .rail:hover .brand i{display:none}
 .rail .brand i{font-style:normal}
 .nav{display:flex;align-items:center;gap:1.05rem;padding:.62rem .75rem;border-radius:.45rem;color:var(--mute);white-space:nowrap;overflow:hidden;background:none;border:0;font-size:1.05rem;font-weight:600;cursor:pointer;width:100%;text-align:left}
 .nav svg{flex:0 0 1.45rem;height:1.45rem}
 .nav span{opacity:0;transition:opacity .15s}
-.rail:focus-within .nav span,.rail:hover .nav span{opacity:1}
+.rail:focus-within .nav span,html.mouse .rail:hover .nav span{opacity:1}
 .nav.on{color:var(--fg)}
 .nav.on svg{color:var(--red)}
 .nav{transition:background .15s,color .15s}
@@ -1774,33 +1774,68 @@ const CH={data:LS.get('nfk.ch',null),busy:0,_m:null,
   fp(html){const out={movie:[],series:[]};if(!html)return out;const hs=[];const re=/TOP\s*10\s*(Kids\s+)?(Movies|TV\s*Shows|Overall)/gi;let m;
     while((m=re.exec(html)))hs.push({i:m.index,k:m[1]?'kids':/movie/i.test(m[2])?'movie':/tv/i.test(m[2])?'series':'all'});
     for(let j=0;j<hs.length;j++){const seg=html.slice(hs[j].i,j+1<hs.length?hs[j+1].i:hs[j].i+60000);const l=[];const lr=/href="\/title\/([^"\/]+)\/?"[^>]*>([^<]{1,140})</g;let x;
-      while((x=lr.exec(seg))&&l.length<10){const t=CH.dec(x[2]);if(t&&!l.some(e=>e.t===t))l.push({t,slug:x[1]})}
+      while((x=lr.exec(seg))&&l.length<10){const t=CH.dec(x[2]);if(t&&!l.some(e=>e.t===t)){const ym=x[1].match(/-((?:19|20)\d\d)$/);l.push({t,slug:x[1],y:ym?+ym[1]:null,st:x[1].replace(/-((?:19|20)\d\d)$/,'').replace(/-/g,' ')})}}
       if(l.length<3)continue;const k=hs[j].k;if(k==='kids')continue;if(k==='all'){if(!out.movie.length)out.movie=l}else if(!out[k].length)out[k]=l}
     return out},
+  async jws(t,ty){const q='query S($country:Country!,$language:Language!,$first:Int!,$filter:TitleFilter){popularTitles(country:$country,first:$first,filter:$filter){edges{node{content(country:$country,language:$language){title originalTitle originalReleaseYear externalIds{imdbId}}}}}}';
+    const body=JSON.stringify({query:q,variables:{country:'DE',language:'de',first:4,filter:{searchQuery:t,objectTypes:[ty==='movie'?'MOVIE':'SHOW']}}});
+    const g=await NET.grab('https://apis.justwatch.com/graphql',{post:body,h:{'Content-Type':'application/json'},body:true,max:3e5});
+    const j=JSON.parse(g.body||'{}');return(((j.data||{}).popularTitles||{}).edges||[]).map(e=>{const c=(e.node||{}).content||{};return{t:c.title||'',o:c.originalTitle||'',y:c.originalReleaseYear||null,imdb:(c.externalIds||{}).imdbId||''}}).filter(e=>e.t)},
   async jw(pk,ty){const q='query P($country:Country!,$language:Language!,$first:Int!,$filter:TitleFilter){popularTitles(country:$country,first:$first,filter:$filter){edges{node{objectType content(country:$country,language:$language){title originalTitle originalReleaseYear externalIds{imdbId}}}}}}';
     const body=JSON.stringify({query:q,variables:{country:'DE',language:'de',first:40,filter:{packages:[CH._jp||pk],objectTypes:[ty==='movie'?'MOVIE':'SHOW']}}});
     const g=await NET.grab('https://apis.justwatch.com/graphql',{post:body,h:{'Content-Type':'application/json'},body:true,max:8e5});
     const j=JSON.parse(g.body||'{}');return(((j.data||{}).popularTitles||{}).edges||[]).map(e=>{const c=(e.node||{}).content||{};return{t:c.title||'',o:c.originalTitle||'',y:c.originalReleaseYear||null,imdb:(c.externalIds||{}).imdbId||''}}).filter(e=>e.t)},
-  async load(force){if(CH.busy||!APP.cfg||APP.cfg.mode==='demo')return;const d=CH.data;if(!force&&d&&Date.now()-d.t<6*36e5&&d.s&&d.s.hbo)return;CH.busy=1;
+  async load(force){if(CH.busy||!APP.cfg||APP.cfg.mode==='demo')return;const d=CH.data;if(!force&&d&&Date.now()-d.t<6*36e5&&d.s&&d.s.hbo&&d.alt)return;CH.busy=1;
     try{await waitIdle(3000);const res={t:Date.now(),s:{}};let any=0;
       for(const[pk,,slug]of CHS){const o={movie:[],series:[],src:''};let fp={movie:[],series:[]};
         try{const g=await NET.grab(`https://flixpatrol.com/top10/${slug}/germany/`,{body:true,max:2e6});fp=CH.fp(g.body||'')}catch(e){}
         for(const ty of['movie','series']){let jw=[];for(const jp of(pk==='hbo'?['mxx','hbm']:[pk])){CH._jp=jp;try{jw=await CH.jw(pk,ty)}catch(e){}CH._jp=null;if(jw.length)break}
-          if(fp[ty].length>=3){o.src='fp';o[ty]=fp[ty].map(e=>{const k=mkey(e.t);const w=jw.find(x=>mkey(x.o)===k||mkey(x.t)===k);return w?{t:e.t,alt:uniq([w.t,w.o].filter(Boolean)),y:w.y,imdb:w.imdb}:{t:e.t,alt:[]}})}
+          if(fp[ty].length>=3){o.src='fp';o[ty]=fp[ty].map(e=>{const k=mkey(e.t);const w=jw.find(x=>mkey(x.o)===k||mkey(x.t)===k||(e.st&&(mkey(x.o)===mkey(e.st)||mkey(x.t)===mkey(e.st))));const alt=uniq([...(w?[w.t,w.o]:[]),e.st||''].filter(x=>x&&x!==e.t));return{t:e.t,alt,y:(w&&w.y)||e.y||null,imdb:(w&&w.imdb)||''}})}
           else if(jw.length>=3){o[ty]=jw.slice(0,10).map(w=>({t:w.t,alt:w.o&&w.o!==w.t?[w.o]:[],y:w.y,imdb:w.imdb}));o[ty+'Src']='jw'}
           if(o[ty].length)any=1}
         res.s[pk]=o}
-      if(any){CH.data=res;LS.set('nfk.ch',res);CH._m=null;refreshCharts()}}
+      if(any){const memo=CH.data&&CH.data.alt||{};res.alt=memo;
+        for(const pk in res.s)for(const ty of['movie','series'])for(const e of res.s[pk][ty]||[]){const mk=ty+'|'+mkey(e.t);const m=memo[mk];
+          if(m){e.alt=uniq([...(e.alt||[]),...m.a]);e.y=e.y||m.y;e.imdb=e.imdb||m.i;continue}
+          if(e.imdb||TMATCH.find(ty,e,new Set()))continue;
+          try{await waitIdle(800);const r=await CH.jws(e.t,ty);const k=mkey(e.t);const w=r.find(x=>mkey(x.o)===k||mkey(x.t)===k)||r.find(x=>e.y&&x.y&&Math.abs(x.y-e.y)<=1)||null;
+            memo[mk]={a:w?uniq([w.t,w.o].filter(x=>x&&x!==e.t)):[],y:w&&w.y,i:w&&w.imdb||''};if(w){e.alt=uniq([...(e.alt||[]),...memo[mk].a]);e.y=e.y||w.y;e.imdb=e.imdb||w.imdb}}catch(er){}}
+        const ks=Object.keys(memo);if(ks.length>600)for(const k of ks.slice(0,ks.length-600))delete memo[k];
+        CH.data=res;LS.set('nfk.ch',res);CH._m=null;refreshCharts()}}
     finally{CH.busy=0}},
   // Rangliste eines Dienstes mit deinen Titeln verknüpft: [{e, it|null}]
   list(pk,ty){const d=CH.data;let l;if(pk==='imdb'){l=((TOP.data&&TOP.data.imdb&&TOP.data.imdb[ty])||[]).filter(e=>ty!=='movie'||!e.tv).slice(0,10).map(e=>({t:e.t[0],alt:e.t.slice(1),y:e.y,imdb:e.id}))}
     else l=d&&d.s&&d.s[pk]&&d.s[pk][ty]||[];if(!l.length)return[];
-    const key=pk+ty+'|'+(d&&d.t)+'|'+(TOP.data&&TOP.data.t)+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.key);CH._m=CH._m||{};if(CH._m[pk+ty]&&CH._m[pk+ty].k===key)return CH._m[pk+ty].v;
-    const idx=new Map();const add=(k,it)=>{if(!k)return;const a=idx.get(k);if(a){if(!a.includes(it))a.push(it)}else idx.set(k,[it])};
-    for(const it of pool(ty)){add(mkey(it.title),it);const m=META.cache[it.id];if(m&&m.imdbId)add('#'+m.imdbId,it);if(m&&m.engTitle)add(mkey(m.engTitle),it)}
-    const used=new Set();const v=l.slice(0,10).map(e=>{let c=[...(e.imdb?idx.get('#'+e.imdb)||[]:[]),...[e.t,...(e.alt||[])].flatMap(t=>idx.get(mkey(t))||[])].filter(it=>!used.has(it));
-      if(e.y)c=c.filter(it=>!it.year||Math.abs(it.year-e.y)<=1);c.sort((a,b)=>QR[b.q]-QR[a.q]);const it=c[0]||null;if(it)used.add(it);return{e,it}});
+    const key=pk+ty+'|'+(d&&d.t)+'|'+(TOP.data&&TOP.data.t)+'|'+APP.catVer+'|'+(APP._pool&&APP._pool.key)+'|'+Math.floor(Date.now()/6e5);CH._m=CH._m||{};if(CH._m[pk+ty]&&CH._m[pk+ty].k===key)return CH._m[pk+ty].v;
+    const used=new Set();const v=l.slice(0,10).map(e=>{const it=TMATCH.find(ty,e,used);if(it)used.add(it);return{e,it}});
     CH._m[pk+ty]={k:key,v};return v}};
+// ---------- Titel aus Ranglisten in der Playlist finden ----------
+const TMATCH={_i:{},
+  // Schreibweisen eines Titels: genau, ohne Artikel, ohne „Staffel 2“, Teil vor dem Doppelpunkt (mit ~)
+  vars(t){const k=mkey(t);if(!k)return[];const o=new Set([k]);const na=k.replace(/^(the|a|an|der|die|das|ein|eine|le|la|les|el|los|il)\s+/,'');o.add(na);
+    const ns=na.replace(/\s+(staffel|season|saison|temporada|sezon|fasl|teil|part|vol|volume|chapter|kapitel)\s*\d+.*$/,'').replace(/\s+s\d{1,2}(\s+e\d+)?$/,'').replace(/\s+(19|20)\d\d$/,'');if(ns)o.add(ns);
+    const pre=String(t).split(/\s*[:：–—]\s*|\s+-\s+/)[0];if(pre&&pre.length<String(t).length){const pk=mkey(pre).replace(/^(the|a|an|der|die|das)\s+/,'');if(pk.length>=4)o.add('~'+pk)}
+    return[...o]},
+  toks(k){return k.replace(/^~/,'').split(' ').filter(w=>w.length>1&&!/^(the|a|an|der|die|das|and|und|of|von|in|im|le|la|de|el)$/.test(w))},
+  idx(ty){const k=APP.catVer+'|'+(APP._pool&&APP._pool.key)+'|'+Math.floor(Date.now()/6e5);const c=TMATCH._i[ty];if(c&&c.k===k)return c;
+    const ex=new Map(),pre=new Map(),tok=new Map();const add=(m,k,it)=>{let a=m.get(k);if(!a)m.set(k,a=[]);if(!a.includes(it))a.push(it)};
+    for(const it of poolAll(ty)){const ts=[it.title];const m=META.cache[it.id];if(m&&m.engTitle)ts.push(m.engTitle);if(m&&m.imdbId)add(ex,'#'+m.imdbId,it);
+      for(const t of ts)for(const v of TMATCH.vars(t)){if(v[0]==='~')add(pre,v.slice(1),it);else{add(ex,v,it);for(const w of TMATCH.toks(v))add(tok,w,it)}}}
+    return TMATCH._i[ty]={k,ex,pre,tok}},
+  find(ty,e,used){const I=TMATCH.idx(ty);const titles=[e.t,...(e.alt||[])].filter(Boolean);const free=a=>(a||[]).filter(it=>!used.has(it));
+    const yOk=(it,d)=>ty!=='movie'||!e.y||!it.year||Math.abs(it.year-e.y)<=d;
+    const best=c=>{c=uniq(c);if(!c.length)return null;const mine=c.filter(mineL);if(mine.length)c=mine;return c.sort((a,b)=>(e.y?Math.abs((a.year||e.y)-e.y)-Math.abs((b.year||e.y)-e.y):0)||QR[b.q]-QR[a.q])[0]};
+    // 1) IMDb-Nummer  2) gleiche Schreibweise  3) Haupttitel vor dem Doppelpunkt  4) fast gleiche Wörter
+    if(e.imdb){const c=free(I.ex.get('#'+e.imdb));if(c.length)return best(c)}
+    let c=[];for(const t of titles)for(const v of TMATCH.vars(t)){if(v[0]==='~')continue;c.push(...free(I.ex.get(v)),...free(I.pre.get(v)))}
+    let r=best(c.filter(it=>yOk(it,1)))||best(c.filter(it=>yOk(it,2)));if(r)return r;
+    c=[];for(const t of titles)for(const v of TMATCH.vars(t))if(v[0]==='~'){const k=v.slice(1);c.push(...free(I.ex.get(k)),...free(I.pre.get(k)))}
+    r=best(c.filter(it=>yOk(it,1)));if(r)return r;
+    for(const t of titles){const tk=TMATCH.toks(mkey(t));if(!tk.length||tk.join('').length<5)continue;const rare=tk.slice().sort((x,y)=>(I.tok.get(x)||[]).length-(I.tok.get(y)||[]).length)[0];
+      const cand=free(I.tok.get(rare)).filter(it=>yOk(it,1));const S=new Set(tk);
+      const sc=cand.map(it=>{const u=new Set(TMATCH.toks(mkey(it.title)));let n=0;for(const w of S)if(u.has(w))n++;return{it,j:n/(S.size+u.size-n)}}).filter(o=>o.j>=.75).sort((x,y)=>y.j-x.j);
+      if(sc.length)return best(sc.filter(o=>o.j===sc[0].j).map(o=>o.it))}
+    return null}};
 function chartRow(pk,ty){const l=CH.list(pk,ty);if(l.length<3)return`<section class="row" data-chart="${pk}|${ty}" hidden></section>`;
   const nm=pk==='imdb'?'IMDb':(CHS.find(c=>c[0]===pk)||[])[1];const src=pk==='imdb'?'meistgesucht weltweit':(CH.data&&CH.data.s[pk]&&CH.data.s[pk][ty+'Src']==='jw'?'gerade beliebt in Deutschland':'heute in Deutschland');
   const have=l.filter(x=>x.it).length;const st=CH.data&&CH.data.t&&pk!=='imdb'?' · Stand '+new Date(CH.data.t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'';
@@ -3116,6 +3151,9 @@ const INTRO={el:null,
       setTimeout(()=>{try{ac.close()}catch(e){}},5600)}catch(e){}}}}catch(e){return null}}};
 function vCrash(){screen(`<div class="scan"><h1 class="wordmark" style="font-size:3.4rem">TIVINATOR</h1><p style="max-width:34rem;margin:1rem auto;line-height:1.6">Beim Einlesen deiner Playlist ist dem Fire TV kurz der Arbeitsspeicher ausgegangen – die App wurde neu gestartet.<br>Schließe am besten andere Apps (Fire-TV-Taste gedrückt halten → Apps) und versuche es noch einmal.</p><div class="ccw">${(()=>{const cur=new Set((scanKeep()||{c:[]}).c);return['IR','DE','EN','TR','AR','AF','KU','FR','ES','IT','NL','PL','RU','IN','AL','GR','PT','RO'].filter(k=>CBY[k]).map(k=>`<button class="chip f${cur.has(k)?' on':''}" data-act="scc" data-k="${k}">${CBY[k].flag||''} ${esc(CBY[k].name.split(' · ')[0])}</button>`).join('')})()}</div>
   <p class="hint" style="margin:.4rem auto 1rem;max-width:34rem">Tipp: Wähle nur die Länder, die du brauchst – dann wird nur das geladen und es braucht viel weniger Speicher.</p><button class="btn pri f" data-act="rescan" data-autofocus>Erneut einlesen</button></div>`)}
+// Leiste links nur bei echter Maus per Überfahren aufklappen (der Fire TV meldet sonst manchmal ein „hängendes“ Überfahren)
+{let mx=-1,my=-1;addEventListener('mousemove',e=>{if(mx>=0&&(Math.abs(e.clientX-mx)>4||Math.abs(e.clientY-my)>4))document.documentElement.classList.add('mouse');mx=e.clientX;my=e.clientY},{passive:true});
+  addEventListener('keydown',()=>{if(document.documentElement.classList.contains('mouse'))document.documentElement.classList.remove('mouse')},true)}
 // ---------- Start ----------
 (async function boot(){
   try{const cr=window.NFK&&NFK.lastCrash&&NFK.lastCrash();if(cr){LS.set('nfk.appcrash',{t:Date.now(),x:String(cr).slice(0,1500)});NFK.clearCrash();setTimeout(()=>toast('Die App war abgestürzt – Details unter Einstellungen → Abo & App'),5000)}}catch(e){}
