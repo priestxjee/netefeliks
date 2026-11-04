@@ -1,3 +1,5 @@
+Suche: Verlauf – deine letzten Suchen (antippen = nochmal suchen), zuletzt geöffnete Titel und zuletzt gesehene Sender; mit „Verlauf löschen“
+Live-TV: Kategorie „Verlauf“ mit deinen zuletzt gesehenen Sendern, lässt sich leeren
 LG: Katalog bleibt gespeichert – kein Neuladen von Sendern, Filmen und Serien bei jedem Start; Updates speichern zuverlässig
 LG: kein schwarzes Bild mehr beim Sprachwechsel – schafft der Fernseher Bild und Ton aus zwei Fassungen nicht, läuft automatisch die Fassung in deiner Sprache
 LG: Updates direkt am Fernseher – „Update verfügbar – Jetzt updaten“ und Einstellungen → „Nach Updates suchen“ wie auf dem Fire TV
