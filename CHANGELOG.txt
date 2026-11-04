@@ -1,3 +1,4 @@
+Verlauf aufräumen: OK lange drücken (oder Menü-Taste ☰) auf einem Eintrag in „Weiterschauen“, im Such-Verlauf oder im Sender-Verlauf → „Entfernen“
 Suche: Verlauf – deine letzten Suchen (antippen = nochmal suchen), zuletzt geöffnete Titel und zuletzt gesehene Sender; mit „Verlauf löschen“
 Live-TV: Kategorie „Verlauf“ mit deinen zuletzt gesehenen Sendern, lässt sich leeren
 LG: Katalog bleibt gespeichert – kein Neuladen von Sendern, Filmen und Serien bei jedem Start; Updates speichern zuverlässig
